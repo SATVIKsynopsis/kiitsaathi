@@ -24,6 +24,10 @@ import CampusTourBooking from "./pages/CampusTourBooking";
 import Auth from "./pages/Auth";
 import ChatBotPage from "./pages/ChatBotPage";
 import KiitSocieties from "./pages/KiitSocieties";
+import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
+import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
+import FestAnnouncements from "./pages/FestAnnouncements";
+import SportsEventsHub from "./pages/SportsEventsHub";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
@@ -54,6 +58,10 @@ const App = () => (
           <Route path="/meetups" element={<Meetups />} />
           <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
           <Route path="/kiit-societies" element={<KiitSocieties />} />
+          <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
+          <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
+          <Route path="/fest-announcements" element={<FestAnnouncements />} />
+          <Route path="/sports-events-hub" element={<SportsEventsHub />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/chatbot" element={<ChatBotPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
