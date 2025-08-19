@@ -80,47 +80,47 @@ const Index = () => {
       <Hero />
       
       {/* Services Section */}
-      <section id="services" className="">
+      <section id="services" className="py-20">
         <ServicesGrid />
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-gradient-to-b from-green-100 to-green-300">
-  <div className="container mx-auto px-4 text-center">
-    <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
-      How KIIT Saathi Works
-    </h2>
-    <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-      Your campus life made easier in just a few simple steps
-    </p>
-    
-    <div className="grid md:grid-cols-3 gap-8">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-          1
+      <section id="how-it-works" className="py-20 bg-gradient-soft">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
+            How KIIT Saathi Works
+          </h2>
+          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Your campus life made easier in just a few simple steps
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                1
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
+              <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                2
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
+              <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                3
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
+              <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
+            </div>
+          </div>
         </div>
-        <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
-        <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
-      </div>
-      
-      <div className="text-center">
-        <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-          2
-        </div>
-        <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
-        <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
-      </div>
-      
-      <div className="text-center">
-        <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-          3
-        </div>
-        <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
-        <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
-      </div>
-    </div>
-  </div>
-
+      </section>
 
       {/* Testimonials Section */}
       <section id="testimonials" className="py-20">
@@ -131,7 +131,6 @@ const Index = () => {
       <section id="faq" className="py-20 bg-gradient-soft">
         <FAQ />
       </section>
-</section>
 
       {/* Contact Section */}
       <section id="contact" className="py-20">
@@ -184,7 +183,7 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="text-gradient flex items-center gap-2">
                   <Mail className="w-5 h-5" />
-                  Contact Us
+                  📩 Contact Us
                 </CardTitle>
               </CardHeader>
               <CardContent>

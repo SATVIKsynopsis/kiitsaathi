@@ -30,6 +30,7 @@ const services = [
     description: "Making moving day hassle free with cartons, packing and hostel to hostel delivery – All in one tap.",
     price: "₹50/carton",
     gradient: "from-kiit-green to-campus-blue",
+    emoji: "📦"
   },
   {
     icon: Printer,
@@ -37,6 +38,7 @@ const services = [
     description: "Too lazy to go out? Just send a PDF and get it printed and delivered.",
     price: "₹2/page",
     gradient: "from-campus-blue to-campus-purple",
+    emoji: "🖨️"
   },
   {
     icon: Users,
@@ -44,6 +46,7 @@ const services = [
     description: "Connect with experienced Seniors with genuine insights & book mentorship sessions with ease.",
     price: "₹99/session",
     gradient: "from-campus-purple to-campus-orange",
+    emoji: "🎓"
   },
   {
     icon: PenTool,
@@ -51,6 +54,7 @@ const services = [
     description: "Don't have time to write? We've got real students who'll do it for you - neat, accurate, and on time.",
     price: "₹5/page",
     gradient: "from-campus-orange to-kiit-green",
+    emoji: "✍️"
   },
   {
     icon: Calendar,
@@ -58,6 +62,7 @@ const services = [
     description: "One calendar. All societies. Never miss an interview again.",
     price: "Free",
     gradient: "from-kiit-green to-campus-blue",
+    emoji: "📣"
   },
   {
     icon: Bot,
@@ -65,6 +70,7 @@ const services = [
     description: "Lost? Hungry? Confused? Ask our chatbot — 24x7 KIIT help.",
     price: "Free",
     gradient: "from-campus-orange to-kiit-green",
+    emoji: "🤖"
   },
   {
     icon: MessageCircle,
@@ -72,6 +78,7 @@ const services = [
     description: "Struggling in class or life? Book a session with a real senior mentor.",
     price: "₹199/hour",
     gradient: "from-campus-blue to-campus-purple",
+    emoji: "💬"
   },
   {
     icon: Shield,
@@ -79,6 +86,7 @@ const services = [
     description: "Explore the vibrant campus of KIIT and everything it has to offer.",
     price: "Free",
     gradient: "from-campus-purple to-campus-orange",
+    emoji: "🌃"
   },
   {
     icon: Search,
@@ -86,6 +94,7 @@ const services = [
     description: "Lost your ID card? Found someone's AirPods? Report it here.",
     price: "Free",
     gradient: "from-campus-orange to-kiit-green",
+    emoji: "🔍"
   },
   {
     icon: Car,
@@ -93,6 +102,7 @@ const services = [
     description: "Auto tours for parents across KIIT, KIMS, and KISS campuses.",
     price: "₹500/tour",
     gradient: "from-kiit-green to-campus-blue",
+    emoji: "🚗"
   },
   {
     icon: Calculator,
@@ -100,6 +110,7 @@ const services = [
     description: "Simplify how you and your friends split bills during trips, café visits, or fests.",
     price: "Free",
     gradient: "from-green-500 to-emerald-600",
+    emoji: "🧾"
   },
   {
     icon: BookOpen,
@@ -107,6 +118,7 @@ const services = [
     description: "Sell your old semester books for a better price and help juniors save money — by students, for students.",
     price: "Fair Price",
     gradient: "from-campus-orange to-kiit-green",
+    emoji: "📚"
   },
   {
     icon: PartyPopper,
@@ -114,6 +126,7 @@ const services = [
     description: "From surprise birthday parties to last-minute cake deliveries, decorations, and fun party combos — all planned & delivered for you.",
     price: "₹299+",
     gradient: "from-pink-500 to-purple-600",
+    emoji: "🎉"
   },
   {
     icon: Users,
@@ -121,6 +134,7 @@ const services = [
     description: "Find your people, create your moments - campus meetups made easy",
     price: "Free",
     gradient: "from-pink-500 to-purple-600",
+    emoji: "💛"
   },
   {
     icon: ShoppingBag,
@@ -128,6 +142,7 @@ const services = [
     description: "From wholesome mini meals to everyday essentials - delivered from trusted campus and nearby stores.",
     price: "₹20 delivery",
     gradient: "from-campus-blue to-campus-purple",
+    emoji: "🛍️"
   }
 ];
 
@@ -155,7 +170,7 @@ export const ServicesGrid = () => {
       navigate(route);
     } else {
       // Show coming soon for services without pages
-      alert(" Coming Soon! This service is under development and will be available soon.");
+      alert("🚀 Coming Soon! This service is under development and will be available soon.");
     }
   };
 
@@ -195,6 +210,7 @@ export const ServicesGrid = () => {
                   <div className={`p-3 rounded-2xl bg-gradient-to-r ${service.gradient}`}>
                     <IconComponent className="w-6 h-6 text-white" />
                   </div>
+                  <div className="text-3xl">{service.emoji}</div>
                 </div>
 
                 {/* Service Content */}
@@ -203,7 +219,7 @@ export const ServicesGrid = () => {
                     {service.title}
                   </h3>
                   
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed">
                     {service.description}
                   </p>
                   
@@ -229,7 +245,7 @@ export const ServicesGrid = () => {
         </div>
 
         {/* Call to Action */}
-        {/* <div className="text-center">
+        <div className="text-center">
           <div className="glass-card p-8 max-w-2xl mx-auto">
             <h3 className="text-2xl font-poppins font-bold text-gradient mb-4">
               Ready to simplify your campus life?
@@ -242,7 +258,7 @@ export const ServicesGrid = () => {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
-        </div> */}
+        </div>
       </div>
     </section>
   );
