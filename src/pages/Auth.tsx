@@ -68,7 +68,7 @@ export default function Auth() {
 
       // Show appropriate message based on whether email confirmation is required
       if (data?.user && !data.session) {
-        toast.success('Almost there! Check your email for the confirmation link to activate your account.', {
+        toast.success('🎉 Almost there! Check your email for the confirmation link to activate your account.', {
           duration: 6000,
         });
       } else if (data?.session) {
@@ -106,28 +106,6 @@ export default function Auth() {
       console.error('Sign in error:', error);
       setError(error.message || 'An error occurred during sign in');
       toast.error(error.message || 'Sign in failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const googleSignIn = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      });
-
-      if (error) throw error;
-
-      toast.success('Successfully signed in with Google!');
-      navigate('/');
-    } catch (error: any) {
-      console.error('Google sign in error:', error);
-      setError(error.message || 'An error occurred during Google sign in');
-      toast.error(error.message || 'Google sign in failed');
     } finally {
       setLoading(false);
     }
@@ -176,7 +154,7 @@ export default function Auth() {
                       <Input
                         id="signin-email"
                         type="email"
-                        placeholder="roll-number@kiit.ac.in"
+                        placeholder="your-email@kiit.ac.in"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -290,26 +268,7 @@ export default function Auth() {
                   </CardFooter>
                 </form>
               </TabsContent>
-              
             </Tabs>
-            <div className=' border-t my-4 mx-8 border-gray-900'>
-              {/* Google Auth */}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={googleSignIn}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  'Sign In with Google'
-                )}
-              </Button>
-            </div>
           </Card>
         </div>
       </div>

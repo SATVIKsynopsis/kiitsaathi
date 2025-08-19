@@ -35,10 +35,11 @@ export const Navbar = () => {
   const scrollToSection = (href: string) => {
     if (location.pathname !== '/') {
       navigate('/');
+      // Wait for navigation to complete, then scroll
       setTimeout(() => {
         const element = document.querySelector(href);
         if (element) {
-          element.scrollIntoView({
+          element.scrollIntoView({ 
             behavior: 'smooth',
             block: 'start'
           });
@@ -47,7 +48,7 @@ export const Navbar = () => {
     } else {
       const element = document.querySelector(href);
       if (element) {
-        element.scrollIntoView({
+        element.scrollIntoView({ 
           behavior: 'smooth',
           block: 'start'
         });
@@ -61,7 +62,7 @@ export const Navbar = () => {
     if (location.pathname !== '/') return;
 
     const sections = navItems.map(item => item.href.substring(1));
-
+    
     const observerOptions = {
       root: null,
       rootMargin: '-20% 0px -70% 0px',
@@ -99,12 +100,12 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/30 border-b border-white/20 shadow-lg">
+    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-gradient-to-r from-kiit-green/10 via-campus-blue/10 to-campus-purple/10 border-b border-white/20 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div
-            className="flex items-center gap-3 cursor-pointer hover:scale-105 transition-all duration-300"
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:scale-105 transition-all duration-300" 
             onClick={() => navigate('/')}
           >
             <img src={kiitMascot} alt="KIIT Saathi Mascot" className="w-10 h-10 animate-pulse" />
@@ -115,29 +116,31 @@ export const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => navigate('/')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${location.pathname === '/'
-                  ? 'text-kiit-black bg-kiit-green/15 shadow-md'
+            <button 
+              onClick={() => navigate('/')} 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${
+                location.pathname === '/' 
+                  ? 'text-kiit-green bg-kiit-green/15 shadow-md' 
                   : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/10'
-                }`}
+              }`}
             >
-              <Home className="w-5 h-5 text-black" />
+              <Home className="w-5 h-5" />
               Home
             </button>
-
+            
             {navItems.map((item) => (
               <button
                 key={item.label}
                 onClick={() => scrollToSection(item.href)}
-                className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium relative ${isActive(item.href)
-                    ? 'text-kiit-green  border-kiit-green'
+                className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium relative ${
+                  isActive(item.href)
+                    ? 'text-kiit-green bg-kiit-green/10'
                     : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/5'
-                  }`}
+                }`}
               >
                 {item.label}
                 {isActive(item.href) && (
-                  <div className="absolute  left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-gradient-primary rounded-full"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-gradient-primary rounded-full"></div>
                 )}
               </button>
             ))}
@@ -151,8 +154,8 @@ export const Navbar = () => {
                   <User className="w-4 h-4" />
                   {user.email}
                 </div>
-                <Button
-                  variant="ghost"
+                <Button 
+                  variant="ghost" 
                   size="sm"
                   onClick={handleSignOut}
                   className="hover:bg-red-500/10 hover:text-red-500 transition-all duration-300"
@@ -162,7 +165,7 @@ export const Navbar = () => {
                 </Button>
               </>
             ) : (
-              <Button
+              <Button 
                 size="sm"
                 onClick={() => navigate('/auth')}
                 className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -174,8 +177,8 @@ export const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-kiit-green/10 transition-colors"
+          <button 
+            className="md:hidden p-2 rounded-lg hover:bg-kiit-green/10 transition-colors" 
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -184,75 +187,69 @@ export const Navbar = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200 py-4 px-2">
-            {/* Home Button */}
-            <div className="mb-4">
+          <div className="md:hidden border-t border-white/20 py-4 space-y-2 backdrop-blur-sm">
+            <button 
+              onClick={() => {
+                navigate('/');
+                setIsOpen(false);
+              }} 
+              className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 ${
+                location.pathname === '/' 
+                  ? 'text-kiit-green bg-kiit-green/10' 
+                  : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/5'
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+            
+            {navItems.map((item) => (
               <button
-                onClick={() => {
-                  navigate('/');
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-lg font-medium ${location.pathname === '/'
-                    ? 'bg-kiit-green/15 text-kiit-green'
-                    : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                key={item.label}
+                onClick={() => scrollToSection(item.href)}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
+                  isActive(item.href)
+                    ? 'text-kiit-green bg-kiit-green/10'
+                    : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/5'
+                }`}
               >
-                <Home className="w-5 h-5" />
-                Home
+                {item.label}
               </button>
-            </div>
-
-            {/* Navigation Items */}
-            <div className="space-y-2 mb-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => scrollToSection(item.href)}
-                  className={`w-full px-4 py-3 rounded-lg text-left text-lg font-medium ${isActive(item.href)
-                      ? 'bg-kiit-green/15 text-kiit-green'
-                      : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            {/* User Actions */}
-            <div className="border-t border-gray-200 pt-4 space-y-3">
+            ))}
+            
+            <div className="flex flex-col gap-3 pt-4 border-t border-white/20">
               {user ? (
                 <>
-                  <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600">
-                    <User className="w-5 h-5" />
-                    <span className="text-base">{user.email}</span>
+                  <div className="flex items-center gap-2 px-4 py-2 text-sm text-foreground">
+                    <User className="w-4 h-4" />
+                    {user.email}
                   </div>
-                  <Button
-                    variant="outline"
-                    size="lg"
+                  <Button 
+                    variant="outline" 
+                    size="sm"
                     onClick={handleSignOut}
-                    className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+                    className="border-red-500/30 hover:bg-red-500/10 text-red-500"
                   >
-                    <LogOut className="w-5 h-5 mr-2" />
+                    <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </Button>
                 </>
               ) : (
-                <Button
-                  size="lg"
+                <Button 
+                  size="sm"
                   onClick={() => {
                     navigate('/auth');
                     setIsOpen(false);
                   }}
-                  className="w-full bg-kiit-green text-white hover:bg-kiit-green/90"
+                  className="gradient-primary text-white font-semibold shadow-lg"
                 >
-                  <LogIn className="w-5 h-5 mr-2" />
+                  <LogIn className="w-4 h-4 mr-2" />
                   Sign In
                 </Button>
               )}
             </div>
           </div>
         )}
-
       </div>
     </nav>
   );
