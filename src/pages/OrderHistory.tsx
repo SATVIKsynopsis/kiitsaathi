@@ -13,7 +13,7 @@ import { Footer } from '@/components/Footer';
 import { ShoppingBag, Calendar, CreditCard, Filter, Search, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function OrderHistory() {
+function OrderHistory() {
   const { user } = useAuth();
   const { orders, loading, fetchOrders, getStatusColor, getStatusIcon } = useOrderHistory();
   const [searchTerm, setSearchTerm] = useState('');
@@ -280,3 +280,5 @@ export default function OrderHistory() {
     </div>
   );
 }
+
+export default OrderHistory;
