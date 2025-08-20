@@ -35,7 +35,6 @@ export const Navbar = () => {
   const scrollToSection = (href: string) => {
     if (location.pathname !== '/') {
       navigate('/');
-      // Wait for navigation to complete, then scroll
       setTimeout(() => {
         const element = document.querySelector(href);
         if (element) {
@@ -100,7 +99,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-gradient-to-r from-kiit-green/10 via-campus-blue/10 to-campus-purple/10 border-b border-white/20 shadow-lg">
+    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/30 border-b border-white/20 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -120,7 +119,7 @@ export const Navbar = () => {
               onClick={() => navigate('/')} 
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${
                 location.pathname === '/' 
-                  ? 'text-kiit-green bg-kiit-green/15 shadow-md' 
+                  ? 'text-kiit-black bg-kiit-green/15 shadow-md' 
                   : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/10'
               }`}
             >
@@ -134,7 +133,7 @@ export const Navbar = () => {
                 onClick={() => scrollToSection(item.href)}
                 className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium relative ${
                   isActive(item.href)
-                    ? 'text-kiit-green bg-kiit-green/10'
+                    ? 'text-kiit-green border-kiit-green'
                     : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/5'
                 }`}
               >
@@ -151,7 +150,7 @@ export const Navbar = () => {
             {user ? (
               <>
                 <div className="flex items-center gap-2 px-3 py-2 text-sm text-foreground">
-                  <User className="w-4 h-4" />
+                  <User  className="w-4 h-4" />
                   {user.email}
                 </div>
                 <Button 
@@ -221,7 +220,7 @@ export const Navbar = () => {
               {user ? (
                 <>
                   <div className="flex items-center gap-2 px-4 py-2 text-sm text-foreground">
-                    <User className="w-4 h-4" />
+                    <User  className="w-4 h-4" />
                     {user.email}
                   </div>
                   <Button 
@@ -254,3 +253,4 @@ export const Navbar = () => {
     </nav>
   );
 };
+

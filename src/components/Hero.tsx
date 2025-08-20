@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Smartphone, Heart } from "lucide-react";
+import { ArrowRight, Smartphone, Heart, Box, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
 import heroCampus from "@/assets/hero-campus.png";
@@ -27,34 +27,31 @@ export const Hero = () => {
             </div>
 
             {/* Main Heading */}
-            <div className="space-y-4">
-              <h1 className="text-5xl lg:text-7xl font-poppins font-bold text-white leading-tight">
+            <div className="space-y-4 my-4">
+              <h1 className="text-5xl lg:text-5xl font-poppins font-bold text-white leading-tight">
                 One app that
                 <span className="block text-white">solves all</span>
                 your campus needs
               </h1>
-              
+
               <p className="text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
                 From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
               </p>
-            </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="glass-button text-white font-semibold px-8 py-4 text-lg group"
                 onClick={() => navigate('/auth')}
-              >
+                >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              
-              <Button variant="outline" size="lg" className="glass-button border-white/40 bg-white/10 backdrop-blur-md text-white font-bold px-10 py-4 text-lg shadow-2xl hover:bg-white/20 hover:shadow-glow transition-all duration-300 hover:scale-105">
-                <Smartphone className="mr-3 w-6 h-6" />
-                📱 Add to Home Screen
-              </Button>
+
+
             </div>
+                </div>
 
             {/* Quick Stats */}
             <div className="flex flex-wrap gap-8 justify-center lg:justify-start pt-8">
@@ -74,17 +71,17 @@ export const Hero = () => {
           </div>
 
           {/* Right Content - Mascot and Campus */}
-          <div className="relative">
+          <div className="relative mt-8">
             {/* Campus Background */}
             <div className="relative">
-              <img 
-                src={heroCampus} 
-                alt="KIIT Campus Life" 
+              <img
+                src={heroCampus}
+                alt="KIIT Campus Life"
                 className="w-full h-auto rounded-3xl shadow-2xl"
               />
-              
+
               {/* Floating Mascot */}
-              <div className="absolute -top-10 -right-10 lg:-right-20">
+              {/* <div className="absolute -top-10 -right-10 lg:-right-20">
                 <div className="mascot-bounce">
                   <img 
                     src={kiitMascot} 
@@ -92,27 +89,34 @@ export const Hero = () => {
                     className="w-32 h-32 lg:w-48 lg:h-48 drop-shadow-2xl"
                   />
                 </div>
-              </div>
+              </div> */}
 
               {/* Floating Elements */}
-              <div className="absolute top-4 left-4 glass-card p-3 animate-float">
-                <div className="text-sm font-semibold text-kiit-green">📦 Carton Service</div>
+              <div className="absolute top-6 left-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-float hover:shadow-xl transition-all ">
+                <div className="text-sm font-semibold text-kiit-green flex items-center gap-2">
+                  <Box width={16} height={16} />
+                  Carton Service
+                </div>
               </div>
-              
-              <div className="absolute bottom-4 right-4 glass-card p-3 animate-bounce-slow">
-                <div className="text-sm font-semibold text-campus-blue">🤖 AI Assistant</div>
+
+              <div className="absolute bottom-4 right-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-bounce-slow hover:shadow-xl transition-all ">
+                <div className="text-sm font-semibold text-campus-blue flex items-center gap-2">
+                  <Bot width={16} height={16} />
+                  AI Assistant
+                </div>
               </div>
+
             </div>
           </div>
         </div>
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };

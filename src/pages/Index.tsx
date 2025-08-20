@@ -80,12 +80,12 @@ const Index = () => {
       <Hero />
       
       {/* Services Section */}
-      <section id="services" className="py-20">
+      <section id="services" className="py-10 my-auto">
         <ServicesGrid />
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-gradient-soft">
+      <section id="how-it-works" className="py-10  bg-gradient-to-br from-kiit-green-soft to-white/10">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
             How KIIT Saathi Works
@@ -123,17 +123,17 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20">
+      <section id="testimonials" className="py-10">
         <Testimonials />
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-gradient-soft">
+      <section id="faq" className="py-10 bg-gradient-soft">
         <FAQ />
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20">
+      <section id="contact" className="py-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
@@ -183,7 +183,7 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="text-gradient flex items-center gap-2">
                   <Mail className="w-5 h-5" />
-                  📩 Contact Us
+                  Contact Us
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -202,7 +202,6 @@ const Index = () => {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="email"
