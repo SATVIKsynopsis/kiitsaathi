@@ -30,7 +30,7 @@ export default function Auth() {
     };
     checkUser();
 
-    // Listen for auth state changes (including email confirmations)
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
@@ -47,7 +47,22 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  // Google Login (Supabase handles redirect)
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      toast.error('Google login failed');
+      console.error('Google login error:', error);
+    }
+  };
+
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -66,7 +81,6 @@ export default function Auth() {
 
       if (error) throw error;
 
-      // Show appropriate message based on whether email confirmation is required
       if (data?.user && !data.session) {
         toast.success('🎉 Almost there! Check your email for the confirmation link to activate your account.', {
           duration: 6000,
@@ -78,7 +92,7 @@ export default function Auth() {
       setEmail('');
       setPassword('');
       setFullName('');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Sign up error:', error);
       setError(error.message || 'An error occurred during sign up');
       toast.error(error.message || 'Sign up failed');
@@ -87,7 +101,7 @@ export default function Auth() {
     }
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -102,7 +116,7 @@ export default function Auth() {
 
       toast.success('Successfully signed in!');
       navigate('/');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Sign in error:', error);
       setError(error.message || 'An error occurred during sign in');
       toast.error(error.message || 'Sign in failed');
@@ -120,7 +134,7 @@ export default function Auth() {
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            className="mb-6 flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
+            className="mb-2 mt-4 flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -135,6 +149,7 @@ export default function Auth() {
                 </TabsList>
               </CardHeader>
 
+              {/* Sign In */}
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn}>
                   <CardContent className="space-y-4">
@@ -195,6 +210,7 @@ export default function Auth() {
                 </form>
               </TabsContent>
 
+              {/* Sign Up */}
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp}>
                   <CardContent className="space-y-4">
@@ -269,6 +285,29 @@ export default function Auth() {
                 </form>
               </TabsContent>
             </Tabs>
+
+            {/* Divider */}
+            <div className="my-2 border-b-2 mx-4"></div>
+
+            {/* Google Login Button */}
+            <CardFooter>
+              <Button 
+                onClick={handleGoogleLogin} 
+                className="w-full bg-White hover:bg-blue-600 text-black"
+              >
+                {/* Google SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" className="inline-block mr-2 h-5 w-5" viewBox="0 0 48 48">
+                  <g>
+                    <path fill="#4285F4" d="M24 9.5c3.54 0 6.73 1.22 9.24 3.22l6.91-6.91C36.44 2.34 30.65 0 24 0 14.64 0 6.27 5.48 1.98 13.44l8.51 6.62C12.81 13.13 17.96 9.5 24 9.5z"/>
+                    <path fill="#34A853" d="M46.09 24.55c0-1.64-.15-3.22-.43-4.76H24v9.03h12.41c-.54 2.91-2.18 5.38-4.65 7.04l7.19 5.59C43.73 37.97 46.09 31.81 46.09 24.55z"/>
+                    <path fill="#FBBC05" d="M10.49 28.06c-.62-1.85-.98-3.81-.98-5.81s.36-3.96.98-5.81l-8.51-6.62C.36 13.96 0 18.86 0 24s.36 10.04 1.98 14.19l8.51-6.62z"/>
+                    <path fill="#EA4335" d="M24 48c6.65 0 12.23-2.19 16.29-5.97l-7.19-5.59c-2.01 1.35-4.59 2.15-7.1 2.15-6.04 0-11.19-3.63-13.51-8.87l-8.51 6.62C6.27 42.52 14.64 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </g>
+                </svg>
+                Continue with Google
+              </Button>
+            </CardFooter>
           </Card>
         </div>
       </div>
