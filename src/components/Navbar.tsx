@@ -149,6 +149,15 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/order-history')}
+                  className="hover:bg-kiit-green/10 hover:text-kiit-green transition-all duration-300"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Order History
+                </Button>
                 <div className="flex items-center gap-2 px-3 py-2 text-sm text-foreground">
                   <User  className="w-4 h-4" />
                   {user.email}
@@ -219,8 +228,20 @@ export const Navbar = () => {
             <div className="flex flex-col gap-3 pt-4 border-t border-white/20">
               {user ? (
                 <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      navigate('/order-history');
+                      setIsOpen(false);
+                    }}
+                    className="justify-start hover:bg-kiit-green/10 hover:text-kiit-green"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Order History
+                  </Button>
                   <div className="flex items-center gap-2 px-4 py-2 text-sm text-foreground">
-                    <User  className="w-4 h-4" />
+                    <User className="w-4 h-4" />
                     {user.email}
                   </div>
                   <Button 
