@@ -19,6 +19,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -29,6 +30,14 @@ export default function Auth() {
       }
     };
     checkUser();
+
+    // Friendly message from callback
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (reason === 'confirm_failed') {
+      setNotice('The confirmation link is invalid or expired. You can request a new email below.');
+    } else if (reason === 'session_missing') {
+      setNotice('Email confirmed, but we could not start your session. Please sign in or resend confirmation.');
+    }
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -72,7 +81,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: "https://ksaathi.vercel.app/auth/callback",
           data: {
             full_name: fullName,
           },
@@ -157,6 +166,17 @@ export default function Auth() {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>
+
+          {notice && (
+            <Alert className="mb-4">
+              <AlertDescription>
+                {notice}{' '}
+                <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
+                  Resend confirmation email
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Card className="glassmorphism border-white/20">
             <Tabs defaultValue="signin" className="w-full">

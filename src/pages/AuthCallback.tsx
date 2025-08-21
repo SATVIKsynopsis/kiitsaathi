@@ -17,7 +17,7 @@ export default function AuthCallback() {
 
     if (error) {
       toast.error(error);
-      navigate('/auth');
+      navigate('/auth?reason=confirm_failed');
       return;
     }
 
@@ -28,8 +28,8 @@ export default function AuthCallback() {
         toast.success('Email confirmed! You are now signed in.');
         navigate('/');
       } else {
-        toast.message('Email confirmed. Please sign in.');
-        navigate('/auth');
+        toast.error('We could not start your session. Please sign in or resend the email.');
+        navigate('/auth?reason=session_missing');
       }
     }, 400);
 
