@@ -317,7 +317,7 @@ const SeniorConnect = () => {
           </div>
           
           <p className="text-center text-sm text-gray-600 mt-8 max-w-2xl mx-auto">
-            Our seniors are volunteers or verified helpers from KIIT, not strangers.
+            Our seniors are volunteers or verified helpers from KIIT, not strangers
           </p>
         </div>
       </section>
