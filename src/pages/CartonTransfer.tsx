@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Package, Users, Truck, Clock, CheckCircle, MessageCircle, Phone, Star } from 'lucide-react';
+import { ArrowLeft, Package, Users, Truck, Clock, CheckCircle, MessageCircle, Phone, Star, Box } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,17 +51,21 @@ const CartonTransfer = () => {
 
   // KIIT hostels list
   const hostels = [
-    'Hostel 1', 'Hostel 2', 'Hostel 3', 'Hostel 4', 'Hostel 5',
-    'Hostel 6', 'Hostel 7', 'Hostel 8', 'Hostel 9', 'Hostel 10',
-    'Hostel 11', 'Hostel 12', 'Hostel 13', 'Hostel 14', 'Hostel 15',
-    'Hostel 16', 'Hostel 17', 'Hostel 18', 'Hostel 19', 'Hostel 20'
+    'KP 1', 'KP 2', 'KP 3', 'KP 4', 'KP 5',
+    'KP 6', 'KP 7', 'KP 8', 'KP 9', 'KP 10',
+    'KP 11', 'KP 12', 'KP 13', 'KP 14', 'KP 15',
+    'KP 16', 'KP 17', 'KP 18', 'KP 19', 'KP 20',
+    'QC 1', 'QC 2', 'QC 3', 'QC 4', 'QC 5',
+    'QC 6', 'QC 7', 'QC 8', 'QC 9', 'QC 10',
+    'QC 11', 'QC 12', 'QC 13', 'QC 14', 'QC 15',
+    'QC 16', 'QC 17', 'QC 18', 'QC 19', 'QC 20'
   ];
 
   const timeSlots = [
-    '10:00–11:00 AM',
-    '12:00–1:00 PM',
-    '3:00–4:00 PM',
-    '5:00–6:00 PM'
+    '10:00-11:00 AM',
+    '12:00-1:00 PM',
+    '3:00-4:00 PM',
+    '5:00-6:00 PM'
   ];
 
   // Live price calculation
@@ -180,7 +184,7 @@ const CartonTransfer = () => {
                 </p>
               </div>
               <p className="text-muted-foreground mb-4">
-                📦 <strong>Free delivery of empty boxes in the morning!</strong>
+                <Box height={16} width={16}/> <strong>Free delivery of empty boxes in the morning!</strong>
               </p>
               <p className="text-muted-foreground">
                 Our team will WhatsApp you confirmation details and call 15 minutes before pickup at <strong>{formData.pickupSlot}</strong>
@@ -205,10 +209,10 @@ const CartonTransfer = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 text-center">
+      <section className="container mx-auto px-4 py-12 text-center mt-10">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-kiit-green mb-6 animate-fade-in">
-            📦 Hostel Carton Box & Transfer
+            <Box height={16} width={16}/> Hostel Carton Box & Transfer
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 animate-fade-in">
             Moving hostels? We deliver the boxes, you pack, and we move everything safely!
@@ -221,10 +225,10 @@ const CartonTransfer = () => {
           </div>
           <Button 
             size="lg" 
-            className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 animate-bounce"
+            className="px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all  animate-bounce"
             onClick={() => document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            📦 Book Boxes Now!
+            <Box height={16} width={16}/> Book Boxes Now!
           </Button>
         </div>
       </section>
@@ -232,25 +236,25 @@ const CartonTransfer = () => {
       {/* How It Works */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-kiit-green mb-12">
-          How It Works ✨
+          How It Works ?
         </h2>
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {[
             {
               icon: <Package className="w-12 h-12 text-kiit-green" />,
-              title: "📦 You Book Boxes",
+              title: "You Book Boxes",
               description: "Select how many cartons you need + tape. We deliver them FREE in the morning.",
               highlight: "FREE DELIVERY"
             },
             {
               icon: <Users className="w-12 h-12 text-campus-blue" />,
-              title: "🎒 You Pack Your Stuff",
+              title: "You Pack Your Stuff",
               description: "You do the packing, we stay out (hostel rules!). Pack at your own pace.",
               highlight: "YOUR PRIVACY"
             },
             {
               icon: <Truck className="w-12 h-12 text-campus-orange" />,
-              title: "🚚 We Pick & Shift",
+              title: "We Pick & Shift",
               description: "Our truck comes during your slot and moves your items to the new hostel safely.",
               highlight: "SAFE TRANSPORT"
             }
@@ -270,7 +274,7 @@ const CartonTransfer = () => {
       {/* Pricing Section */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-kiit-green mb-12">
-          Simple Pricing 💸
+          Simple Pricing 
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
           {[
@@ -301,7 +305,7 @@ const CartonTransfer = () => {
         <div className="text-center">
           <div className="bg-kiit-green/10 p-4 rounded-lg inline-block">
             <p className="text-kiit-green font-semibold">
-              ✨ Free delivery of empty boxes in the morning!
+              Free delivery of empty boxes in the morning!
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               No extra charges for box delivery • Save time and energy
@@ -562,14 +566,14 @@ const CartonTransfer = () => {
       </section>
 
       {/* WhatsApp Support Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 left-6 z-50">
         <Button
-          size="lg"
-          className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse hover:animate-none"
+          size="default"
+          className="rounded-full shadow-lg hover:shadow-xl transition-all  hover:cursor-pointer"
           onClick={() => window.open('https://wa.me/919876543210', '_blank')}
         >
           <MessageCircle className="w-5 h-5 mr-2" />
-          📲 Chat with Team
+          Chat with Team
         </Button>
         </div>
         <Footer />
