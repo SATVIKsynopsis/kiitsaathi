@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Heart, Box, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
-import heroCampus from "@/assets/hero-campus.png";
+import heroCampus from "@/assets/KIIT_img.webp";
+
 
 export const Hero = () => {
   const navigate = useNavigate();
