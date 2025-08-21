@@ -72,7 +72,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: fullName,
           },
@@ -120,6 +120,24 @@ export default function Auth() {
       console.error('Sign in error:', error);
       setError(error.message || 'An error occurred during sign in');
       toast.error(error.message || 'Sign in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      toast.info('Enter your email above first');
+      return;
+    }
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      toast.success('Confirmation email resent. Please check your inbox.');
+    } catch (err: any) {
+      console.error('Resend confirmation error:', err);
+      toast.error(err.message || 'Failed to resend confirmation email');
     } finally {
       setLoading(false);
     }
@@ -283,6 +301,12 @@ export default function Auth() {
                     </Button>
                   </CardFooter>
                 </form>
+                <div className="px-6 pb-4 text-sm text-muted-foreground text-center">
+                  Didn’t receive the email?
+                  <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
+                    Resend confirmation email
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
 
