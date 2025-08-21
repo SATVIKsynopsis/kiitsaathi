@@ -22,7 +22,9 @@ import PrintoutOnDemand from "./pages/PrintoutOnDemand";
 import Meetups from "./pages/Meetups";
 import CampusTourBooking from "./pages/CampusTourBooking";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import ChatBotPage from "./pages/ChatBotPage";
+import OrderHistory from "./pages/OrderHistory";
 import KiitSocieties from "./pages/KiitSocieties";
 import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
 import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
@@ -62,7 +64,9 @@ const App = () => (
           <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
           <Route path="/fest-announcements" element={<FestAnnouncements />} />
           <Route path="/sports-events-hub" element={<SportsEventsHub />} />
+          <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/chatbot" element={<ChatBotPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
