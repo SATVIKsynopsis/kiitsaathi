@@ -17,6 +17,7 @@ import StudyMaterial from "./pages/StudyMaterial";
 import BookBuyback from "./pages/BookBuyback";
 import BuyPrelovedBooks from "./pages/BuyPrelovedBooks";
 import BookBuybackSell from "./pages/BookBuybackSell";
+import Orders from "./pages/Orders";
 import Celebrations from "./pages/Celebrations";
 import PrintoutOnDemand from "./pages/PrintoutOnDemand";
 import Meetups from "./pages/Meetups";
@@ -54,8 +55,9 @@ const App = () => (
           <Route path="/meetups" element={<Meetups />} />
           <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
           <Route path="/kiit-societies" element={<KiitSocieties />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth" element={<Auth/>} />
           <Route path="/chatbot" element={<ChatBotPage />} />
+          <Route path="/orders" element={<Orders />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

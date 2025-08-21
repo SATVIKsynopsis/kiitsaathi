@@ -21,6 +21,9 @@ interface CartonBookingRequest {
   pickupSlot: string;
   paymentMethod: string;
   totalPrice: number;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -56,21 +59,48 @@ const handler = async (req: Request): Promise<Response> => {
     const bookingData: CartonBookingRequest = await req.json();
     console.log("Received carton booking:", bookingData);
 
+    // Razorpay payment verification (for online payments)
+    let paymentVerified = true;
+    let paymentStatus = 'not-required';
+    let paymentDetails = null;
+    if (bookingData.paymentMethod === 'upi' && bookingData.razorpay_payment_id && bookingData.razorpay_order_id && bookingData.razorpay_signature) {
+      // Verify payment using Razorpay API
+      const crypto = await import('node:crypto');
+      const generated_signature = crypto.createHmac('sha256', Deno.env.get('RAZORPAY_SECRET'))
+        .update(bookingData.razorpay_order_id + '|' + bookingData.razorpay_payment_id)
+        .digest('hex');
+      paymentVerified = generated_signature === bookingData.razorpay_signature;
+      paymentStatus = paymentVerified ? 'success' : 'failed';
+      paymentDetails = {
+        payment_id: bookingData.razorpay_payment_id,
+        order_id: bookingData.razorpay_order_id,
+        signature: bookingData.razorpay_signature,
+        verified: paymentVerified
+      };
+      if (!paymentVerified) {
+        return new Response(JSON.stringify({ error: 'Payment verification failed' }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+    }
+
     // Insert booking into database with user_id
     const { data: booking, error: dbError } = await supabase
-      .from("carton_transfer_bookings")
-      .insert({
-        user_id: user.id,
-        full_name: bookingData.fullName,
-        mobile_number: bookingData.mobileNumber,
-        hostel_name: bookingData.hostelName,
-        room_number: bookingData.roomNumber,
-        number_of_boxes: bookingData.numberOfBoxes,
-        need_tape: bookingData.needTape,
-        pickup_slot: bookingData.pickupSlot,
-        payment_method: bookingData.paymentMethod,
-        total_price: bookingData.totalPrice,
-      })
+            .from("carton_transfer_bookings")
+            .insert({
+              user_id: user.id,
+              full_name: bookingData.fullName,
+              mobile_number: bookingData.mobileNumber,
+              hostel_name: bookingData.hostelName,
+              room_number: bookingData.roomNumber,
+              number_of_boxes: bookingData.numberOfBoxes,
+              need_tape: bookingData.needTape,
+              pickup_slot: bookingData.pickupSlot,
+              payment_method: bookingData.paymentMethod,
+              total_price: bookingData.totalPrice,
+              // payment_status and payment_details are now handled by the Node.js backend
+            })
       .select()
       .single();
 

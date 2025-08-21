@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import PaymentComponent from "../components/PaymentComponent";
 import { Button } from "@/components/ui/button";
+import ConfirmationDashboard from "../components/ConfirmationDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,16 +40,18 @@ const SeniorConnect = () => {
     mode: "",
     language: ""
   });
-
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
 
-  const filterOptions = {
+  const filterOptions: Record<string, string[]> = {
     area: ["Academics", "Society Prep", "Hostel Life", "Placements", "Mental Health", "Campus Life"],
     branch: ["CSE", "EEE", "Law", "MBBS", "Mechanical", "Civil", "IT"],
     year: ["3rd Year", "4th Year", "Alumni"],
     mode: ["Call", "WhatsApp Chat", "In-Person Meetup"],
     language: ["Hindi", "English", "Odia"]
   };
+
 
   const sampleSeniors = [
     {
@@ -113,7 +117,7 @@ const SeniorConnect = () => {
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft width={16} height={16} />
             Back to Home
           </Button>
         </div>
@@ -148,7 +152,7 @@ const SeniorConnect = () => {
               className="bg-kiit-green hover:bg-kiit-green-dark text-white px-8 py-3 text-lg rounded-full transition-all duration-300 hover:scale-105"
             >
               Find a Senior
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <ArrowRight width={20} height={20} className="ml-2" />
             </Button>
           </div>
         </div>
@@ -184,7 +188,7 @@ const SeniorConnect = () => {
                     onClick={() => alert("🚀 Coming Soon! Skill sessions are under development.")}
                   >
                     Explore Sessions
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    <ArrowRight width={16} height={16} className="ml-1" />
                   </Button>
                 </div>
               </CardContent>
@@ -193,7 +197,7 @@ const SeniorConnect = () => {
             <Card className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green cursor-pointer">
               <CardHeader className="text-center pb-4">
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-kiit-green to-campus-blue w-fit mx-auto mb-3">
-                  <BookOpen className="w-6 h-6 text-white" />
+                  <BookOpen width={24} height={24} className="text-white" />
                 </div>
                 <div className="text-3xl mb-2">📚</div>
                 <CardTitle className="text-lg">Study Materials by Seniors</CardTitle>
@@ -211,7 +215,7 @@ const SeniorConnect = () => {
                     onClick={() => navigate('/study-material')}
                   >
                     View Materials
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    <ArrowRight width={16} height={16} className="ml-1" />
                   </Button>
                 </div>
               </CardContent>
@@ -257,7 +261,7 @@ const SeniorConnect = () => {
                   <CardTitle className="text-lg">{senior.name}</CardTitle>
                   <p className="text-sm text-gray-600">{senior.branch} • {senior.year}</p>
                   <div className="flex items-center justify-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-current" />
+                    <Star width={16} height={16} className="fill-current" />
                     <span className="text-sm">{senior.rating} ({senior.sessions} sessions)</span>
                   </div>
                 </CardHeader>
@@ -273,7 +277,7 @@ const SeniorConnect = () => {
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
-                    <Clock className="w-4 h-4" />
+                    <Clock width={16} height={16} />
                     {senior.availability}
                   </div>
                   
@@ -322,13 +326,12 @@ const SeniorConnect = () => {
       <section className="py-16 px-4 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center text-kiit-green mb-12">💰 Simple Pricing</h2>
-          
           <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            {[
-              { title: "First Session", price: "Free", desc: "Try it out risk-free" },
-              { title: "15-min Voice Call", price: "₹20", desc: "Quick doubts solved" },
-              { title: "In-Person 1-on-1", price: "₹30", desc: "Face-to-face guidance" },
-              { title: "Mentorship Package", price: "₹60", desc: "3 calls included" }
+            {[{
+              title: "First Session", price: "Free", desc: "Try it out risk-free", amount: 0 },
+              { title: "15-min Voice Call", price: "₹20", desc: "Quick doubts solved", amount: 20 },
+              { title: "In-Person 1-on-1", price: "₹30", desc: "Face-to-face guidance", amount: 30 },
+              { title: "Mentorship Package", price: "₹60", desc: "3 calls included", amount: 60 }
             ].map((plan, index) => (
               <Card key={index} className={`text-center ${index === 3 ? 'border-kiit-green border-2' : ''}`}>
                 <CardHeader>
@@ -337,19 +340,33 @@ const SeniorConnect = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600">{plan.desc}</p>
+                  {plan.amount > 0 ? (
+                    <PaymentComponent amount={plan.amount} user_id={"user_id_placeholder"} service_name="SeniorConnect" subservice_name={plan.name} payment_method="card" />
+                  ) : (
+                    <span className="mt-4 inline-block text-green-600 font-semibold">Free</span>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
-          
           <div className="text-center mt-8">
-            <Button className="bg-kiit-green hover:bg-kiit-green-dark text-white">
-              Buy Mentorship Pass
-            </Button>
+            <PaymentComponent amount={60} user_id={"user_id_placeholder"} service_name="SeniorConnect" subservice_name="Session" payment_method="card" />
             <p className="text-xs text-gray-500 mt-2">We pay seniors a token amount per session from this.</p>
           </div>
         </div>
       </section>
+      {/* Confirmation Dashboard Popup */}
+      {showConfirmation && purchasedService && (
+        <ConfirmationDashboard
+          serviceName={purchasedService.name}
+          amount={purchasedService.amount}
+          onContinue={() => {
+            setShowConfirmation(false);
+            // Redirect to service or show purchased services
+            // For demo, just close popup
+          }}
+        />
+      )}
 
       {/* Booking Form */}
       {showBookingForm && (

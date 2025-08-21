@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ConfirmationDashboard from '../components/ConfirmationDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,12 +26,7 @@ interface AvailableBook {
 }
 
 export function BuyBooksSection() {
-  const { bookConditions, fetchAvailableBooks } = useBookBuyback();
-  const [availableBooks, setAvailableBooks] = useState<AvailableBook[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [cart, setCart] = useState<AvailableBook[]>([]);
-  
-  // Filters
+  // Filter state
   const [filters, setFilters] = useState({
     semester: '',
     condition: '',
@@ -38,27 +34,53 @@ export function BuyBooksSection() {
     maxPrice: ''
   });
 
-  // Load available books
-  const loadBooks = async () => {
-    setIsLoading(true);
-    try {
-      const books = await fetchAvailableBooks(filters);
-      setAvailableBooks(books);
-    } catch (error) {
-      console.error('Failed to load books:', error);
-    } finally {
-      setIsLoading(false);
+  // Handle filter changes
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+  const { bookConditions, fetchAvailableBooks } = useBookBuyback();
+  const [availableBooks, setAvailableBooks] = useState<AvailableBook[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [cart, setCart] = useState<AvailableBook[]>([]);
+  
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
+  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
+
+  // Razorpay payment handler
+  const handlePayment = (serviceName: string, amount: number) => {
+    if (!window.Razorpay) {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => openRazorpay(serviceName, amount);
+      document.body.appendChild(script);
+    } else {
+      openRazorpay(serviceName, amount);
     }
   };
 
-  useEffect(() => {
-    loadBooks();
-  }, [filters]);
-
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const openRazorpay = (serviceName: string, amount: number) => {
+    const options = {
+      key: 'rzp_test_R7KUVw9Ke7AS55	', // Hardcoded Razorpay Key ID
+      amount: amount * 100,
+      currency: 'INR',
+      name: serviceName,
+      description: `Payment for ${serviceName}`,
+      handler: function (response: any) {
+        setPurchasedService({ name: serviceName, amount });
+        setShowPaymentConfirmation(true);
+      },
+      theme: {
+        color: '#1bbd36'
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
+  // Cart logic
   const addToCart = (book: AvailableBook) => {
     setCart(prev => {
       const existing = prev.find(b => b.id === book.id);
@@ -93,6 +115,50 @@ export function BuyBooksSection() {
   const isInCart = (bookId: string) => {
     return cart.some(b => b.id === bookId);
   };
+
+  if (showPaymentConfirmation && purchasedService) {
+    return (
+      <ConfirmationDashboard
+        serviceName={purchasedService.name}
+        amount={purchasedService.amount}
+        onContinue={() => setShowPaymentConfirmation(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <BookOpen className="w-8 h-8 mx-auto text-kiit-green mb-2" />
+        <h2 className="text-3xl font-bold mb-2">Buy Pre-Loved Books</h2>
+        <p className="text-muted-foreground mb-6">Save money, help seniors, and go green!</p>
+      </div>
+      {/* ...existing code... */}
+      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+        {/* ...existing code... */}
+        <div>
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg">Your Cart</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* ...existing code... */}
+              <Button 
+                className="w-full" 
+                size="lg"
+                disabled={cart.length === 0}
+                onClick={() => handlePayment('Pre-Loved Books Purchase', getTotalPrice())}
+              >
+                Proceed to Checkout
+              </Button>
+              {/* ...existing code... */}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">

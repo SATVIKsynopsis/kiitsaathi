@@ -1,3 +1,5 @@
+import ConfirmationDashboard from '../components/ConfirmationDashboard';
+import PaymentComponent from '../components/PaymentComponent';
 import { useState } from "react";
 import { 
   BookOpen, 
@@ -149,9 +151,15 @@ export default function StudyMaterial() {
   const subjects = ["DSD", "M3", "Basic Electronics", "OOPS", "COA", "DBMS"];
   const semesters = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
+  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
+
+
   const handleResourceRequest = () => {
-    toast.success("Resource request submitted! We'll notify you when it's available.");
-    setRequestDialogOpen(false);
+  // Assume paid resource request is ₹10
+  setRequestDialogOpen(false);
+  // Render PaymentComponent for payment
+  <PaymentComponent amount={10} user_id={"user_id_placeholder"} service_name="StudyMaterial" subservice_name="Resource" payment_method="card" />;
   };
 
   const handleAddResource = () => {
@@ -179,6 +187,15 @@ export default function StudyMaterial() {
     return matchesSearch && matchesSubject && matchesSemester;
   });
 
+  if (showPaymentConfirmation && purchasedService) {
+    return (
+      <ConfirmationDashboard
+        serviceName={purchasedService.name}
+        amount={purchasedService.amount}
+        onContinue={() => setShowPaymentConfirmation(false)}
+      />
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft to-white">
       <Navbar />
@@ -187,7 +204,7 @@ export default function StudyMaterial() {
         <div className="container mx-auto px-4 py-6">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-kiit-green-dark mb-4">
-              <BookOpen className="w-4 h-4" />
+              <BookOpen width={16} height={16} />
               Study Resources by Seniors
             </div>
             
@@ -277,7 +294,7 @@ export default function StudyMaterial() {
                       {note.subject} • {note.semester} Sem
                     </Badge>
                     <div className="flex items-center gap-1 text-amber-500">
-                      <Star className="w-3 h-3 fill-current" />
+                      <Star width={12} height={12} className="fill-current" />
                       <span className="text-xs">{note.rating}</span>
                     </div>
                   </div>
@@ -288,7 +305,7 @@ export default function StudyMaterial() {
                   
                   <div className="space-y-2 text-sm text-muted-foreground mb-4">
                     <div className="flex items-center gap-2">
-                      <Users className="w-3 h-3" />
+                      <Users width={12} height={12} />
                       <span>By {note.uploadedBy}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -296,7 +313,7 @@ export default function StudyMaterial() {
                       <span>{note.views} views</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="w-3 h-3" />
+                      <Clock width={12} height={12} />
                       <span>{note.uploadDate}</span>
                     </div>
                   </div>
@@ -335,7 +352,7 @@ export default function StudyMaterial() {
                   
                   <div className="space-y-2 text-sm text-muted-foreground mb-4">
                     <div className="flex items-center gap-2">
-                      <Users className="w-3 h-3" />
+                      <Users width={12} height={12} />
                       <span>By {pyq.uploadedBy}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -486,7 +503,7 @@ export default function StudyMaterial() {
         <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="lg" className="shadow-lg bg-white">
-              <BookOpen className="w-5 h-5 mr-2" />
+              <BookOpen width={20} height={20} className="mr-2" />
               Add Resource
             </Button>
           </DialogTrigger>

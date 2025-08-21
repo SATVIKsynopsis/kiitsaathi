@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
@@ -25,14 +25,18 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        localStorage.setItem('user_id', session.user.id);
         navigate('/');
       }
     };
     checkUser();
 
-    // Listen for auth state changes (including email confirmations)
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (session?.user?.id) {
+          localStorage.setItem('user_id', session.user.id);
+        }
         if (event === 'SIGNED_IN' && session) {
           toast.success('Successfully signed in!');
           navigate('/');
@@ -66,7 +70,6 @@ export default function Auth() {
 
       if (error) throw error;
 
-      // Show appropriate message based on whether email confirmation is required
       if (data?.user && !data.session) {
         toast.success('Almost there! Check your email for the confirmation link to activate your account.', {
           duration: 6000,
@@ -93,12 +96,16 @@ export default function Auth() {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      if (data?.session?.user?.id) {
+        localStorage.setItem('user_id', data.session.user.id);
+      }
 
       toast.success('Successfully signed in!');
       navigate('/');
@@ -113,20 +120,17 @@ export default function Auth() {
 
   const googleSignIn = async () => {
     setLoading(true);
-    setError('');
-
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
       });
 
       if (error) throw error;
-
-      toast.success('Successfully signed in with Google!');
-      navigate('/');
     } catch (error: any) {
-      console.error('Google sign in error:', error);
-      setError(error.message || 'An error occurred during Google sign in');
+      console.error('Google sign-in error:', error);
       toast.error(error.message || 'Google sign in failed');
     } finally {
       setLoading(false);
@@ -134,184 +138,175 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft via-background to-campus-blue/20">
+    <div>
       <Navbar />
-      
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-md mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="mb-6 flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
 
-          <Card className="glassmorphism border-white/20">
-            <Tabs defaultValue="signin" className="w-full">
-              <CardHeader>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-              </CardHeader>
+      <div className="flex justify-center items-center min-h-screen">
+        <Card className="glassmorphism border-white/20 w-full max-w-md">
+          <Tabs defaultValue="signin" className="w-full">
+            <CardHeader>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+            </CardHeader>
 
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn}>
-                  <CardContent className="space-y-4">
-                    <CardTitle>Welcome Back</CardTitle>
-                    <CardDescription>
-                      Sign in to access your KIIT Saathi account
-                    </CardDescription>
-                    
-                    {error && (
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                    )}
+            {/* Sign In */}
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn}>
+                <CardContent className="space-y-4">
+                  <CardTitle>Welcome Back</CardTitle>
+                  <CardDescription>
+                    Sign in to access your KIIT Saathi account
+                  </CardDescription>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email">Email</Label>
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        placeholder="roll-number@kiit.ac.in"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-password">Password</Label>
-                      <Input
-                        id="signin-password"
-                        type="password"
-                        placeholder="Your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                  </CardContent>
-
-                  <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-kiit-green hover:bg-kiit-green-dark"
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">Email</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder="roll-number@kiit.ac.in"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                       disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Signing In...
-                        </>
-                      ) : (
-                        'Sign In'
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </TabsContent>
+                    />
+                  </div>
 
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp}>
-                  <CardContent className="space-y-4">
-                    <CardTitle>Join KIIT Saathi</CardTitle>
-                    <CardDescription>
-                      Create your account to access all services
-                    </CardDescription>
-                    
-                    {error && (
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Full Name</Label>
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="Your full name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="your-email@kiit.ac.in"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="Create a strong password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                        minLength={6}
-                      />
-                    </div>
-                  </CardContent>
-
-                  <CardFooter>
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-campus-blue hover:bg-campus-blue/80"
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">Password</Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                       disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating Account...
-                        </>
-                      ) : (
-                        'Create Account'
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </TabsContent>
-              
-            </Tabs>
-            <div className=' border-t my-4 mx-8 border-gray-900'>
-              {/* Google Auth */}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={googleSignIn}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  'Sign In with Google'
-                )}
-              </Button>
-            </div>
-          </Card>
-        </div>
+                    />
+                  </div>
+                </CardContent>
+
+                <CardFooter>
+                  <Button
+                    type="submit"
+                    className="w-full bg-kiit-green hover:bg-kiit-green-dark"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing In...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+
+            {/* Sign Up */}
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp}>
+                <CardContent className="space-y-4">
+                  <CardTitle>Join KIIT Saathi</CardTitle>
+                  <CardDescription>
+                    Create your account to access all services
+                  </CardDescription>
+
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      placeholder="Your full name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="your-email@kiit.ac.in"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="Create a strong password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      minLength={6}
+                    />
+                  </div>
+                </CardContent>
+
+                <CardFooter>
+                  <Button
+                    type="submit"
+                    className="w-full bg-campus-blue hover:bg-campus-blue/80"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          {/* Google Auth */}
+          <div className="border-t my-4 mx-8 border-gray-900">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={googleSignIn}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                'Sign In with Google'
+              )}
+            </Button>
+          </div>
+        </Card>
       </div>
 
       <Footer />
