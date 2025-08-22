@@ -19,6 +19,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -29,6 +30,14 @@ export default function Auth() {
       }
     };
     checkUser();
+
+    // Friendly message from callback
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (reason === 'confirm_failed') {
+      setNotice('The confirmation link is invalid or expired. You can request a new email below.');
+    } else if (reason === 'session_missing') {
+      setNotice('Email confirmed, but we could not start your session. Please sign in or resend confirmation.');
+    }
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -72,7 +81,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: "https://ksaathi.vercel.app/auth/callback",
           data: {
             full_name: fullName,
           },
@@ -125,6 +134,24 @@ export default function Auth() {
     }
   };
 
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      toast.info('Enter your email above first');
+      return;
+    }
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      toast.success('Confirmation email resent. Please check your inbox.');
+    } catch (err: any) {
+      console.error('Resend confirmation error:', err);
+      toast.error(err.message || 'Failed to resend confirmation email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft via-background to-campus-blue/20">
       <Navbar />
@@ -139,6 +166,17 @@ export default function Auth() {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>
+
+          {notice && (
+            <Alert className="mb-4">
+              <AlertDescription>
+                {notice}{' '}
+                <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
+                  Resend confirmation email
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Card className="glassmorphism border-white/20">
             <Tabs defaultValue="signin" className="w-full">
@@ -283,6 +321,12 @@ export default function Auth() {
                     </Button>
                   </CardFooter>
                 </form>
+                <div className="px-6 pb-4 text-sm text-muted-foreground text-center">
+                  Didn’t receive the email?
+                  <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
+                    Resend confirmation email
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
 
