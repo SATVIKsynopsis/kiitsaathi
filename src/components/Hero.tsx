@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Heart, Box, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
-import heroCampus from "@/assets/hero-campus.png";
+import heroCampus from "@/assets/KIIT_img.webp";
+
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -27,33 +28,31 @@ export const Hero = () => {
             </div>
 
             {/* Main Heading */}
-            <div className="space-y-6">
-              <div className="my-4">
-                <h1 className="text-5xl lg:text-5xl font-poppins font-bold text-white leading-tight">
-                  One app that
-                  <span className="block text-white">solves all</span>
-                  your campus needs
-                </h1>
+            <div className="space-y-4 my-4">
+              <h1 className="text-5xl lg:text-5xl font-poppins font-bold text-white leading-tight">
+                One app that
+                <span className="block text-white">solves all</span>
+                your campus needs
+              </h1>
 
-                <p className="text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
-                  From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
-                </p>
-              </div>
+              <p className="text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
+                From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
+              </p>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button
-                  size="lg"
-                  className="glass-button text-white font-semibold px-8 py-4 text-lg group transition-all duration-300 "
-                  onClick={() => navigate('/auth')}
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button
+                size="lg"
+                className="glass-button text-white font-semibold px-8 py-4 text-lg group"
+                onClick={() => navigate('/auth')}
                 >
-                  Get Started Free
-                  <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:rotate-60" />
-                </Button>
-                
-              </div>
+                Get Started Free
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+
 
             </div>
+                </div>
 
             {/* Quick Stats */}
             <div className="flex flex-wrap gap-8 justify-center lg:justify-start pt-8">
@@ -73,40 +72,41 @@ export const Hero = () => {
           </div>
 
           {/* Right Content - Mascot and Campus */}
-          <div className="relative m-7 mt-14">
+          <div className="relative mt-8">
             {/* Campus Background */}
             <div className="relative">
               <img
                 src={heroCampus}
                 alt="KIIT Campus Life"
-                className="w-full  rounded-3xl shadow-2xl"
+                className="w-full h-auto rounded-3xl shadow-2xl"
               />
 
               {/* Floating Mascot */}
-              {/* <div className="absolute top-10  md:-right-10">
+              {/* <div className="absolute -top-10 -right-10 lg:-right-20">
                 <div className="mascot-bounce">
                   <img 
                     src={kiitMascot} 
                     alt="KIIT Buddy - Your Campus Assistant" 
-                    className="w-32 h-32 md:w-24 lg:h-24 drop-shadow-2xl"
+                    className="w-32 h-32 lg:w-48 lg:h-48 drop-shadow-2xl"
                   />
                 </div>
               </div> */}
 
               {/* Floating Elements */}
-              <div className="absolute top-6 left-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-float hover:shadow-xl transition-all cursor-pointer border border-white/10 hover:border-white/20">
+              <div className="absolute top-6 left-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-float hover:shadow-xl transition-all ">
                 <div className="text-sm font-semibold text-kiit-green flex items-center gap-2">
                   <Box width={16} height={16} />
                   Carton Service
                 </div>
               </div>
 
-              <div className="absolute bottom-4 right-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-bounce-slow hover:shadow-xl transition-all cursor-pointer border border-white/10 hover:border-white/20">
+              <div className="absolute bottom-4 right-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-bounce-slow hover:shadow-xl transition-all ">
                 <div className="text-sm font-semibold text-campus-blue flex items-center gap-2">
                   <Bot width={16} height={16} />
                   AI Assistant
                 </div>
               </div>
+
             </div>
           </div>
         </div>

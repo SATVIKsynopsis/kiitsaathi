@@ -1,36 +1,52 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
-
+import { useAuth } from "@/hooks/useAuth";
 const upcomingEvents = [
   {
     id: 1,
     title: "Automatrix2.0 Agentic AI Workshop",
     date: "This Saturday, 16 Aug",
     time: "10:00 AM",
-    emoji: "🤖"
   },
   {
     id: 2,
     title: "Fed Hackathon",
     date: "Saturday",
     time: "10:00 AM",
-    emoji: "💻"
   },
   {
     id: 3,
     title: "Cultural Night - Music & Dance",
     date: "Sunday, 17 Aug",
     time: "6:00 PM",
-    emoji: "🎵"
   },
   {
     id: 4,
     title: "Career Fair 2024",
     date: "Monday, 18 Aug",
     time: "9:00 AM",
-    emoji: "💼"
   }
 ];
+
+export function useUnlockAudio(audioRef: React.RefObject<HTMLAudioElement>) {
+  useEffect(() => {
+    const unlock = () => {
+      if (audioRef.current) {
+        audioRef.current.play().then(() => {
+          audioRef.current?.pause();
+          audioRef.current.currentTime = 0; // reset
+          console.log(" Audio unlocked!");
+          document.removeEventListener("click", unlock);
+        }).catch(() => {
+          // Ignore if blocked
+        });
+      }
+    };
+
+    document.addEventListener("click", unlock, { once: true });
+    return () => document.removeEventListener("click", unlock);
+  }, [audioRef]);
+}
 
 export const NotificationBell = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -38,28 +54,22 @@ export const NotificationBell = () => {
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [eventTextVisible, setEventTextVisible] = useState(false);
   const [shouldShow, setShouldShow] = useState(true);
+  const [showEvents, setshowEvents] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const {user} = useAuth();
+  useUnlockAudio(audioRef);
+
+
 
   // Create soft ding sound using Web Audio API
-  const playDingSound = () => {
+  const playDingSound = async () => {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
-      
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
+      if (audioRef.current) {
+        // Ensure playback is allowed
+        await audioRef.current.play();
+      }
     } catch (error) {
-      console.log('Audio not supported');
+      console.log("Unable to play sound:", error);
     }
   };
 
@@ -80,23 +90,20 @@ export const NotificationBell = () => {
 
   // Show bell after page loads
   useEffect(() => {
-    const showTimer = setTimeout(() => {
-      setIsVisible(true);
-    }, 1500);
+    if(!user) return;
+    setIsVisible(true);
+    playDingSound();
+  }, [user]);
 
-    return () => clearTimeout(showTimer);
-  }, []);
-
-  // Handle landing animation and sound
+  // Handle landing animation 
   useEffect(() => {
     if (isVisible && !hasLanded) {
       const landTimer = setTimeout(() => {
         setHasLanded(true);
-        playDingSound();
         // Start showing events after landing
         setTimeout(() => {
           setEventTextVisible(true);
-        }, 500);
+        }, 100);
       }, 800); // Match animation duration
 
       return () => clearTimeout(landTimer);
@@ -105,7 +112,7 @@ export const NotificationBell = () => {
 
   // Cycle through events with exact timing
   useEffect(() => {
-    if (!hasLanded || !shouldShow) return;
+    if (!showEvents || !hasLanded || !shouldShow) return;
 
     const cycleEvents = () => {
       // Fade out current event (0.5s)
@@ -121,19 +128,20 @@ export const NotificationBell = () => {
 
     // Initial event shows for 4s, then cycles every 5s (4s visible + 0.5s fade out + 0.5s fade in)
     const timer = setTimeout(() => {
-      const interval = setInterval(cycleEvents, 5000);
+      const interval = setInterval(cycleEvents, 2000);
       return () => clearInterval(interval);
-    }, 4000); // First event shows for 4 seconds
+    }, 2000); // First event shows for 4 seconds
 
     return () => clearTimeout(timer);
-  }, [hasLanded, shouldShow, currentEventIndex]);
+  }, [showEvents, hasLanded, shouldShow, currentEventIndex]);
 
   if (!shouldShow) return null;
 
   const currentEvent = upcomingEvents[currentEventIndex];
 
-  return (
-    <div className="fixed top-4 right-4 z-50 pointer-events-none">
+  return (<>
+  <audio ref={audioRef} src="src\assets\Ding.mp3" preload="auto" />
+    <div onClick={()=>{setshowEvents(!showEvents); }} className=" fixed top-2 right-4 z-50 cursor-pointer">
       {/* Bell Icon */}
       <div className="relative flex items-start justify-end">
         <div
@@ -157,7 +165,7 @@ export const NotificationBell = () => {
         </div>
 
         {/* Event Text - Mobile responsive positioning */}
-        {hasLanded && (
+        {hasLanded && showEvents &&  (
           <div 
             className={`
               absolute sm:top-0 sm:right-20 top-16 right-0 
@@ -175,7 +183,7 @@ export const NotificationBell = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-pink-300/20 via-purple-300/20 to-blue-300/20 rounded-2xl"></div>
               
               <div className="relative flex items-start gap-2 sm:gap-3">
-                <span className="text-xl sm:text-2xl flex-shrink-0 drop-shadow-sm">{currentEvent.emoji}</span>
+                
                 <div className="min-w-0">
                   <h3 className="font-bold text-sm sm:text-lg text-purple-900 dark:text-purple-100 leading-tight">
                     {currentEvent.title}
@@ -188,15 +196,15 @@ export const NotificationBell = () => {
               
               {/* Floating sparkles */}
               <div className="absolute -top-1 -right-1 text-yellow-400 animate-pulse text-sm">
-                ✨
+                
               </div>
               <div className="absolute -bottom-1 -left-1 text-pink-400 animate-pulse text-sm" style={{ animationDelay: '0.5s' }}>
-                💫
+                
               </div>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
+  </>);
 };

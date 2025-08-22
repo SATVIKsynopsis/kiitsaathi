@@ -1016,6 +1016,48 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          amount: number
+          booking_details: Json | null
+          created_at: string
+          id: string
+          payment_method: string | null
+          payment_status: string
+          service_name: string
+          subservice_name: string | null
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          booking_details?: Json | null
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          payment_status?: string
+          service_name: string
+          subservice_name?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          booking_details?: Json | null
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          payment_status?: string
+          service_name?: string
+          subservice_name?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       print_helpers: {
         Row: {
           contact: string

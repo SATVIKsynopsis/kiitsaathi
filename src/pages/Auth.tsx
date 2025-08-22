@@ -19,6 +19,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     // Check if user is already logged in
@@ -30,6 +31,17 @@ export default function Auth() {
       }
     };
     checkUser();
+
+
+
+    // Friendly message from callback
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (reason === 'confirm_failed') {
+      setNotice('The confirmation link is invalid or expired. You can request a new email below.');
+    } else if (reason === 'session_missing') {
+      setNotice('Email confirmed, but we could not start your session. Please sign in or resend confirmation.');
+    }
+
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -51,7 +63,22 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  // Google Login (Supabase handles redirect)
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      toast.error('Google login failed');
+      console.error('Google login error:', error);
+    }
+  };
+
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -61,7 +88,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: "https://ksaathi.vercel.app/auth/callback",
           data: {
             full_name: fullName,
           },
@@ -71,7 +98,7 @@ export default function Auth() {
       if (error) throw error;
 
       if (data?.user && !data.session) {
-        toast.success('Almost there! Check your email for the confirmation link to activate your account.', {
+        toast.success('🎉 Almost there! Check your email for the confirmation link to activate your account.', {
           duration: 6000,
         });
       } else if (data?.session) {
@@ -81,7 +108,7 @@ export default function Auth() {
       setEmail('');
       setPassword('');
       setFullName('');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Sign up error:', error);
       setError(error.message || 'An error occurred during sign up');
       toast.error(error.message || 'Sign up failed');
@@ -90,7 +117,7 @@ export default function Auth() {
     }
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -109,7 +136,7 @@ export default function Auth() {
 
       toast.success('Successfully signed in!');
       navigate('/');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Sign in error:', error);
       setError(error.message || 'An error occurred during sign in');
       toast.error(error.message || 'Sign in failed');
@@ -117,6 +144,7 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
 
   const googleSignIn = async () => {
     setLoading(true);
@@ -132,6 +160,21 @@ export default function Auth() {
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       toast.error(error.message || 'Google sign in failed');
+
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      toast.info('Enter your email above first');
+      return;
+    }
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      toast.success('Confirmation email resent. Please check your inbox.');
+    } catch (err: any) {
+      console.error('Resend confirmation error:', err);
+      toast.error(err.message || 'Failed to resend confirmation email');
+
     } finally {
       setLoading(false);
     }
@@ -140,6 +183,7 @@ export default function Auth() {
   return (
     <div>
       <Navbar />
+
 
       <div className="flex justify-center items-center min-h-screen">
         <Card className="glassmorphism border-white/20 w-full max-w-md">
@@ -165,6 +209,67 @@ export default function Auth() {
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
+
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-md mx-auto">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="mb-2 mt-4 flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Button>
+
+          {notice && (
+            <Alert className="mb-4">
+              <AlertDescription>
+                {notice}{' '}
+                <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
+                  Resend confirmation email
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Card className="glassmorphism border-white/20">
+            <Tabs defaultValue="signin" className="w-full">
+              <CardHeader>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+              </CardHeader>
+
+              {/* Sign In */}
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn}>
+                  <CardContent className="space-y-4">
+                    <CardTitle>Welcome Back</CardTitle>
+                    <CardDescription>
+                      Sign in to access your KIIT Saathi account
+                    </CardDescription>
+                    
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <Input
+                        id="signin-email"
+                        type="email"
+                        placeholder="your-email@kiit.ac.in"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+
 
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
@@ -193,6 +298,7 @@ export default function Auth() {
                   </div>
                 </CardContent>
 
+
                 <CardFooter>
                   <Button
                     type="submit"
@@ -206,6 +312,21 @@ export default function Auth() {
                       </>
                     ) : (
                       'Sign In'
+
+              {/* Sign Up */}
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp}>
+                  <CardContent className="space-y-4">
+                    <CardTitle>Join KIIT Saathi</CardTitle>
+                    <CardDescription>
+                      Create your account to access all services
+                    </CardDescription>
+                    
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+
                     )}
                   </Button>
                 </CardFooter>
@@ -263,6 +384,7 @@ export default function Auth() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       disabled={loading}
+
                       minLength={6}
                     />
                   </div>
@@ -307,6 +429,53 @@ export default function Auth() {
             </Button>
           </div>
         </Card>
+
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating Account...
+                        </>
+                      ) : (
+                        'Create Account'
+                      )}
+                    </Button>
+                  </CardFooter>
+                </form>
+                <div className="px-6 pb-4 text-sm text-muted-foreground text-center">
+                  Didn’t receive the email?
+                  <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
+                    Resend confirmation email
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* Divider */}
+            <div className="my-2 border-b-2 mx-4"></div>
+
+            {/* Google Login Button */}
+            <CardFooter>
+              <Button 
+                onClick={handleGoogleLogin} 
+                className="w-full bg-White hover:bg-blue-600 text-black"
+              >
+                {/* Google SVG Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" className="inline-block mr-2 h-5 w-5" viewBox="0 0 48 48">
+                  <g>
+                    <path fill="#4285F4" d="M24 9.5c3.54 0 6.73 1.22 9.24 3.22l6.91-6.91C36.44 2.34 30.65 0 24 0 14.64 0 6.27 5.48 1.98 13.44l8.51 6.62C12.81 13.13 17.96 9.5 24 9.5z"/>
+                    <path fill="#34A853" d="M46.09 24.55c0-1.64-.15-3.22-.43-4.76H24v9.03h12.41c-.54 2.91-2.18 5.38-4.65 7.04l7.19 5.59C43.73 37.97 46.09 31.81 46.09 24.55z"/>
+                    <path fill="#FBBC05" d="M10.49 28.06c-.62-1.85-.98-3.81-.98-5.81s.36-3.96.98-5.81l-8.51-6.62C.36 13.96 0 18.86 0 24s.36 10.04 1.98 14.19l8.51-6.62z"/>
+                    <path fill="#EA4335" d="M24 48c6.65 0 12.23-2.19 16.29-5.97l-7.19-5.59c-2.01 1.35-4.59 2.15-7.1 2.15-6.04 0-11.19-3.63-13.51-8.87l-8.51 6.62C6.27 42.52 14.64 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </g>
+                </svg>
+                Continue with Google
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
       </div>
 
       <Footer />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Smartphone, LogIn, Home, LogOut, User } from "lucide-react";
+import { Menu, X, LogIn, Home, LogOut, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -16,10 +16,10 @@ export const Navbar = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success('Successfully signed out');
-      navigate('/');
+      toast.success("Successfully signed out");
+      navigate("/");
     } catch (error) {
-      toast.error('Error signing out');
+      toast.error("Error signing out");
     }
   };
 
@@ -28,19 +28,19 @@ export const Navbar = () => {
     { label: "How It Works", href: "#how-it-works" },
     { label: "Testimonials", href: "#testimonials" },
     { label: "FAQ", href: "#faq" },
-    { label: "Contact", href: "#contact" }
+    { label: "Contact", href: "#contact" },
   ];
 
   // Smooth scroll to section
   const scrollToSection = (href: string) => {
-    if (location.pathname !== '/') {
-      navigate('/');
+    if (location.pathname !== "/") {
+      navigate("/");
       setTimeout(() => {
         const element = document.querySelector(href);
         if (element) {
           element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
+            behavior: "smooth",
+            block: "start",
           });
         }
       }, 100);
@@ -48,8 +48,8 @@ export const Navbar = () => {
       const element = document.querySelector(href);
       if (element) {
         element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
+          behavior: "smooth",
+          block: "start",
         });
       }
     }
@@ -58,14 +58,14 @@ export const Navbar = () => {
 
   // Scroll spy functionality
   useEffect(() => {
-    if (location.pathname !== '/') return;
+    if (location.pathname !== "/") return;
 
-    const sections = navItems.map(item => item.href.substring(1));
+    const sections = navItems.map((item) => item.href.substring(1));
 
     const observerOptions = {
       root: null,
-      rootMargin: '-20% 0px -70% 0px',
-      threshold: 0
+      rootMargin: "-20% 0px -70% 0px",
+      threshold: 0,
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -99,16 +99,20 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/30 border-b border-white/20 shadow-lg">
+    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-green-500 text-white border-b border-white/20 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div
             className="flex items-center gap-3 cursor-pointer hover:scale-105 transition-all duration-300"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
-            <img src={kiitMascot} alt="KIIT Saathi Mascot" className="w-10 h-10 animate-pulse" />
-            <div className="font-poppins font-bold text-2xl lg:text-xl text-gradient hover:scale-105 transition-transform drop-shadow-lg">
+            <img
+              src={kiitMascot}
+              alt="KIIT Saathi Mascot"
+              className="w-10 h-10 animate-pulse"
+            />
+            <div className="font-poppins font-bold text-2xl lg:text-xl text-blue-700 drop-shadow-lg">
               KIIT Saathi
             </div>
           </div>
@@ -116,13 +120,14 @@ export const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <button
-              onClick={() => navigate('/')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${location.pathname === '/'
-                  ? 'text-kiit-black bg-kiit-green/15 shadow-md'
-                  : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/10'
-                }`}
+              onClick={() => navigate("/")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${
+                location.pathname === "/"
+                  ? "text-black bg-white/40 shadow-md"
+                  : "text-white hover:text-kiit-green hover:bg-kiit-green/10"
+              }`}
             >
-              <Home className="w-5 h-5 text-black" />
+              <Home className="w-5 h-5" />
               Home
             </button>
 
@@ -130,14 +135,15 @@ export const Navbar = () => {
               <button
                 key={item.label}
                 onClick={() => scrollToSection(item.href)}
-                className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium relative ${isActive(item.href)
-                    ? 'text-kiit-green  border-kiit-green'
-                    : 'text-foreground hover:text-kiit-green hover:bg-kiit-green/5'
-                  }`}
+                className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium relative ${
+                  isActive(item.href)
+                    ? "text-black bg-white/40"
+                    : "text-white hover:text-kiit-green hover:bg-kiit-green/5"
+                }`}
               >
                 {item.label}
                 {isActive(item.href) && (
-                  <div className="absolute  left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-gradient-primary rounded-full"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-gradient-primary rounded-full"></div>
                 )}
               </button>
             ))}
@@ -147,7 +153,16 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <div className="flex items-center gap-2 px-3 py-2 text-sm text-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/order-history")}
+                  className="hover:bg-kiit-green/10 hover:text-kiit-green transition-all duration-300"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Order History
+                </Button>
+                <div className="flex items-center gap-2 px-3 py-2 text-sm text-white">
                   <User className="w-4 h-4" />
                   {user.email}
                 </div>
@@ -164,7 +179,7 @@ export const Navbar = () => {
             ) : (
               <Button
                 size="sm"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate("/auth")}
                 className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <LogIn className="w-4 h-4 mr-2" />
@@ -184,75 +199,81 @@ export const Navbar = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200 py-4 px-2">
-            {/* Home Button */}
-            <div className="mb-4">
+          <div className="md:hidden border-t border-white/20 py-4 space-y-2 backdrop-blur-sm">
+            <button
+              onClick={() => {
+                navigate("/");
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 ${
+                location.pathname === "/"
+                  ? "text-black bg-white/40"
+                  : "text-white hover:text-kiit-green hover:bg-kiit-green/5"
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+
+            {navItems.map((item) => (
               <button
-                onClick={() => {
-                  navigate('/');
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-lg font-medium ${location.pathname === '/'
-                    ? 'bg-kiit-green/15 text-kiit-green'
-                    : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                key={item.label}
+                onClick={() => scrollToSection(item.href)}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
+                  isActive(item.href)
+                    ? "text-black bg-white/40"
+                    : "text-white hover:text-kiit-green hover:bg-kiit-green/5"
+                }`}
               >
-                <Home className="w-5 h-5" />
-                Home
+                {item.label}
               </button>
-            </div>
+            ))}
 
-            {/* Navigation Items */}
-            <div className="space-y-2 mb-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => scrollToSection(item.href)}
-                  className={`w-full px-4 py-3 rounded-lg text-left text-lg font-medium ${isActive(item.href)
-                      ? 'bg-kiit-green/15 text-kiit-green'
-                      : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            {/* User Actions */}
-            <div className="border-t border-gray-200 pt-4 space-y-3">
+            <div className="flex flex-col gap-3 pt-4 border-t border-white/20">
               {user ? (
                 <>
-                  <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600">
-                    <User className="w-5 h-5" />
-                    <span className="text-base">{user.email}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigate("/order-history");
+                      setIsOpen(false);
+                    }}
+                    className="justify-start hover:bg-kiit-green/10 hover:text-kiit-green"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Order History
+                  </Button>
+                  <div className="flex items-center gap-2 px-4 py-2 text-sm text-white">
+                    <User className="w-4 h-4" />
+                    {user.email}
                   </div>
                   <Button
                     variant="outline"
-                    size="lg"
+                    size="sm"
                     onClick={handleSignOut}
-                    className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+                    className="border-red-500/30 hover:bg-red-500/10 text-red-500"
                   >
-                    <LogOut className="w-5 h-5 mr-2" />
+                    <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <Button
-                  size="lg"
+                  size="sm"
                   onClick={() => {
-                    navigate('/auth');
+                    navigate("/auth");
                     setIsOpen(false);
                   }}
-                  className="w-full bg-kiit-green text-white hover:bg-kiit-green/90"
+                  className="gradient-primary text-white font-semibold shadow-lg"
                 >
-                  <LogIn className="w-5 h-5 mr-2" />
+                  <LogIn className="w-4 h-4 mr-2" />
                   Sign In
                 </Button>
               )}
             </div>
           </div>
         )}
-
       </div>
     </nav>
   );

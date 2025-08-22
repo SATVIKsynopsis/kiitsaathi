@@ -185,7 +185,7 @@ const SeniorConnect = () => {
                     variant="ghost" 
                     size="sm" 
                     className="opacity-0 group-hover:opacity-100 transition-all duration-300"
-                    onClick={() => alert("🚀 Coming Soon! Skill sessions are under development.")}
+                    onClick={() => navigate('/skill-enhancing-sessions')}
                   >
                     Explore Sessions
                     <ArrowRight width={16} height={16} className="ml-1" />
