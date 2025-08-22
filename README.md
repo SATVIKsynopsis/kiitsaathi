@@ -1,9 +1,3 @@
-You're right! The previous README was a good start, but we can definitely make the features and other sections more descriptive to give a clearer picture of KiitSaathi's capabilities.
-
-Here's an updated README with more descriptive features and expanded sections:
-
----
-
 # KiitSaathi
 
 KiitSaathi is a comprehensive web application designed to simplify and enhance campus life for students at KIIT University. From academic support to social activities and essential services, KiitSaathi aims to be the go-to platform for all student needs, fostering a more connected and efficient campus environment.
