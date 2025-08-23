@@ -77,6 +77,7 @@ function OrderHistory() {
       <div className="container mx-auto px-4 py-8 pt-24">
         {/* Header */}
         <div className="mb-8">
+            <h1 className='text-lg font-bold block'>{user.email}</h1>
           <div className="flex items-center gap-3 mb-2">
             <ShoppingBag className="w-8 h-8 text-kiit-green" />
             <h1 className="text-3xl font-bold text-foreground">Order History</h1>

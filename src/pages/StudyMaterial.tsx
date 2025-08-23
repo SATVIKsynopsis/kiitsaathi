@@ -15,17 +15,7 @@ import {
   ChevronRight,
   X
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import {Footer} from "../components/Footer";
 
 // Mock data for demonstration
 const studyMaterials = {
@@ -65,6 +55,30 @@ const studyMaterials = {
       views: 756,
       rating: 4.7,
       pdfUrl: "/api/secure-pdf/electronics-notes.pdf"
+    },
+    {
+      id: 4,
+      title: "Data Structures and Algorithms",
+      subject: "DSA",
+      semester: "3rd",
+      branch: "CSE",
+      uploadedBy: "Sneha P. (Final Year)",
+      uploadDate: "2024-01-12",
+      views: 1456,
+      rating: 4.9,
+      pdfUrl: "/api/secure-pdf/dsa-notes.pdf"
+    },
+    {
+      id: 5,
+      title: "Operating Systems Complete Guide",
+      subject: "OS",
+      semester: "4th",
+      branch: "CSE",
+      uploadedBy: "Vikash M. (Final Year)",
+      uploadDate: "2024-01-20",
+      views: 1123,
+      rating: 4.8,
+      pdfUrl: "/api/secure-pdf/os-notes.pdf"
     }
   ],
   pyqs: [
@@ -89,6 +103,17 @@ const studyMaterials = {
       uploadedBy: "Math Club KIIT",
       views: 1876,
       pdfUrl: "/api/secure-pdf/m3-pyqs.pdf"
+    },
+    {
+      id: 3,
+      title: "DSA Mid-Sem and End-Sem Papers",
+      subject: "DSA",
+      semester: "3rd",
+      branch: "CSE",
+      year: "2021-2023",
+      uploadedBy: "CSE Student Body",
+      views: 1654,
+      pdfUrl: "/api/secure-pdf/dsa-pyqs.pdf"
     }
   ],
   playlists: [
@@ -109,6 +134,15 @@ const studyMaterials = {
       duration: "32 hours",
       subscribers: "800K",
       description: "Complete M3 coverage with solved examples"
+    },
+    {
+      id: 3,
+      title: "Data Structures Masterclass",
+      subject: "DSA",
+      youtubeId: "PLmjdcKkCqsVFqe-CxnvKOyKGLKg-Qz0Qa",
+      duration: "40 hours",
+      subscribers: "900K",
+      description: "Master data structures with practical examples"
     }
   ],
   telegramGroups: [
@@ -132,34 +166,138 @@ const studyMaterials = {
       link: "https://t.me/kiitelectronics",
       members: "6.7K",
       description: "Electronics and communication resources"
+    },
+    {
+      id: 4,
+      name: "KIIT Study Group",
+      link: "https://t.me/kiitstudygroup",
+      members: "15.2K",
+      description: "General study discussions and resources"
     }
   ]
 };
+
+// Extract subjects and semesters from semesterSubjects
+const semesterSubjects = {
+  "1st": [
+    { code: "PH10001", name: "Physics" },
+    { code: "MA10001", name: "Differential Equations & Linear Algebra" },
+    { code: "LS10001", name: "Science of Living Systems" },
+    { code: "CH10003", name: "Environmental Science" },
+    { code: "EI10001", name: "Elements of Machine Learning" },
+    { code: "ME10001", name: "Engineering Mechanics" },
+    { code: "EC10003", name: "Biomedical Engineering" },
+    { code: "EI10003", name: "Basic Instrumentation" },
+    { code: "CH10005", name: "Nanoscience" },
+    { code: "PH10005", name: "Smart Materials" },
+    { code: "LS10003", name: "Molecular Diagnostics" },
+    { code: "PE10002", name: "Science of Public Health" },
+    { code: "MA10003", name: "Optimization Techniques" }
+  ],
+  "2nd": [
+    { code: "CH10001", name: "Chemistry" },
+    { code: "MA11002", name: "Transform Calculus & Numerical Analysis" },
+    { code: "HS10001", name: "English" },
+    { code: "EC10001", name: "Basic Electronics" },
+    { code: "CE10001", name: "Basic Civil Engineering" },
+    { code: "ME10003", name: "Basic Mechanical Engineering" },
+    { code: "EE10002", name: "Basic Electrical Engineering" },
+    { code: "HS10013", name: "Society, Science, and Technology" },
+    { code: "HS10202", name: "Essential of Management" },
+    { code: "HS10212", name: "Shades of Economics" },
+    { code: "HS10123", name: "India Economy Post Liberalisation" },
+    { code: "SO10043", name: "Socio-Political Environment" },
+    { code: "PS10043", name: "Thinking Perspectives" },
+    { code: "PS10045", name: "Creativity, Innovation and Entrepreneurship" },
+    { code: "EX17001", name: "Community/Environment-based Project" }
+  ],
+  "3rd": [
+    { code: "EX20003", name: "Scientific and Technical Writing" },
+    { code: "MA21001", name: "Probability and Statistics" },
+    { code: "EX20001", name: "Industry 4.0 Technologies 2" },
+    { code: "CS21001", name: "Data Structures" },
+    { code: "EC20005", name: "Digital Systems Design" },
+    { code: "CS21003", name: "Automata Theory and Formal Languages" },
+    { code: "HS20202", name: "Organizational Behavior" },
+    { code: "HS20120", name: "Economics of Development" },
+    { code: "HS20122", name: "International Economic Cooperation" }
+  ],
+  "4th": [
+    { code: "EX20003", name: "Scientific and Technical Writing" },
+    { code: "MA21002", name: "Discrete Structures" },
+    { code: "CS20002", name: "Operating Systems" },
+    { code: "CS20004", name: "Object Oriented Programming in JAVA" },
+    { code: "CS20006", name: "Database Management Systems" },
+    { code: "CS21002", name: "Computer Organization and Architecture" },
+    { code: "HS20202", name: "Organizational Behavior" },
+    { code: "HS20120", name: "Economics of Development" },
+    { code: "HS20122", name: "International Economic Cooperation" }
+  ],
+  "5th": [
+    { code: "CS31001", name: "Software Engineering" },
+    { code: "CS30003", name: "Computer Networks" },
+    { code: "CS30001", name: "Design & Analysis of Algorithms" },
+    { code: "HS30011", name: "Engineering Economics & Costing" },
+    { code: "CS30009", name: "Distributed Operating Systems" },
+    { code: "CS30011", name: "Computational Intelligence" },
+    { code: "CS30005", name: "High Performance Computing" },
+    { code: "EC30007", name: "ARM and Advanced Microprocessors" },
+    { code: "CS30007", name: "Multi-Core Programming" },
+    { code: "CM30006", name: "Compiler" },
+    { code: "CS30013", name: "Data Mining and Data Warehousing" },
+    { code: "CS30015", name: "Image Processing and Applications" }
+  ],
+  "6th": [
+    { code: "CS31002", name: "Machine Learning" },
+    { code: "CS30002", name: "Artificial Intelligence" },
+    { code: "HS30401", name: "Universal Human Values" },
+    { code: "CS30010", name: "Cloud Computing" },
+    { code: "CS30026", name: "Computer Vision" },
+    { code: "CS30012", name: "Software Project Management" },
+    { code: "CS30014", name: "Time Series Forecasting" },
+    { code: "CS30016", name: "Natural Language Processing" }
+  ],
+  "7th": [
+    { code: "EX40003", name: "Engineering Professional Practice" },
+    { code: "CS40001", name: "Deep Learning Techniques" },
+    { code: "CS40003", name: "Software Testing and Automation" },
+    { code: "CS40005", name: "Human Computer Interaction" },
+    { code: "CS40007", name: "Computer Graphics and Multimedia Systems" },
+    { code: "CS40009", name: "Principles of Cryptography" }
+  ],
+  "8th": [
+    { code: "CS40002", name: "Nature Inspired Computing" },
+    { code: "CS40004", name: "IOT and Applications" },
+    { code: "CS40006", name: "Agile Software Development" },
+    { code: "CS40008", name: "Social Network Analysis" },
+    { code: "CS40010", name: "Augmented and Virtual Reality" }
+  ]
+};
+
+// Extract unique subjects from all semesters
+const subjects = [...new Set(Object.values(semesterSubjects).flat().map(subject => subject.name))];
+const semesters = Object.keys(semesterSubjects);
 
 export default function StudyMaterial() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedSemester, setSelectedSemester] = useState("all");
-  const [selectedResourceType, setSelectedResourceType] = useState("all");
   const [activeSection, setActiveSection] = useState("notes");
-  const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  const [selectedPdf, setSelectedPdf] = useState(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
 
-  const subjects = ["DSD", "M3", "Basic Electronics", "OOPS", "COA", "DBMS"];
-  const semesters = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
-
   const handleResourceRequest = () => {
-    toast.success("Resource request submitted! We'll notify you when it's available.");
+    alert("Resource request submitted! We'll notify you when it's available.");
     setRequestDialogOpen(false);
   };
 
   const handleAddResource = () => {
-    toast.success("Resource submitted for review! It will be available after admin approval.");
+    alert("Resource submitted for review! It will be available after admin approval.");
     setAddResourceDialogOpen(false);
   };
 
-  const openSecurePdfViewer = (pdfUrl: string) => {
+  const openSecurePdfViewer = (pdfUrl) => {
     setSelectedPdf(pdfUrl);
   };
 
@@ -180,136 +318,190 @@ export default function StudyMaterial() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft to-white">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-kiit-green-dark mb-4">
+            <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <BookOpen className="w-4 h-4" />
               Study Resources by Seniors
             </div>
             
-            <h1 className="text-4xl lg:text-5xl font-poppins font-bold text-gradient mb-4">
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4">
               Study Material Hub
-              <span className="block text-2xl lg:text-3xl">By Seniors, For Students</span>
+              <span className="block text-2xl lg:text-3xl mt-2">By Seniors, For Students</span>
             </h1>
             
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Access curated notes, PYQs, and resources shared by your seniors. 
-              <span className="font-semibold text-kiit-green"> Because good notes are gold! 📚</span>
+              <span className="font-semibold text-green-600"> Because good notes are gold! 📚</span>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="glass-card p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search by subject or topic..."
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search notes, subjects, or keywords..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
             
-            <div className="flex gap-3">
-              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Subjects</SelectItem>
-                  {subjects.map(subject => (
-                    <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Semester" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Semesters</SelectItem>
-                  {semesters.map(sem => (
-                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex gap-4">
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="all">All Subjects</option>
+                {subjects.map(subject => (
+                  <option key={subject} value={subject}>{subject}</option>
+                ))}
+              </select>
+              
+              <select
+                value={selectedSemester}
+                onChange={(e) => setSelectedSemester(e.target.value)}
+                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="all">All Semesters</option>
+                {semesters.map(semester => (
+                  <option key={semester} value={semester}>{semester} Semester</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {[
-            { id: "notes", label: "📘 Notes", icon: BookOpen },
-            { id: "pyqs", label: "❓ PYQs", icon: FileQuestion },
-            { id: "playlists", label: "🎥 YouTube", icon: Youtube },
-            { id: "telegram", label: "💬 Telegram", icon: MessageSquare }
-          ].map(section => (
-            <Button
-              key={section.id}
-              variant={activeSection === section.id ? "default" : "outline"}
-              onClick={() => setActiveSection(section.id)}
-              className="flex items-center gap-2"
+        {/* Section Navigation */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex flex-wrap gap-4">
+            <button
+              onClick={() => setActiveSection("notes")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                activeSection === "notes" 
+                  ? "bg-green-500 text-white shadow-lg" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
             >
-              <section.icon className="w-4 h-4" />
-              {section.label}
-            </Button>
-          ))}
+              <BookOpen className="w-5 h-5" />
+              Study Notes
+            </button>
+            
+            <button
+              onClick={() => setActiveSection("pyqs")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                activeSection === "pyqs" 
+                  ? "bg-green-500 text-white shadow-lg" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <FileQuestion className="w-5 h-5" />
+              Previous Year Questions
+            </button>
+            
+            <button
+              onClick={() => setActiveSection("playlists")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                activeSection === "playlists" 
+                  ? "bg-green-500 text-white shadow-lg" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <Youtube className="w-5 h-5" />
+              YouTube Playlists
+            </button>
+            
+            <button
+              onClick={() => setActiveSection("telegram")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                activeSection === "telegram" 
+                  ? "bg-green-500 text-white shadow-lg" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <MessageSquare className="w-5 h-5" />
+              Telegram Groups
+            </button>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <button
+            onClick={() => setRequestDialogOpen(true)}
+            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <FileQuestion className="w-5 h-5" />
+            Request Resource
+          </button>
+          
+          <button
+            onClick={() => setAddResourceDialogOpen(true)}
+            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Add Resource
+          </button>
         </div>
 
         {/* Notes Section */}
         {activeSection === "notes" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {filteredNotes.map(note => (
-              <Card key={note.id} className="group hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
+              <div key={note.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Badge variant="secondary" className="text-xs">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">
                       {note.subject} • {note.semester} Sem
-                    </Badge>
-                    <div className="flex items-center gap-1 text-amber-500">
-                      <Star className="w-3 h-3 fill-current" />
-                      <span className="text-xs">{note.rating}</span>
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                      <span className="text-xs text-gray-500">{note.rating}</span>
                     </div>
                   </div>
                   
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-kiit-green transition-colors">
+                  <h3 className="font-semibold text-lg mb-2 group-hover:text-green-600 transition-colors">
                     {note.title}
                   </h3>
                   
-                  <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                  <div className="space-y-2 text-sm text-gray-500 mb-4">
                     <div className="flex items-center gap-2">
                       <Users className="w-3 h-3" />
                       <span>By {note.uploadedBy}</span>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Clock className="w-3 h-3" />
+                      <span>{new Date(note.uploadDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Eye className="w-3 h-3" />
                       <span>{note.views} views</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3 h-3" />
-                      <span>{note.uploadDate}</span>
-                    </div>
                   </div>
                   
-                  <Button 
-                    onClick={() => openSecurePdfViewer(note.pdfUrl)}
-                    className="w-full group-hover:bg-kiit-green group-hover:text-white transition-colors"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Notes
-                  </Button>
-                </CardContent>
-              </Card>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => openSecurePdfViewer(note.pdfUrl)}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      View Notes
+                    </button>
+                    
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -318,22 +510,22 @@ export default function StudyMaterial() {
         {activeSection === "pyqs" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {filteredPyqs.map(pyq => (
-              <Card key={pyq.id} className="group hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
+              <div key={pyq.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Badge variant="secondary" className="text-xs">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
                       {pyq.subject} • {pyq.semester} Sem
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    </span>
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
                       {pyq.year}
-                    </Badge>
+                    </span>
                   </div>
                   
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-kiit-green transition-colors">
+                  <h3 className="font-semibold text-lg mb-2 group-hover:text-green-600 transition-colors">
                     {pyq.title}
                   </h3>
                   
-                  <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                  <div className="space-y-2 text-sm text-gray-500 mb-4">
                     <div className="flex items-center gap-2">
                       <Users className="w-3 h-3" />
                       <span>By {pyq.uploadedBy}</span>
@@ -344,15 +536,15 @@ export default function StudyMaterial() {
                     </div>
                   </div>
                   
-                  <Button 
+                  <button 
                     onClick={() => openSecurePdfViewer(pyq.pdfUrl)}
-                    className="w-full group-hover:bg-kiit-green group-hover:text-white transition-colors"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                   >
-                    <Eye className="w-4 h-4 mr-2" />
+                    <Eye className="w-4 h-4" />
                     View PYQs
-                  </Button>
-                </CardContent>
-              </Card>
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -361,40 +553,39 @@ export default function StudyMaterial() {
         {activeSection === "playlists" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {studyMaterials.playlists.map(playlist => (
-              <Card key={playlist.id} className="group hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
+              <div key={playlist.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <div className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-24 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Youtube className="w-8 h-8 text-white" />
                     </div>
                     
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2 group-hover:text-kiit-green transition-colors">
+                      <h3 className="font-semibold text-lg mb-2 group-hover:text-green-600 transition-colors">
                         {playlist.title}
                       </h3>
                       
-                      <p className="text-sm text-muted-foreground mb-3">
+                      <p className="text-sm text-gray-500 mb-3">
                         {playlist.description}
                       </p>
                       
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
                         <span>{playlist.duration}</span>
                         <span>{playlist.subscribers} subscribers</span>
                       </div>
                       
-                      <Button 
+                      <button 
                         onClick={() => window.open(`https://youtube.com/playlist?list=${playlist.youtubeId}`, '_blank')}
-                        variant="outline"
-                        className="group-hover:bg-red-500 group-hover:text-white group-hover:border-red-500 transition-colors"
+                        className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2"
                       >
-                        <Youtube className="w-4 h-4 mr-2" />
+                        <Youtube className="w-4 h-4" />
                         Watch Playlist
-                        <ChevronRight className="w-4 h-4 ml-2" />
-                      </Button>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -403,175 +594,182 @@ export default function StudyMaterial() {
         {activeSection === "telegram" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {studyMaterials.telegramGroups.map(group => (
-              <Card key={group.id} className="group hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
+              <div key={group.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <div className="p-6">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <MessageSquare className="w-6 h-6 text-white" />
                     </div>
                     
                     <div>
-                      <h3 className="font-semibold text-lg group-hover:text-kiit-green transition-colors">
+                      <h3 className="font-semibold text-lg group-hover:text-green-600 transition-colors">
                         {group.name}
                       </h3>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
                         <Users className="w-3 h-3" />
                         <span>{group.members} members</span>
                       </div>
                     </div>
                   </div>
                   
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-gray-500 mb-4">
                     {group.description}
                   </p>
                   
-                  <Button 
+                  <button 
                     onClick={() => window.open(group.link, '_blank')}
-                    className="w-full group-hover:bg-blue-500 group-hover:text-white transition-colors"
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                   >
-                    <MessageSquare className="w-4 h-4 mr-2" />
+                    <MessageSquare className="w-4 h-4" />
                     Join Group
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
-      </div>
 
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3">
-        <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="bg-gradient-to-r from-kiit-green to-campus-blue text-white shadow-lg">
-              <Plus className="w-5 h-5 mr-2" />
-              Request Resource
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Request a Study Resource</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Subject/Topic</Label>
-                <Input placeholder="e.g., Data Structures, M3 Integration" />
+        {/* Request Dialog */}
+        {requestDialogOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Request Resource</h3>
+                <button onClick={() => setRequestDialogOpen(false)}>
+                  <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+                </button>
               </div>
-              <div>
-                <Label>Resource Type</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="notes">Notes</SelectItem>
-                    <SelectItem value="pyqs">Previous Year Questions</SelectItem>
-                    <SelectItem value="playlist">YouTube Playlist</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Additional Details</Label>
-                <Textarea placeholder="Any specific requirements or details..." />
-              </div>
-              <Button onClick={handleResourceRequest} className="w-full">
-                Submit Request
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg" className="shadow-lg bg-white">
-              <BookOpen className="w-5 h-5 mr-2" />
-              Add Resource
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Share a Study Resource</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Resource Title</Label>
-                <Input placeholder="e.g., Complete DSD Notes" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
-                  <Label>Subject</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select subject" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subjects.map(subject => (
-                        <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter subject name" />
                 </div>
                 <div>
-                  <Label>Semester</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select semester" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {semesters.map(sem => (
-                        <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option>Select semester</option>
+                    {semesters.map(sem => (
+                      <option key={sem} value={sem}>{sem} Semester</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
+                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option>Study Notes</option>
+                    <option>Previous Year Questions</option>
+                    <option>YouTube Playlist</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Additional Details</label>
+                  <textarea className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" rows={3} placeholder="Any specific requirements..."></textarea>
                 </div>
               </div>
-              <div>
-                <Label>Upload File</Label>
-                <Input type="file" accept=".pdf" />
+              <div className="flex gap-3 mt-6">
+                <button 
+                  onClick={handleResourceRequest}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  Submit Request
+                </button>
+                <button 
+                  onClick={() => setRequestDialogOpen(false)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
-              <div>
-                <Label>Your Name & Year</Label>
-                <Input placeholder="e.g., Rahul S. (Final Year)" />
-              </div>
-              <Button onClick={handleAddResource} className="w-full">
-                Submit for Review
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Secure PDF Viewer Modal */}
-      <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <div className="flex items-center justify-between">
-              <DialogTitle>Study Material Viewer</DialogTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedPdf(null)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </DialogHeader>
-          <div className="p-6 pt-0">
-            <div className="bg-muted rounded-lg p-8 text-center">
-              <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Secure PDF Viewer</h3>
-              <p className="text-muted-foreground mb-4">
-                This is where the secure PDF viewer would be integrated.
-                PDFs will be displayed with no download/print/share options.
-              </p>
-              <Badge variant="outline">Protected Content</Badge>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-      <Footer />
+        )}
+
+        {/* Add Resource Dialog */}
+        {addResourceDialogOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Add Resource</h3>
+                <button onClick={() => setAddResourceDialogOpen(false)}>
+                  <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Resource title" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Subject name" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option>Select semester</option>
+                    {semesters.map(sem => (
+                      <option key={sem} value={sem}>{sem} Semester</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
+                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option>Study Notes</option>
+                    <option>Previous Year Questions</option>
+                    <option>YouTube Playlist</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">File/Link</label>
+                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Upload file or paste link" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" rows={3} placeholder="Brief description of the resource..."></textarea>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button 
+                  onClick={handleAddResource}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  Submit Resource
+                </button>
+                <button 
+                  onClick={() => setAddResourceDialogOpen(false)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PDF Viewer Modal */}
+        {selectedPdf && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-4xl w-full h-5/6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">PDF Viewer</h3>
+                <button onClick={() => setSelectedPdf(null)}>
+                  <X className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+                </button>
+              </div>
+              <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">PDF content would be displayed here</p>
+                  <p className="text-sm text-gray-500 mt-2">File: {selectedPdf}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    <Footer/>
     </div>
   );
 }
