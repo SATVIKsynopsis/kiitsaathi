@@ -90,10 +90,10 @@ export const NotificationBell = () => {
 
   // Show bell after page loads
   useEffect(() => {
-    if(!user) return;
+    
     setIsVisible(true);
     playDingSound();
-  }, [user]);
+  }, []);
 
   // Handle landing animation 
   useEffect(() => {

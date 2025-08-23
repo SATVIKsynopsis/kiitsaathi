@@ -124,7 +124,7 @@ export const Navbar = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${
                 location.pathname === "/"
                   ? "text-black bg-white/40 shadow-md"
-                  : "text-white hover:text-kiit-green hover:bg-kiit-green/10"
+                  : "text-white hover:text-kiit-black hover:bg-kiit-black"
               }`}
             >
               <Home className="w-5 h-5" />
@@ -153,27 +153,19 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/order-history")}
-                  className="hover:bg-kiit-green/10 hover:text-kiit-green transition-all duration-300"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Order History
-                </Button>
-                <div className="flex items-center gap-2 px-3 py-2 text-sm text-white">
-                  <User className="w-4 h-4" />
-                  {user.email}
-                </div>
+                
+                <Button onClick={() => navigate("/order-history")} 
+                  className="bg-black/10 hover:text-black transition-all duration-300 gap-2 px-3 rounded-full py-4">
+                  <User className="w-6 h-6 " />
+                  {/* {user.email} */}
+                  </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  className="hover:bg-red-500/10 hover:text-red-500 transition-all duration-300"
+                  className="bg-black/10 hover:text-black transition-all duration-300 gap-2 px-2 rounded-full py-4 "
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                  <LogOut className="w-6 h-6 mr-2" />
                 </Button>
               </>
             ) : (
