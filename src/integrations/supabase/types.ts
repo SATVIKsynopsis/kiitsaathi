@@ -1016,6 +1016,54 @@ export type Database = {
         }
         Relationships: []
       }
+      notes: {
+        Row: {
+          branch: string
+          created_at: string
+          id: number
+          pdf_url: string
+          rating: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at: string
+          upload_date: string
+          uploaded_by: string
+          user_id: string | null
+          views: number
+        }
+        Insert: {
+          branch: string
+          created_at?: string
+          id?: number
+          pdf_url: string
+          rating?: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at?: string
+          upload_date?: string
+          uploaded_by: string
+          user_id?: string | null
+          views?: number
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          id?: number
+          pdf_url?: string
+          rating?: number | null
+          semester?: string
+          subject?: string
+          title?: string
+          updated_at?: string
+          upload_date?: string
+          uploaded_by?: string
+          user_id?: string | null
+          views?: number
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number
@@ -1261,6 +1309,51 @@ export type Database = {
           id?: string
           role?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      pyqs: {
+        Row: {
+          branch: string
+          created_at: string
+          id: number
+          pdf_url: string
+          semester: string
+          subject: string
+          title: string
+          updated_at: string
+          uploaded_by: string
+          user_id: string | null
+          views: number
+          year: string
+        }
+        Insert: {
+          branch: string
+          created_at?: string
+          id?: number
+          pdf_url: string
+          semester: string
+          subject: string
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          user_id?: string | null
+          views?: number
+          year: string
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          id?: number
+          pdf_url?: string
+          semester?: string
+          subject?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          user_id?: string | null
+          views?: number
+          year?: string
         }
         Relationships: []
       }
