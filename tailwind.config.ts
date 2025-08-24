@@ -36,6 +36,20 @@ export default {
 				'campus-blue': 'hsl(var(--campus-blue))',
 				'campus-orange': 'hsl(var(--campus-orange))',
 				'campus-purple': 'hsl(var(--campus-purple))',
+				
+				// Society Brand Colors
+				'fedkiit-green': 'hsl(var(--fedkiit-green))',
+				'fedkiit-black': 'hsl(var(--fedkiit-black))',
+				'fedkiit-grey': 'hsl(var(--fedkiit-grey))',
+				'fedkiit-light-grey': 'hsl(var(--fedkiit-light-grey))',
+				'ecell-black': 'hsl(var(--ecell-black))',
+				'ecell-white': 'hsl(var(--ecell-white))',
+				'ecell-cyan': 'hsl(var(--ecell-cyan))',
+				'usc-orange': 'hsl(var(--usc-orange))',
+				'usc-maroon': 'hsl(var(--usc-maroon))',
+				'usc-green': 'hsl(var(--usc-green))',
+				'usc-white': 'hsl(var(--usc-white))',
+				'usc-black': 'hsl(var(--usc-black))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'

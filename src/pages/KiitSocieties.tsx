@@ -9,7 +9,10 @@ import {
   Trophy,
   Search,
   Users,
-  MessageSquare
+  MessageSquare,
+  Instagram,
+  ExternalLink,
+  Sparkles
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -50,46 +53,46 @@ const KiitSocieties = () => {
 
   const kiitSocieties = [
     {
-      name: "KIIT Technology Society",
-      description: "Innovation, coding competitions, and tech workshops",
+      name: "Fed KIIT",
+      brief: "Fostering innovation and development through hackathons, workshops, and tech-driven projects.",
       category: "Technical",
-      members: "500+",
-      gradient: "from-blue-500 to-purple-600"
+      members: "1,200+",
+      gradient: "from-blue-600 via-purple-600 to-indigo-700",
+      website: "https://www.fedkiit.com/",
+      instagram: "https://www.instagram.com/fedkiit/?hl=en",
+      upcomingEvent: {
+        title: "TechFest Hackathon 2024",
+        date: "March 15-17"
+      },
+      logoPlaceholder: "🚀"
     },
     {
-      name: "KIIT Cultural Society",
-      description: "Dance, music, drama, and cultural events",
-      category: "Cultural",
-      members: "800+",
-      gradient: "from-pink-500 to-orange-500"
-    },
-    {
-      name: "KIIT Debate Society",
-      description: "Parliamentary debates, MUNs, and public speaking",
-      category: "Literary",
-      members: "300+",
-      gradient: "from-green-500 to-teal-600"
-    },
-    {
-      name: "KIIT Photography Club",
-      description: "Capture memories, workshops, and exhibitions",
-      category: "Creative",
-      members: "400+",
-      gradient: "from-purple-500 to-indigo-600"
-    },
-    {
-      name: "KIIT Entrepreneurship Cell",
-      description: "Startup culture, business plans, and networking",
+      name: "KIIT E-Cell",
+      brief: "Promoting entrepreneurship through mentorship, startup incubations, and networking.",
       category: "Business",
-      members: "250+",
-      gradient: "from-orange-500 to-red-500"
+      members: "800+",
+      gradient: "from-orange-500 via-red-500 to-pink-600",
+      website: "https://www.kiitecell.org/",
+      instagram: "https://www.instagram.com/ecell_kiit/?hl=en",
+      upcomingEvent: {
+        title: "Startup Pitch Competition",
+        date: "April 5-7"
+      },
+      logoPlaceholder: "💡"
     },
     {
-      name: "KIIT Social Service Society",
-      description: "Community service, outreach, and social impact",
-      category: "Social",
-      members: "600+",
-      gradient: "from-teal-500 to-cyan-600"
+      name: "USC KIIT",
+      brief: "Uniting students across cultures with leadership programs, global events, and community initiatives.",
+      category: "Cultural",
+      members: "1,500+",
+      gradient: "from-emerald-500 via-teal-500 to-cyan-600",
+      website: "#",
+      instagram: "https://www.instagram.com/usc.kiit/?hl=en",
+      upcomingEvent: {
+        title: "International Cultural Night",
+        date: "March 22"
+      },
+      logoPlaceholder: "🌍"
     }
   ];
 
@@ -199,28 +202,97 @@ const KiitSocieties = () => {
             <p className="text-gray-600">Discover societies that match your interests and passions</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {kiitSocieties.map((society, index) => (
-              <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green">
-                <CardHeader className="text-center pb-4">
-                  <div className={`p-4 rounded-2xl bg-gradient-to-r ${society.gradient} w-fit mx-auto mb-3`}>
-                    <Users className="w-6 h-6 text-white" />
+              <div 
+                key={index} 
+                className="group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-2xl"
+              >
+                {/* Main Card with Gradient Background */}
+                <div className={`relative h-80 bg-gradient-to-br ${society.gradient} p-6 text-white`}>
+                  {/* Society Logo Placeholder */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl border border-white/30">
+                      {society.logoPlaceholder}
+                    </div>
+                    {/* Instagram Icon */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(society.instagram, '_blank');
+                      }}
+                      className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center hover:bg-white/30 transition-all duration-300 border border-white/30"
+                    >
+                      <Instagram className="w-5 h-5" />
+                    </button>
                   </div>
-                  <CardTitle className="text-lg">{society.name}</CardTitle>
-                  <p className="text-sm text-gray-600">{society.category} • {society.members} members</p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">{society.description}</p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full group-hover:bg-kiit-green group-hover:text-white transition-all duration-300"
-                    onClick={() => alert("🚀 Coming Soon! Society details page is under development.")}
+
+                  {/* Society Name - Clickable */}
+                  <button
+                    onClick={() => society.website !== "#" && window.open(society.website, '_blank')}
+                    className="text-left w-full group/name"
                   >
-                    Learn More
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </CardContent>
-              </Card>
+                    <h3 className="text-2xl font-bold mb-2 group-hover/name:underline flex items-center gap-2">
+                      {society.name}
+                      {society.website !== "#" && <ExternalLink className="w-4 h-4 opacity-0 group-hover/name:opacity-100 transition-opacity duration-300" />}
+                    </h3>
+                  </button>
+
+                  {/* Category and Members */}
+                  <div className="flex items-center gap-4 mb-4 text-sm">
+                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                      {society.category}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      {society.members}
+                    </span>
+                  </div>
+
+                  {/* Upcoming Event Box - Always Visible */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (society.website !== "#") {
+                        window.open(society.website, '_blank');
+                      }
+                    }}
+                    className="w-full mb-4 p-3 bg-white/90 text-gray-800 rounded-xl border-2 border-yellow-300 shadow-lg hover:shadow-xl hover:bg-white transition-all duration-300 group/event"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-left">
+                        <div className="font-semibold text-sm flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-yellow-500" />
+                          Upcoming Event
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {society.upcomingEvent.title}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-medium text-orange-600">
+                          {society.upcomingEvent.date}
+                        </div>
+                        <ExternalLink className="w-3 h-3 mt-1 ml-auto opacity-0 group-hover/event:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Brief - Hidden by default, shown on hover */}
+                  <div className="absolute inset-x-6 bottom-6 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out">
+                    <div className="p-4 bg-white/95 backdrop-blur-sm rounded-xl text-gray-800 shadow-lg border border-white/50">
+                      <p className="text-sm leading-relaxed">{society.brief}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Glowing Border Effect */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" 
+                     style={{
+                       background: `linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)`
+                     }}>
+                </div>
+              </div>
             ))}
           </div>
         </div>

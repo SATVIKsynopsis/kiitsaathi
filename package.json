@@ -53,8 +53,12 @@
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
 
+
     "razorpay": "^2.9.6",
     "react": "^19.1.1",
+
+
+    "pdfjs-dist": "^5.4.54",
 
     "react": "^18.3.1",
 
