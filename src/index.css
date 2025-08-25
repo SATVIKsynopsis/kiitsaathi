@@ -27,6 +27,25 @@ Beautiful, vibrant colors inspired by campus life and modern design
     --glass-white: 0 0% 100%;
     --glass-overlay: 0 0% 100% / 0.1;
 
+    /* Society Brand Colors */
+    /* FedKIIT Colors */
+    --fedkiit-green: 140 82% 55%; /* #1FC166 */
+    --fedkiit-black: 0 0% 0%;
+    --fedkiit-grey: 0 0% 50%;
+    --fedkiit-light-grey: 31 12% 80%;
+    
+    /* KIIT E-Cell Colors */
+    --ecell-black: 0 0% 0%;
+    --ecell-white: 0 0% 100%;
+    --ecell-cyan: 195 100% 50%; /* #00BFFF */
+    
+    /* USC KIIT Colors */
+    --usc-orange: 33 100% 50%; /* #FF8C00 */
+    --usc-maroon: 0 100% 27%; /* #8B0000 */
+    --usc-green: 120 61% 34%; /* #228B22 */
+    --usc-white: 0 0% 100%;
+    --usc-black: 0 0% 0%;
+
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
 

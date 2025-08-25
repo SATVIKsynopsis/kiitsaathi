@@ -155,12 +155,12 @@ export const ServicesGrid = () => {
       navigate(route);
     } else {
       // Show coming soon for services without pages
-      alert(" Coming Soon! This service is under development and will be available soon.");
+      alert("Coming Soon! This service is under development and will be available soon.");
     }
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-kiit-green-soft to-white">
+    <section className="py-20 bg-gradient-to-br from-kiit-green-soft to-white/10">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -195,15 +195,16 @@ export const ServicesGrid = () => {
                   <div className={`p-3 rounded-2xl bg-gradient-to-r ${service.gradient}`}>
                     <IconComponent className="w-6 h-6 text-white" />
                   </div>
+                  
                 </div>
 
                 {/* Service Content */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h3 className="text-xl font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
                     {service.title}
                   </h3>
                   
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed text-sm">
                     {service.description}
                   </p>
                   

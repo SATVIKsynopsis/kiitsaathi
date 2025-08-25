@@ -18,8 +18,8 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = globalThis['SUPABASE_URL'] as string;
+    const supabaseKey = globalThis['SUPABASE_SERVICE_ROLE_KEY'] as string;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     if (req.method === 'GET') {

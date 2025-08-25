@@ -25,7 +25,10 @@ import {
   MessageSquare,
   ArrowLeft,
   Lightbulb,
-  BookOpen
+  BookOpen,
+  Wrench,
+  BookMarked,
+  Quote
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -129,8 +132,8 @@ const SeniorConnect = () => {
       <section className="pt-24 pb-16 px-4">
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold text-kiit-green mb-6 animate-fade-in">
-              🎓 Senior Connect
+            <h1 className="text-4xl md:text-6xl font-bold text-kiit-green mb-6 animate-fade-in flex justify-center items-center gap-3">
+              <GraduationCap className="w-10 h-10" /> Senior Connect
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-4">
               Real advice. No filters. Meet seniors who've lived through it.
@@ -143,7 +146,7 @@ const SeniorConnect = () => {
             
             <div className="relative mb-12">
               <div className="w-64 h-64 mx-auto bg-gradient-to-br from-kiit-green-light to-purple-200 rounded-full flex items-center justify-center mb-8">
-                <div className="text-6xl">👥</div>
+                <Users className="w-24 h-24 text-kiit-green-dark" />
               </div>
             </div>
             
@@ -162,17 +165,19 @@ const SeniorConnect = () => {
       <section className="py-16 px-4 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-kiit-green mb-4">🚀 More Learning Resources</h2>
+            <h2 className="text-3xl font-bold text-kiit-green mb-4 flex justify-center items-center gap-2">
+              <Sparkles className="w-7 h-7" /> More Learning Resources
+            </h2>
             <p className="text-gray-600">Enhance your skills and access study materials</p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
             <Card className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green cursor-pointer">
               <CardHeader className="text-center pb-4">
-                <div className="p-3 rounded-2xl bg-gradient-to-r from-campus-blue to-campus-purple w-fit mx-auto mb-3">
+                {/* <div className="p-3 rounded-2xl bg-gradient-to-r from-campus-blue to-campus-purple w-fit mx-auto mb-3">
                   <Lightbulb className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl mb-2">🛠️</div>
+                </div> */}
+                <Wrench className="w-8 h-8 mx-auto mb-2 text-kiit-green-dark" />
                 <CardTitle className="text-lg">Skill-Enhancing Sessions</CardTitle>
               </CardHeader>
               <CardContent>
@@ -185,7 +190,7 @@ const SeniorConnect = () => {
                     variant="ghost" 
                     size="sm" 
                     className="opacity-0 group-hover:opacity-100 transition-all duration-300"
-                    onClick={() => alert("🚀 Coming Soon! Skill sessions are under development.")}
+                    onClick={() => navigate('/skill-enhancing-sessions')}
                   >
                     Explore Sessions
                     <ArrowRight width={16} height={16} className="ml-1" />
@@ -196,10 +201,17 @@ const SeniorConnect = () => {
 
             <Card className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green cursor-pointer">
               <CardHeader className="text-center pb-4">
+
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-kiit-green to-campus-blue w-fit mx-auto mb-3">
                   <BookOpen width={24} height={24} className="text-white" />
                 </div>
                 <div className="text-3xl mb-2">📚</div>
+
+                {/* <div className="p-3 rounded-2xl bg-gradient-to-r from-kiit-green to-campus-blue w-fit mx-auto mb-3">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div> */}
+                <BookMarked className="w-8 h-8 mx-auto mb-2 text-kiit-green-dark" />
+
                 <CardTitle className="text-lg">Study Materials by Seniors</CardTitle>
               </CardHeader>
               <CardContent>
@@ -223,6 +235,7 @@ const SeniorConnect = () => {
           </div>
         </div>
       </section>
+
 
       {/* Filter Section */}
       <section id="filter-section" className="py-16 px-4 bg-gradient-to-br from-kiit-green-soft to-white">
@@ -437,13 +450,16 @@ const SeniorConnect = () => {
         </section>
       )}
 
+
+
       {/* Emotional Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-purple-100 to-pink-100">
         <div className="container mx-auto text-center">
           <div className="max-w-3xl mx-auto">
             <Heart className="w-12 h-12 mx-auto mb-6 text-red-400" />
-            <blockquote className="text-xl md:text-2xl italic text-gray-700 mb-6">
-              "I was totally lost in my first semester. One chat with my senior helped me feel like I belong here."
+            <blockquote className="text-xl md:text-2xl italic text-gray-700 mb-6 flex items-center gap-2 justify-center">
+              <Quote className="w-6 h-6 text-gray-500" />
+              I was totally lost in my first semester. One chat with my senior helped me feel like I belong here.
             </blockquote>
             <p className="text-gray-600 mb-8">— 2nd Year CSE Student</p>
             
@@ -466,65 +482,7 @@ const SeniorConnect = () => {
           </div>
         </div>
       </section>
-
-      {/* FAQs */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-center text-kiit-green mb-12">🙋 Frequently Asked Questions</h2>
-          
-          <div className="space-y-6">
-            {[
-              {
-                q: "Is this safe?",
-                a: "Yes. Only verified seniors with KIIT IDs are allowed on our platform."
-              },
-              {
-                q: "Can I stay anonymous?",
-                a: "You don't have to share your name in chat unless you're comfortable."
-              },
-              {
-                q: "What if my senior doesn't respond?",
-                a: "We'll reassign you to someone else within 24 hours, guaranteed."
-              },
-              {
-                q: "Can I become a senior mentor?",
-                a: "Yes! If you're 3rd year or above, scroll below and click 'Become a Mentor'."
-              }
-            ].map((faq, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-2">Q: {faq.q}</h3>
-                  <p className="text-gray-600">→ A: {faq.a}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Become a Mentor */}
-      <section className="py-16 px-4 bg-gradient-to-br from-kiit-green-soft to-purple-100">
-        <div className="container mx-auto text-center">
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold text-kiit-green mb-6">🧑‍🏫 Help juniors like someone helped you</h2>
-            <p className="text-gray-600 mb-8">
-              If you're a 3rd year or above, apply to mentor juniors and get paid ₹15–₹20 per session.
-            </p>
-            <Button className="bg-kiit-green hover:bg-kiit-green-dark text-white px-8 py-3 text-lg">
-              Apply to Mentor
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Sticky WhatsApp Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button className="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg animate-pulse">
-          <MessageSquare className="w-6 h-6" />
-          <span className="ml-2 hidden md:inline">Need Help? Chat with us!</span>
-        </Button>
-      </div>
-
+    
       <Footer />
     </div>
   );
