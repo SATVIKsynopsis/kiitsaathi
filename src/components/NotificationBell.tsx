@@ -1,30 +1,35 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 const upcomingEvents = [
   {
     id: 1,
     title: "Automatrix2.0 Agentic AI Workshop",
     date: "This Saturday, 16 Aug",
     time: "10:00 AM",
+    section:"usc"
   },
   {
     id: 2,
     title: "Fed Hackathon",
     date: "Saturday",
     time: "10:00 AM",
+    section:"fedkiit"
   },
   {
     id: 3,
     title: "Cultural Night - Music & Dance",
     date: "Sunday, 17 Aug",
     time: "6:00 PM",
+    section:"korus"
   },
   {
     id: 4,
     title: "Career Fair 2024",
     date: "Monday, 18 Aug",
     time: "9:00 AM",
+    section: "fedkiit"
   }
 ];
 
@@ -57,6 +62,7 @@ export const NotificationBell = () => {
   const [showEvents, setshowEvents] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const {user} = useAuth();
+  const navigate = useNavigate();
   useUnlockAudio(audioRef);
 
 
@@ -128,9 +134,9 @@ export const NotificationBell = () => {
 
     // Initial event shows for 4s, then cycles every 5s (4s visible + 0.5s fade out + 0.5s fade in)
     const timer = setTimeout(() => {
-      const interval = setInterval(cycleEvents, 2000);
+      const interval = setInterval(cycleEvents, 3000);
       return () => clearInterval(interval);
-    }, 2000); // First event shows for 4 seconds
+    }, 3000); // First event shows for 4 seconds
 
     return () => clearTimeout(timer);
   }, [showEvents, hasLanded, shouldShow, currentEventIndex]);
@@ -166,7 +172,7 @@ export const NotificationBell = () => {
 
         {/* Event Text - Mobile responsive positioning */}
         {hasLanded && showEvents &&  (
-          <div 
+          <div onClick={()=> navigate(`/kiit-societies#${currentEvent.section}`)}
             className={`
               absolute sm:top-0 sm:right-20 top-16 right-0 
               max-w-xs sm:max-w-sm md:max-w-md
