@@ -1,3 +1,26 @@
+// Check if user has paid for contact unlock for a specific item
+app.get('/has-paid-contact', async (req, res) => {
+  const { user_id, item_id, item_title } = req.query;
+  if (!user_id || !item_id || !item_title) {
+    return res.status(400).json({ error: 'Missing user_id, item_id, or item_title' });
+  }
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', user_id)
+      .eq('service_name', 'LostAndFound')
+      .eq('subservice_name', item_title)
+      .eq('payment_status', 'success');
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+    // If any successful payment found, return true
+    return res.json({ paid: data && data.length > 0 });
+  } catch (err) {
+    return res.status(500).json({ error: 'Unexpected server error', details: err });
+  }
+});
 
 import dotenv from 'dotenv';
 dotenv.config();
