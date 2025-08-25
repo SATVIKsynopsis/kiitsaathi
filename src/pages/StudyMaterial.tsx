@@ -1,5 +1,3 @@
-import ConfirmationDashboard from '../components/ConfirmationDashboard';
-import PaymentComponent from '../components/PaymentComponent';
 import { useState } from "react";
 import { 
   BookOpen, 
@@ -7,17 +5,18 @@ import {
   Youtube, 
   MessageSquare, 
   Search, 
-  Filter,
   Plus,
-  Download,
   Eye,
   Star,
   Clock,
   Users,
   ChevronRight,
-  X
+  X,
+  ArrowLeft
 } from "lucide-react";
-import {Footer} from "../components/Footer";
+import { Footer } from "../components/Footer";
+import ConfirmationDashboard from '../components/ConfirmationDashboard';
+import PaymentComponent from '../components/PaymentComponent';
 
 // Mock data for demonstration
 const studyMaterials = {
@@ -179,107 +178,6 @@ const studyMaterials = {
   ]
 };
 
-// Extract subjects and semesters from semesterSubjects
-const semesterSubjects = {
-  "1st": [
-    { code: "PH10001", name: "Physics" },
-    { code: "MA10001", name: "Differential Equations & Linear Algebra" },
-    { code: "LS10001", name: "Science of Living Systems" },
-    { code: "CH10003", name: "Environmental Science" },
-    { code: "EI10001", name: "Elements of Machine Learning" },
-    { code: "ME10001", name: "Engineering Mechanics" },
-    { code: "EC10003", name: "Biomedical Engineering" },
-    { code: "EI10003", name: "Basic Instrumentation" },
-    { code: "CH10005", name: "Nanoscience" },
-    { code: "PH10005", name: "Smart Materials" },
-    { code: "LS10003", name: "Molecular Diagnostics" },
-    { code: "PE10002", name: "Science of Public Health" },
-    { code: "MA10003", name: "Optimization Techniques" }
-  ],
-  "2nd": [
-    { code: "CH10001", name: "Chemistry" },
-    { code: "MA11002", name: "Transform Calculus & Numerical Analysis" },
-    { code: "HS10001", name: "English" },
-    { code: "EC10001", name: "Basic Electronics" },
-    { code: "CE10001", name: "Basic Civil Engineering" },
-    { code: "ME10003", name: "Basic Mechanical Engineering" },
-    { code: "EE10002", name: "Basic Electrical Engineering" },
-    { code: "HS10013", name: "Society, Science, and Technology" },
-    { code: "HS10202", name: "Essential of Management" },
-    { code: "HS10212", name: "Shades of Economics" },
-    { code: "HS10123", name: "India Economy Post Liberalisation" },
-    { code: "SO10043", name: "Socio-Political Environment" },
-    { code: "PS10043", name: "Thinking Perspectives" },
-    { code: "PS10045", name: "Creativity, Innovation and Entrepreneurship" },
-    { code: "EX17001", name: "Community/Environment-based Project" }
-  ],
-  "3rd": [
-    { code: "EX20003", name: "Scientific and Technical Writing" },
-    { code: "MA21001", name: "Probability and Statistics" },
-    { code: "EX20001", name: "Industry 4.0 Technologies 2" },
-    { code: "CS21001", name: "Data Structures" },
-    { code: "EC20005", name: "Digital Systems Design" },
-    { code: "CS21003", name: "Automata Theory and Formal Languages" },
-    { code: "HS20202", name: "Organizational Behavior" },
-    { code: "HS20120", name: "Economics of Development" },
-    { code: "HS20122", name: "International Economic Cooperation" }
-  ],
-  "4th": [
-    { code: "EX20003", name: "Scientific and Technical Writing" },
-    { code: "MA21002", name: "Discrete Structures" },
-    { code: "CS20002", name: "Operating Systems" },
-    { code: "CS20004", name: "Object Oriented Programming in JAVA" },
-    { code: "CS20006", name: "Database Management Systems" },
-    { code: "CS21002", name: "Computer Organization and Architecture" },
-    { code: "HS20202", name: "Organizational Behavior" },
-    { code: "HS20120", name: "Economics of Development" },
-    { code: "HS20122", name: "International Economic Cooperation" }
-  ],
-  "5th": [
-    { code: "CS31001", name: "Software Engineering" },
-    { code: "CS30003", name: "Computer Networks" },
-    { code: "CS30001", name: "Design & Analysis of Algorithms" },
-    { code: "HS30011", name: "Engineering Economics & Costing" },
-    { code: "CS30009", name: "Distributed Operating Systems" },
-    { code: "CS30011", name: "Computational Intelligence" },
-    { code: "CS30005", name: "High Performance Computing" },
-    { code: "EC30007", name: "ARM and Advanced Microprocessors" },
-    { code: "CS30007", name: "Multi-Core Programming" },
-    { code: "CM30006", name: "Compiler" },
-    { code: "CS30013", name: "Data Mining and Data Warehousing" },
-    { code: "CS30015", name: "Image Processing and Applications" }
-  ],
-  "6th": [
-    { code: "CS31002", name: "Machine Learning" },
-    { code: "CS30002", name: "Artificial Intelligence" },
-    { code: "HS30401", name: "Universal Human Values" },
-    { code: "CS30010", name: "Cloud Computing" },
-    { code: "CS30026", name: "Computer Vision" },
-    { code: "CS30012", name: "Software Project Management" },
-    { code: "CS30014", name: "Time Series Forecasting" },
-    { code: "CS30016", name: "Natural Language Processing" }
-  ],
-  "7th": [
-    { code: "EX40003", name: "Engineering Professional Practice" },
-    { code: "CS40001", name: "Deep Learning Techniques" },
-    { code: "CS40003", name: "Software Testing and Automation" },
-    { code: "CS40005", name: "Human Computer Interaction" },
-    { code: "CS40007", name: "Computer Graphics and Multimedia Systems" },
-    { code: "CS40009", name: "Principles of Cryptography" }
-  ],
-  "8th": [
-    { code: "CS40002", name: "Nature Inspired Computing" },
-    { code: "CS40004", name: "IOT and Applications" },
-    { code: "CS40006", name: "Agile Software Development" },
-    { code: "CS40008", name: "Social Network Analysis" },
-    { code: "CS40010", name: "Augmented and Virtual Reality" }
-  ]
-};
-
-// Extract unique subjects from all semesters
-const subjects = [...new Set(Object.values(semesterSubjects).flat().map(subject => subject.name))];
-const semesters = Object.keys(semesterSubjects);
-
 export default function StudyMaterial() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
@@ -288,25 +186,17 @@ export default function StudyMaterial() {
   const [selectedPdf, setSelectedPdf] = useState(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
-
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
+  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
 
   const subjects = ["DSD", "M3", "Basic Electronics", "OOPS", "COA", "DBMS"];
   const semesters = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
-  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
-  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
-
-
   const handleResourceRequest = () => {
-  // Assume paid resource request is ₹10
-  setRequestDialogOpen(false);
-  // Render PaymentComponent for payment
-  <PaymentComponent amount={10} user_id={"user_id_placeholder"} service_name="StudyMaterial" subservice_name="Resource" payment_method="card" />;
-
-  const handleResourceRequest = () => {
-    alert("Resource request submitted! We'll notify you when it's available.");
+    // Assume paid resource request is ₹10
     setRequestDialogOpen(false);
-
+    setPurchasedService({ name: "Study Material Resource Request", amount: 10 });
+    setShowPaymentConfirmation(true);
   };
 
   const handleAddResource = () => {
@@ -314,7 +204,7 @@ export default function StudyMaterial() {
     setAddResourceDialogOpen(false);
   };
 
-  const openSecurePdfViewer = (pdfUrl) => {
+  const openSecurePdfViewer = (pdfUrl: string) => {
     setSelectedPdf(pdfUrl);
   };
 
@@ -343,19 +233,15 @@ export default function StudyMaterial() {
       />
     );
   }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-
-            <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-kiit-green-dark mb-4">
-              <BookOpen width={16} height={16} />
-
             <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <BookOpen className="w-4 h-4" />
-
               Study Resources by Seniors
             </div>
             
@@ -495,17 +381,10 @@ export default function StudyMaterial() {
                   <div className="flex items-start justify-between mb-3">
                     <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">
                       {note.subject} • {note.semester} Sem
-
-                    </Badge>
-                    <div className="flex items-center gap-1 text-amber-500">
-                      <Star width={12} height={12} className="fill-current" />
-                      <span className="text-xs">{note.rating}</span>
-
                     </span>
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 text-yellow-500 fill-current" />
                       <span className="text-xs text-gray-500">{note.rating}</span>
-
                     </div>
                   </div>
                   
@@ -515,21 +394,16 @@ export default function StudyMaterial() {
                   
                   <div className="space-y-2 text-sm text-gray-500 mb-4">
                     <div className="flex items-center gap-2">
-                      <Users width={12} height={12} />
+                      <Users className="w-3 h-3" />
                       <span>By {note.uploadedBy}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-3 h-3" />
-                      <span>{new Date(note.uploadDate).toLocaleDateString()}</span>
+                      <span>{note.uploadDate}</span>
                     </div>
                     <div className="flex items-center gap-2">
-
-                      <Clock width={12} height={12} />
-                      <span>{note.uploadDate}</span>
-
                       <Eye className="w-3 h-3" />
                       <span>{note.views} views</span>
-
                     </div>
                   </div>
                   
@@ -541,7 +415,6 @@ export default function StudyMaterial() {
                       <Eye className="w-4 h-4" />
                       View Notes
                     </button>
-                    
                   </div>
                 </div>
               </div>
@@ -570,7 +443,7 @@ export default function StudyMaterial() {
                   
                   <div className="space-y-2 text-sm text-gray-500 mb-4">
                     <div className="flex items-center gap-2">
-                      <Users width={12} height={12} />
+                      <Users className="w-3 h-3" />
                       <span>By {pyq.uploadedBy}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -728,23 +601,6 @@ export default function StudyMaterial() {
           </div>
         )}
 
-
-        <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg" className="shadow-lg bg-white">
-              <BookOpen width={20} height={20} className="mr-2" />
-              Add Resource
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Share a Study Resource</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Resource Title</Label>
-                <Input placeholder="e.g., Complete DSD Notes" />
-
         {/* Add Resource Dialog */}
         {addResourceDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -754,7 +610,6 @@ export default function StudyMaterial() {
                 <button onClick={() => setAddResourceDialogOpen(false)}>
                   <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                 </button>
-
               </div>
               <div className="space-y-4">
                 <div>
@@ -830,7 +685,7 @@ export default function StudyMaterial() {
           </div>
         )}
       </div>
-    <Footer/>
+      <Footer/>
     </div>
   );
 }
