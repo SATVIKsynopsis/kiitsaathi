@@ -1,0 +1,188 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { useToast } from '@/hooks/use-toast';
+
+export interface OrderItem {
+  itemName: string;
+  quantity: number;
+  mrp: number;
+}
+
+export interface FoodOrder {
+  id?: number;
+  customer_name: string;
+  phone_number: string;
+  delivery_location: string;
+  special_notes?: string;
+  items: OrderItem[];
+  total_mrp: number;
+  delivery_charge_percent: number;
+  total_payable: number;
+  status: 'pending' | 'accepted' | 'delivered';
+  created_at?: string;
+  updated_at?: string;
+  customer_id?: string;
+  helper_id?: string;
+}
+
+export function useFoodOrders() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<FoodOrder[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchOrders = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createOrder = async (orderData: Omit<FoodOrder, 'id' | 'status' | 'created_at' | 'updated_at' | 'customer_id' | 'helper_id'>) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create an order",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .insert([{
+          ...orderData,
+          customer_id: user.id,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Order Created",
+        description: "Your order has been submitted successfully!",
+      });
+
+      await fetchOrders();
+      return true;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create order. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const acceptOrder = async (orderId: number) => {
+    if (!user) return false;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          status: 'accepted',
+          helper_id: user.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      toast({
+        title: "Order Accepted",
+        description: "You have successfully accepted this order!",
+      });
+
+      await fetchOrders();
+      return true;
+    } catch (error) {
+      console.error('Error accepting order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept order. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deliverOrder = async (orderId: number) => {
+    if (!user) return false;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          status: 'delivered',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId)
+        .eq('helper_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Order Delivered",
+        description: "Order has been marked as delivered!",
+      });
+
+      await fetchOrders();
+      return true;
+    } catch (error) {
+      console.error('Error delivering order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to mark order as delivered. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [user]);
+
+  return {
+    orders,
+    loading,
+    createOrder,
+    acceptOrder,
+    deliverOrder,
+    fetchOrders
+  };
+}
