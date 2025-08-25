@@ -73,6 +73,7 @@ app.post('/verify-payment', async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, user_id, amount, service_name, subservice_name, payment_method } = req.body;
 
   try {
+    // Insert order
     const { data, error } = await supabase
       .from('orders')
       .insert([
@@ -90,6 +91,48 @@ app.post('/verify-payment', async (req, res) => {
     if (error) {
       console.error('Supabase insert error:', error);
       return res.status(500).json({ error: error.message, details: error });
+    }
+
+    // If LostAndFound, send contact details to user's email
+    if (service_name === 'LostAndFound') {
+      // 1. Get user email from Supabase users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', user_id)
+        .single();
+      if (userError || !userData?.email) {
+        console.error('User email fetch error:', userError);
+      } else {
+        // 2. Get contact details for the item
+        const { data: itemData, error: itemError } = await supabase
+          .from('lost_found')
+          .select('contact_name, contact_email, contact_phone, title')
+          .eq('title', subservice_name)
+          .single();
+        if (itemError || !itemData) {
+          console.error('LostFound item fetch error:', itemError);
+        } else {
+          // 3. Send email using Resend API
+          try {
+            const Resend = require('resend');
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            await resend.emails.send({
+              from: 'KIIT Saathi <onboarding@resend.dev>',
+              to: [userData.email],
+              subject: `Contact Details for ${itemData.title}`,
+              html: `<h2>Contact Details for ${itemData.title}</h2>
+                <p><strong>Name:</strong> ${itemData.contact_name}</p>
+                <p><strong>Email:</strong> ${itemData.contact_email}</p>
+                <p><strong>Phone:</strong> ${itemData.contact_phone}</p>
+                <p>Thank you for using KIIT Saathi Lost & Found!</p>`
+            });
+            console.log('Contact details sent to', userData.email);
+          } catch (emailErr) {
+            console.error('Error sending contact email:', emailErr);
+          }
+        }
+      }
     }
 
     console.log('Order insert response:', data);

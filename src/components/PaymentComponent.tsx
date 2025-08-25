@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface PaymentComponentProps {
@@ -7,9 +7,10 @@ interface PaymentComponentProps {
   service_name: string;
   subservice_name?: string;
   payment_method: string;
+  autoOpen?: boolean;
 }
 
-const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, service_name, subservice_name, payment_method }) => {
+const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, service_name, subservice_name, payment_method, autoOpen = false }) => {
   const navigate = useNavigate();
   const handlePay = async () => {
     // 1. Create order
@@ -70,7 +71,13 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, se
     rzp.open();
   };
 
-  return <button onClick={handlePay}>Pay Now</button>;
+  useEffect(() => {
+    if (autoOpen) {
+      handlePay();
+    }
+  }, [autoOpen]);
+
+  return !autoOpen ? <button onClick={handlePay}>Pay Now</button> : null;
 };
 
 export default PaymentComponent;

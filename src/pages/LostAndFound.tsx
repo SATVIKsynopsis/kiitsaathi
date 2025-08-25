@@ -293,7 +293,7 @@ export default function LostAndFound() {
         if (result.paid) {
           setPaidItemId(item.id);
           setPaidItems(prev => ({...prev, [item.id]: true}));
-          toast({ title: "Contact Information Unlocked!", description: "You can now view the contact details." });
+          toast({ title: "Contact Details Sent!", description: "Contact details have been sent to your registered email address." });
           return;
         }
       } catch (err) { /* ignore */ }
@@ -615,6 +615,7 @@ export default function LostAndFound() {
               service_name="LostAndFound"
               subservice_name={showPayment.item.title}
               payment_method="card"
+              autoOpen={true}
             />
             <Button className="mt-4 w-full" variant="outline" onClick={() => setShowPayment({item: null, open: false})}>Cancel</Button>
             <Button className="mt-2 w-full bg-green-600 text-white" onClick={handlePaymentSuccess}>Simulate Payment Success</Button>
