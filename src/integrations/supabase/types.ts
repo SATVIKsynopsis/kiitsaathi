@@ -900,6 +900,57 @@ export type Database = {
           },
         ]
       }
+      food_orders: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          customer_name: string
+          delivery_charge_percent: number
+          delivery_location: string
+          helper_id: string | null
+          id: number
+          items: Json
+          phone_number: string
+          special_notes: string | null
+          status: string
+          total_mrp: number
+          total_payable: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          customer_name: string
+          delivery_charge_percent?: number
+          delivery_location: string
+          helper_id?: string | null
+          id?: number
+          items: Json
+          phone_number: string
+          special_notes?: string | null
+          status?: string
+          total_mrp: number
+          total_payable: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string
+          delivery_charge_percent?: number
+          delivery_location?: string
+          helper_id?: string | null
+          id?: number
+          items?: Json
+          phone_number?: string
+          special_notes?: string | null
+          status?: string
+          total_mrp?: number
+          total_payable?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           created_at: string

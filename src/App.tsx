@@ -30,6 +30,8 @@ import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
 import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
 import FestAnnouncements from "./pages/FestAnnouncements";
 import SportsEventsHub from "./pages/SportsEventsHub";
+import FoodOrderCustomer from "./pages/FoodOrderCustomer";
+import FoodOrderHelper from "./pages/FoodOrderHelper";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
@@ -63,9 +65,11 @@ const App = () => (
           <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
           <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
           <Route path="/fest-announcements" element={<FestAnnouncements />} />
-          <Route path="/sports-events-hub" element={<SportsEventsHub />} />
-          <Route path="/order-history" element={<OrderHistory />} />
-          <Route path="/auth" element={<Auth />} />
+           <Route path="/sports-events-hub" element={<SportsEventsHub />} />
+           <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
+           <Route path="/food-order-helper" element={<FoodOrderHelper />} />
+           <Route path="/order-history" element={<OrderHistory />} />
+           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/chatbot" element={<ChatBotPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

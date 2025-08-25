@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
 
 export interface OrderItem {
   itemName: string;
@@ -26,11 +27,21 @@ export interface FoodOrder {
   helper_id?: string;
 }
 
+type FoodOrderRow = Database['public']['Tables']['food_orders']['Row'];
+
 export function useFoodOrders() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [orders, setOrders] = useState<FoodOrder[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const convertRowToFoodOrder = (row: FoodOrderRow): FoodOrder => ({
+    ...row,
+    items: Array.isArray(row.items) ? (row.items as unknown as OrderItem[]) : [],
+    status: row.status as 'pending' | 'accepted' | 'delivered',
+    customer_id: row.customer_id || undefined,
+    helper_id: row.helper_id || undefined,
+  });
 
   const fetchOrders = async () => {
     if (!user) return;
@@ -38,12 +49,12 @@ export function useFoodOrders() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('orders')
+        .from('food_orders')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders((data || []).map(convertRowToFoodOrder));
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -69,12 +80,13 @@ export function useFoodOrders() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('orders')
-        .insert([{
+        .from('food_orders')
+        .insert({
           ...orderData,
           customer_id: user.id,
-          status: 'pending'
-        }])
+          status: 'pending',
+          items: orderData.items as any
+        })
         .select()
         .single();
 
@@ -106,7 +118,7 @@ export function useFoodOrders() {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('orders')
+        .from('food_orders')
         .update({
           status: 'accepted',
           helper_id: user.id,
@@ -143,7 +155,7 @@ export function useFoodOrders() {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('orders')
+        .from('food_orders')
         .update({
           status: 'delivered',
           updated_at: new Date().toISOString()
