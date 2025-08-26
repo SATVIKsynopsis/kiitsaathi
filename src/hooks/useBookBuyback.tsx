@@ -145,11 +145,11 @@ export function useBookBuyback() {
         upi_id: formData.upiId,
         terms_accepted: formData.termsAccepted,
         
-        // Required fields derived from book selection
+        // Required fields derived from book selection and form
         book_titles: bookTitles,
         book_condition: bookConditions,
-        branch: 'Not Specified', // TODO: Add branch field to form
-        year_of_study: 'Not Specified', // TODO: Add year field to form
+        branch: formData.branch,
+        year_of_study: formData.yearOfStudy,
         
         // Book data
         semester: selectedSemester,
