@@ -37,6 +37,7 @@ import { DatabaseErrorFallback } from "@/components/DatabaseErrorFallback";
 import { supabase } from "@/integrations/supabase/client";
 import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
 import { useAuth } from "@/hooks/useAuth";
+import PaymentComponent from "../components/PaymentComponent";
 
 interface LostFoundItem {
   id: string;
@@ -158,6 +159,9 @@ export default function LostAndFound() {
   }, [items, searchTerm, selectedCategory, selectedType, activeTab]);
 
   // Handle image selection
+    const [showPayment, setShowPayment] = useState<{item: LostFoundItem | null, open: boolean}>({item: null, open: false});
+    const [paidItemId, setPaidItemId] = useState<string | null>(null);
+    const [paidItems, setPaidItems] = useState<{[id: string]: boolean}>({});
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -280,11 +284,41 @@ export default function LostAndFound() {
     }
   };
 
-  const handleContactClick = (item: LostFoundItem) => {
-    toast({
-      title: "Contact Information",
-      description: `Name: ${item.contact_name}\nEmail: ${item.contact_email}\nPhone: ${item.contact_phone}`,
-    });
+  const handleContactClick = async (item: LostFoundItem) => {
+    // Check backend if already paid
+    if (user?.id) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${item.id}&item_title=${encodeURIComponent(item.title)}`);
+        const result = await res.json();
+        if (result.paid) {
+          setPaidItemId(item.id);
+          setPaidItems(prev => ({...prev, [item.id]: true}));
+          toast({ title: "Contact Details Sent!", description: "Contact details have been sent to your registered email address." });
+          return;
+        }
+      } catch (err) { /* ignore */ }
+    }
+    setShowPayment({item, open: true});
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (showPayment.item && user?.id) {
+      // After payment, mark as paid in frontend and check backend for confirmation
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${showPayment.item.id}&item_title=${encodeURIComponent(showPayment.item.title)}`);
+        const result = await res.json();
+        if (result.paid) {
+          setPaidItemId(showPayment.item.id);
+          setPaidItems(prev => ({...prev, [showPayment.item.id]: true}));
+          setShowPayment({item: null, open: false});
+          toast({ title: "Contact Information Unlocked!", description: "You can now view the contact details." });
+        } else {
+          toast({ title: "Payment not verified", description: "Please contact support if you have paid." });
+        }
+      } catch (err) {
+        toast({ title: "Error", description: "Could not verify payment." });
+      }
+    }
   };
 
   const removeImage = () => {
@@ -543,13 +577,22 @@ export default function LostAndFound() {
                           </div>
                         </div>
                         
-                        <Button 
-                          className="w-full"
-                          onClick={() => handleContactClick(item)}
-                        >
-                          <Phone className="w-4 h-4 mr-2" />
-                          Contact {item.contact_name}
-                        </Button>
+                        {paidItemId === item.id || paidItems[item.id] ? (
+                          <div className="mt-2 p-2 border rounded bg-muted">
+                            <div className="font-semibold">Contact Details:</div>
+                            <div>Name: {item.contact_name}</div>
+                            <div>Email: {item.contact_email}</div>
+                            <div>Phone: {item.contact_phone}</div>
+                          </div>
+                        ) : (
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleContactClick(item)}
+                          >
+                            <Phone className="w-4 h-4 mr-2" />
+                            Contact {item.contact_name}
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -560,6 +603,26 @@ export default function LostAndFound() {
         </div>
       </section>
 
+      {/* Payment Dialog for Contact Unlock */}
+      {showPayment.open && showPayment.item && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Unlock Contact Details</h3>
+            <p className="mb-4">Pay ₹50 to view contact details for <span className="font-semibold">{showPayment.item.title}</span>.</p>
+            <PaymentComponent
+              amount={50}
+              user_id={user?.id || ""}
+              service_name="LostAndFound"
+              subservice_name={showPayment.item.title}
+              payment_method="card"
+              autoOpen={true}
+            />
+            <Button className="mt-4 w-full" variant="outline" onClick={() => setShowPayment({item: null, open: false})}>Cancel</Button>
+            <Button className="mt-2 w-full bg-green-600 text-white" onClick={handlePaymentSuccess}>Simulate Payment Success</Button>
+            {/* Replace above with real payment success callback in production */}
+          </div>
+        </div>
+      )}
       {/* Testimonials */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">

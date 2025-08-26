@@ -26,6 +26,7 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        localStorage.setItem('user_id', session.user.id);
         navigate('/');
       }
     };
@@ -42,6 +43,9 @@ export default function Auth() {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (session?.user?.id) {
+          localStorage.setItem('user_id', session.user.id);
+        }
         if (event === 'SIGNED_IN' && session) {
           toast.success('Successfully signed in!');
           navigate('/');
@@ -116,12 +120,16 @@ export default function Auth() {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      if (data?.session?.user?.id) {
+        localStorage.setItem('user_id', data.session.user.id);
+      }
 
       toast.success('Successfully signed in!');
       navigate('/');
@@ -144,7 +152,7 @@ export default function Auth() {
       const { error } = await supabase.auth.resend({ type: 'signup', email });
       if (error) throw error;
       toast.success('Confirmation email resent. Please check your inbox.');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Resend confirmation error:', err);
       toast.error(err.message || 'Failed to resend confirmation email');
     } finally {
@@ -153,9 +161,8 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft via-background to-campus-blue/20">
+    <div>
       <Navbar />
-      
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
           <Button
@@ -230,8 +237,8 @@ export default function Auth() {
                   </CardContent>
 
                   <CardFooter>
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full bg-kiit-green hover:bg-kiit-green-dark"
                       disabled={loading}
                     >
@@ -305,8 +312,8 @@ export default function Auth() {
                   </CardContent>
 
                   <CardFooter>
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full bg-campus-blue hover:bg-campus-blue/80"
                       disabled={loading}
                     >
@@ -322,7 +329,7 @@ export default function Auth() {
                   </CardFooter>
                 </form>
                 <div className="px-6 pb-4 text-sm text-muted-foreground text-center">
-                  Didn’t receive the email?
+                  Didn't receive the email?
                   <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
                     Resend confirmation email
                   </Button>

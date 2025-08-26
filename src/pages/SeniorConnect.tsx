@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import PaymentComponent from "../components/PaymentComponent";
 import { Button } from "@/components/ui/button";
+import ConfirmationDashboard from "../components/ConfirmationDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,16 +43,18 @@ const SeniorConnect = () => {
     mode: "",
     language: ""
   });
-
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
 
-  const filterOptions = {
+  const filterOptions: Record<string, string[]> = {
     area: ["Academics", "Society Prep", "Hostel Life", "Placements", "Mental Health", "Campus Life"],
     branch: ["CSE", "EEE", "Law", "MBBS", "Mechanical", "Civil", "IT"],
     year: ["3rd Year", "4th Year", "Alumni"],
     mode: ["Call", "WhatsApp Chat", "In-Person Meetup"],
     language: ["Hindi", "English", "Odia"]
   };
+
 
   const sampleSeniors = [
     {
@@ -116,7 +120,7 @@ const SeniorConnect = () => {
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft width={16} height={16} />
             Back to Home
           </Button>
         </div>
@@ -151,7 +155,7 @@ const SeniorConnect = () => {
               className="bg-kiit-green hover:bg-kiit-green-dark text-white px-8 py-3 text-lg rounded-full transition-all duration-300 hover:scale-105"
             >
               Find a Senior
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <ArrowRight width={20} height={20} className="ml-2" />
             </Button>
           </div>
         </div>
@@ -189,7 +193,7 @@ const SeniorConnect = () => {
                     onClick={() => navigate('/skill-enhancing-sessions')}
                   >
                     Explore Sessions
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    <ArrowRight width={16} height={16} className="ml-1" />
                   </Button>
                 </div>
               </CardContent>
@@ -197,10 +201,17 @@ const SeniorConnect = () => {
 
             <Card className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green cursor-pointer">
               <CardHeader className="text-center pb-4">
+
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-kiit-green to-campus-blue w-fit mx-auto mb-3">
+                  <BookOpen width={24} height={24} className="text-white" />
+                </div>
+                <div className="text-3xl mb-2">📚</div>
+
                 {/* <div className="p-3 rounded-2xl bg-gradient-to-r from-kiit-green to-campus-blue w-fit mx-auto mb-3">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div> */}
                 <BookMarked className="w-8 h-8 mx-auto mb-2 text-kiit-green-dark" />
+
                 <CardTitle className="text-lg">Study Materials by Seniors</CardTitle>
               </CardHeader>
               <CardContent>
@@ -216,7 +227,7 @@ const SeniorConnect = () => {
                     onClick={() => navigate('/study-material')}
                   >
                     View Materials
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    <ArrowRight width={16} height={16} className="ml-1" />
                   </Button>
                 </div>
               </CardContent>
@@ -224,6 +235,222 @@ const SeniorConnect = () => {
           </div>
         </div>
       </section>
+
+
+      {/* Filter Section */}
+      <section id="filter-section" className="py-16 px-4 bg-gradient-to-br from-kiit-green-soft to-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-kiit-green mb-4">🔍 Find Your Perfect Senior</h2>
+            <p className="text-gray-600">Filter by what you need help with</p>
+          </div>
+          
+          <div className="grid md:grid-cols-5 gap-4 mb-8">
+            {Object.entries(filterOptions).map(([key, options]) => (
+              <div key={key} className="space-y-2">
+                <Label className="text-sm font-medium capitalize">{key === "area" ? "Area of Help" : key}</Label>
+                <select 
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={selectedFilters[key as keyof typeof selectedFilters]}
+                  onChange={(e) => setSelectedFilters(prev => ({ ...prev, [key]: e.target.value }))}
+                >
+                  <option value="">Any</option>
+                  {options.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+          
+          {/* Senior Profiles */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {sampleSeniors.map((senior) => (
+              <Card key={senior.id} className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-kiit-green to-purple-400 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-bold text-xl">
+                    {senior.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <CardTitle className="text-lg">{senior.name}</CardTitle>
+                  <p className="text-sm text-gray-600">{senior.branch} • {senior.year}</p>
+                  <div className="flex items-center justify-center gap-1 text-yellow-500">
+                    <Star width={16} height={16} className="fill-current" />
+                    <span className="text-sm">{senior.rating} ({senior.sessions} sessions)</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-4">{senior.specialization}</p>
+                  
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {senior.modes.map(mode => (
+                      <Badge key={mode} variant="secondary" className="text-xs">
+                        {mode}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
+                    <Clock width={16} height={16} />
+                    {senior.availability}
+                  </div>
+                  
+                  <Button 
+                    onClick={scrollToBooking}
+                    className="w-full bg-kiit-green hover:bg-kiit-green-dark text-white"
+                  >
+                    Connect Now
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-kiit-green mb-12">🤝 How It Works</h2>
+          
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { icon: Filter, title: "Choose a Topic", desc: "Select a senior you vibe with based on your needs" },
+              { icon: MessageCircle, title: "Pick Communication Mode", desc: "Call, chat, or meet in person - your choice" },
+              { icon: Calendar, title: "Get Scheduled", desc: "Instant chat or scheduled slot based on availability" },
+              { icon: Sparkles, title: "Talk & Learn", desc: "Get real advice and repeat when needed" }
+            ].map((step, index) => (
+              <div key={index} className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-kiit-green to-purple-400 rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <step.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-semibold mb-2">{step.title}</h3>
+                <p className="text-sm text-gray-600">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+          
+          <p className="text-center text-sm text-gray-600 mt-8 max-w-2xl mx-auto">
+            Our seniors are volunteers or verified helpers from KIIT, not strangers
+          </p>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-16 px-4 bg-white/80 backdrop-blur-sm">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-kiit-green mb-12">💰 Simple Pricing</h2>
+          <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {[{
+              title: "First Session", price: "Free", desc: "Try it out risk-free", amount: 0 },
+              { title: "15-min Voice Call", price: "₹20", desc: "Quick doubts solved", amount: 20 },
+              { title: "In-Person 1-on-1", price: "₹30", desc: "Face-to-face guidance", amount: 30 },
+              { title: "Mentorship Package", price: "₹60", desc: "3 calls included", amount: 60 }
+            ].map((plan, index) => (
+              <Card key={index} className={`text-center ${index === 3 ? 'border-kiit-green border-2' : ''}`}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{plan.title}</CardTitle>
+                  <div className="text-2xl font-bold text-kiit-green">{plan.price}</div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600">{plan.desc}</p>
+                  {plan.amount > 0 ? (
+                    <PaymentComponent amount={plan.amount} user_id={"user_id_placeholder"} service_name="SeniorConnect" subservice_name={plan.name} payment_method="card" />
+                  ) : (
+                    <span className="mt-4 inline-block text-green-600 font-semibold">Free</span>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <PaymentComponent amount={60} user_id={"user_id_placeholder"} service_name="SeniorConnect" subservice_name="Session" payment_method="card" />
+            <p className="text-xs text-gray-500 mt-2">We pay seniors a token amount per session from this.</p>
+          </div>
+        </div>
+      </section>
+      {/* Confirmation Dashboard Popup */}
+      {showConfirmation && purchasedService && (
+        <ConfirmationDashboard
+          serviceName={purchasedService.name}
+          amount={purchasedService.amount}
+          onContinue={() => {
+            setShowConfirmation(false);
+            // Redirect to service or show purchased services
+            // For demo, just close popup
+          }}
+        />
+      )}
+
+      {/* Booking Form */}
+      {showBookingForm && (
+        <section id="booking-form" className="py-16 px-4">
+          <div className="container mx-auto max-w-2xl">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center text-2xl text-kiit-green">📅 Schedule Your Session</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Name</Label>
+                    <Input placeholder="Your full name" />
+                  </div>
+                  <div>
+                    <Label>WhatsApp Number</Label>
+                    <Input placeholder="+91 XXXXX XXXXX" />
+                  </div>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Year & Branch</Label>
+                    <Input placeholder="e.g., 2nd Year CSE" />
+                  </div>
+                  <div>
+                    <Label>Preferred Senior</Label>
+                    <select className="w-full p-2 border border-gray-300 rounded-md">
+                      <option value="">Any available senior</option>
+                      {sampleSeniors.map(senior => (
+                        <option key={senior.id} value={senior.name}>{senior.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label>What do you want help with?</Label>
+                  <Textarea placeholder="Describe your doubts or questions..." />
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Communication Mode</Label>
+                    <select className="w-full p-2 border border-gray-300 rounded-md">
+                      <option value="call">Voice Call</option>
+                      <option value="chat">WhatsApp Chat</option>
+                      <option value="person">In-Person</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Preferred Date/Time</Label>
+                    <Input type="datetime-local" />
+                  </div>
+                </div>
+                
+                <Button className="w-full bg-kiit-green hover:bg-kiit-green-dark text-white">
+                  Request Session
+                </Button>
+                
+                <div className="text-center text-sm text-green-600 mt-4">
+                  ✅ You're booked! A senior will reach out to you soon.
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
+
 
       {/* Emotional Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-purple-100 to-pink-100">

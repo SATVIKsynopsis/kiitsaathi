@@ -28,6 +28,9 @@ interface BookSubmissionRequest {
   pickupLocation?: string;
   termsAccepted?: boolean;
   bookSetNeeded?: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -61,6 +64,31 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Received book request:", requestData);
 
     if (requestData.type === 'sell') {
+      // Razorpay payment verification (for paid requests)
+      let paymentVerified = true;
+      let paymentStatus = 'not-required';
+      let paymentDetails = null;
+      if (requestData.razorpay_payment_id && requestData.razorpay_order_id && requestData.razorpay_signature) {
+        // Verify payment using Razorpay API
+        const crypto = await import('node:crypto');
+        const generated_signature = crypto.createHmac('sha256', Deno.env.get('RAZORPAY_SECRET'))
+          .update(requestData.razorpay_order_id + '|' + requestData.razorpay_payment_id)
+          .digest('hex');
+        paymentVerified = generated_signature === requestData.razorpay_signature;
+        paymentStatus = paymentVerified ? 'success' : 'failed';
+        paymentDetails = {
+          payment_id: requestData.razorpay_payment_id,
+          order_id: requestData.razorpay_order_id,
+          signature: requestData.razorpay_signature,
+          verified: paymentVerified
+        };
+        if (!paymentVerified) {
+          return new Response(JSON.stringify({ error: 'Payment verification failed' }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        }
+      }
       // Handle book selling submission
       const { data, error } = await supabase
         .from('book_submissions')
@@ -76,7 +104,9 @@ const handler = async (req: Request): Promise<Response> => {
           book_condition: requestData.bookCondition,
           photo_urls: requestData.photoUrls,
           pickup_location: requestData.pickupLocation,
-          terms_accepted: requestData.termsAccepted
+          terms_accepted: requestData.termsAccepted,
+          payment_status: paymentStatus,
+          payment_details: paymentDetails
         }])
         .select()
         .single();
@@ -126,6 +156,31 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
     } else if (requestData.type === 'buy') {
+      // Razorpay payment verification (for paid requests)
+      let paymentVerified = true;
+      let paymentStatus = 'not-required';
+      let paymentDetails = null;
+      if (requestData.razorpay_payment_id && requestData.razorpay_order_id && requestData.razorpay_signature) {
+        // Verify payment using Razorpay API
+        const crypto = await import('node:crypto');
+        const generated_signature = crypto.createHmac('sha256', Deno.env.get('RAZORPAY_SECRET'))
+          .update(requestData.razorpay_order_id + '|' + requestData.razorpay_payment_id)
+          .digest('hex');
+        paymentVerified = generated_signature === requestData.razorpay_signature;
+        paymentStatus = paymentVerified ? 'success' : 'failed';
+        paymentDetails = {
+          payment_id: requestData.razorpay_payment_id,
+          order_id: requestData.razorpay_order_id,
+          signature: requestData.razorpay_signature,
+          verified: paymentVerified
+        };
+        if (!paymentVerified) {
+          return new Response(JSON.stringify({ error: 'Payment verification failed' }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        }
+      }
       // Handle book purchase request
       const { data, error } = await supabase
         .from('book_purchase_requests')
@@ -134,7 +189,9 @@ const handler = async (req: Request): Promise<Response> => {
           full_name: requestData.fullName,
           roll_number: requestData.rollNumber,
           contact_number: requestData.contactNumber,
-          book_set_needed: requestData.bookSetNeeded
+          book_set_needed: requestData.bookSetNeeded,
+          payment_status: paymentStatus,
+          payment_details: paymentDetails
         }])
         .select()
         .single();
