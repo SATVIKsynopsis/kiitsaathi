@@ -170,6 +170,11 @@ export default function FoodOrderHelper() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Helper Dashboard</h1>
           <p className="text-muted-foreground">Manage food delivery orders</p>
+          <div className="mt-4">
+            <Button variant="outline" onClick={() => navigate('/food-order-customer')}>
+              Create New Order
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="pending" className="space-y-6">

@@ -117,6 +117,25 @@ export function useFoodOrders() {
 
     setLoading(true);
     try {
+      // Check if order is still pending before accepting
+      const { data: currentOrder, error: fetchError } = await supabase
+        .from('food_orders')
+        .select('status')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (currentOrder.status !== 'pending') {
+        toast({
+          title: "Order Not Available",
+          description: "This order has already been accepted by another helper",
+          variant: "destructive",
+        });
+        await fetchOrders();
+        return false;
+      }
+
       const { error } = await supabase
         .from('food_orders')
         .update({
@@ -187,6 +206,26 @@ export function useFoodOrders() {
 
   useEffect(() => {
     fetchOrders();
+
+    // Set up real-time subscription for order updates
+    const channel = supabase
+      .channel('food-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'food_orders'
+        },
+        () => {
+          fetchOrders(); // Refresh orders when any change occurs
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   return {

@@ -8,10 +8,12 @@ import { Plus, Minus, ShoppingCart, Trash2 } from 'lucide-react';
 import { useFoodOrders, type OrderItem } from '@/hooks/useFoodOrders';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export default function FoodOrderCustomer() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { createOrder, loading } = useFoodOrders();
   
   const [customerName, setCustomerName] = useState('');
@@ -59,13 +61,39 @@ export default function FoodOrderCustomer() {
     }
 
     if (!validatePhoneNumber(phoneNumber)) {
-      alert('Please enter a valid Indian mobile number');
+      toast({
+        title: "Invalid Phone Number",
+        description: "Please enter a valid 10-digit Indian mobile number",
+        variant: "destructive",
+      });
       return;
     }
 
     const validItems = items.filter(item => item.itemName.trim() && item.mrp > 0);
     if (validItems.length === 0) {
-      alert('Please add at least one valid item');
+      toast({
+        title: "No Valid Items",
+        description: "Please add at least one valid item with a name and price",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!customerName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!deliveryLocation.trim()) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter your delivery location",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -116,6 +144,11 @@ export default function FoodOrderCustomer() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Food & Essentials Order</h1>
           <p className="text-muted-foreground">Create your order for delivery to your location</p>
+          <div className="mt-4">
+            <Button variant="outline" onClick={() => navigate('/food-order-helper')}>
+              Switch to Helper Dashboard
+            </Button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
