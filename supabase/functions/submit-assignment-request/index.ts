@@ -25,17 +25,7 @@ interface AssignmentRequest {
   deliveryMethod: string;
   totalPrice: number;
   fileCount: number;
-  razorpay_payment_id?: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
 }
-
-type PaymentDetails = {
-  payment_id: string;
-  order_id: string;
-  signature: string;
-  verified: boolean;
-} | null;
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
@@ -45,26 +35,6 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const requestData: AssignmentRequest = await req.json();
     console.log('Assignment request received:', requestData);
-
-    // Razorpay payment verification (for paid requests)
-  // Payment verification and order creation are now handled by the Node.js backend. Remove old Razorpay logic.
-
-    // Store assignment request with payment info
-    await supabase
-      .from('assignment_requests')
-      .insert({
-        assignment_id: requestData.assignmentId,
-        student_name: requestData.studentName,
-        whatsapp_number: requestData.whatsappNumber,
-        year: requestData.year,
-        branch: requestData.branch,
-        pages: requestData.pages,
-        deadline: requestData.deadline,
-        delivery_method: requestData.deliveryMethod,
-        total_price: requestData.totalPrice,
-        file_count: requestData.fileCount
-        // payment_status and payment_details are now handled by the Node.js backend
-      });
 
     // Send confirmation email to student
     const studentEmailResponse = await resend.emails.send({
