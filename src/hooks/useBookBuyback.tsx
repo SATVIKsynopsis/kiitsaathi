@@ -131,23 +131,52 @@ export function useBookBuyback() {
   const submitSellRequest = async (formData: any) => {
     setIsLoading(true);
     try {
+      // Get book titles and conditions for required fields
+      const bookTitles = selectedBooks.map(book => book.book_name).join(', ');
+      const bookConditions = [...new Set(selectedBooks.map(book => book.condition))].join(', ');
+      
       const submissionData = {
-        ...formData,
+        // Map form fields to database columns
+        full_name: formData.fullName,
+        roll_number: formData.rollNumber,
+        contact_number: formData.contactNumber,
+        email: formData.email,
+        pickup_location: formData.pickupLocation,
+        upi_id: formData.upiId,
+        terms_accepted: formData.termsAccepted,
+        
+        // Required fields derived from book selection
+        book_titles: bookTitles,
+        book_condition: bookConditions,
+        branch: 'Not Specified', // TODO: Add branch field to form
+        year_of_study: 'Not Specified', // TODO: Add year field to form
+        
+        // Book data
         semester: selectedSemester,
-        selected_books: selectedBooks,
+        selected_books: JSON.parse(JSON.stringify(selectedBooks)), // Convert to plain object for JSON storage
         total_estimated_price: getTotalEstimatedPrice(),
         bonus_applicable: isFullSemesterSet(),
         bonus_amount: getBonusAmount(),
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        
+        // User ID
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+        
+        // Default status
+        status: 'pending'
       };
+
+      console.log('Submitting book request:', submissionData);
 
       const { data, error } = await supabase
         .from('book_submissions')
-        .insert([submissionData])
+        .insert(submissionData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insertion error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success! 🎉",
