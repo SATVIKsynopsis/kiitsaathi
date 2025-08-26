@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ConfirmationDashboard from '../components/ConfirmationDashboard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Package, Users, Truck, Clock, CheckCircle, MessageCircle, Phone, Star, Box } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import PaymentComponent from '../components/PaymentComponent';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
@@ -50,9 +48,6 @@ const CartonTransfer = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
-  const [purchasedService, setPurchasedService] = useState<{ name: string; amount: number } | null>(null);
-
 
   // KIIT hostels list
   const hostels = [
@@ -160,27 +155,13 @@ const CartonTransfer = () => {
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!validateForm()) return;
-    if (formData.paymentMethod === 'upi') {
-      // Trigger Razorpay payment before booking
-    } else {
-      // Require authentication before final booking
-      requireAuth(() => handleBookingSubmission());
-    }
+    
+    // Require authentication before final booking
+    requireAuth(() => handleBookingSubmission());
   };
 
-  if (showPaymentConfirmation && purchasedService) {
-    return (
-      <ConfirmationDashboard
-        serviceName={purchasedService.name}
-        amount={purchasedService.amount}
-        onContinue={() => {
-          setShowPaymentConfirmation(false);
-          setBookingSuccess(true);
-        }}
-      />
-    );
-  }
   if (bookingSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft via-background to-campus-blue/20 flex items-center justify-center p-4">
@@ -510,7 +491,20 @@ const CartonTransfer = () => {
                   </p>
                 </div>
 
-                <PaymentComponent amount={totalPrice} user_id={user?.id || ''} service_name="CartonTransfer" subservice_name="Booking" payment_method="card" />
+                <Button 
+                  type="submit" 
+                  className="w-full py-6 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
+                  disabled={isBooking}
+                >
+                  {isBooking ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Processing Booking...
+                    </div>
+                  ) : (
+                    '🚀 Confirm Booking'
+                  )}
+                </Button>
               </form>
             </CardContent>
           </Card>
