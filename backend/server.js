@@ -12,10 +12,13 @@ app.use(cors({
     "http://localhost:8080",
     "http://10.5.83.177:8080",
     "https://kiitsaathi.vercel.app",
-    "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app/" // your Vercel frontend
+    "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app" // your Vercel frontend
   ],
   credentials: true,
 }));
+
+app.use(express.json());
+
 
 
 // Razorpay instance
