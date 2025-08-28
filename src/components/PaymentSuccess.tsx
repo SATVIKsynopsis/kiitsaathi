@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useOrderHistory, OrderInsert } from '@/hooks/useOrderHistory';
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, ArrowRight, Home, Package, Calendar, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Package, Calendar, CreditCard, ArrowRight, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useOrderHistory } from '@/hooks/useOrderHistory';
 import { format } from 'date-fns';
 
 interface PaymentSuccessProps {
@@ -32,6 +33,7 @@ export function PaymentSuccess({
   customConfirmationMessage 
 }: PaymentSuccessProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { createOrder } = useOrderHistory();
   const [isRecording, setIsRecording] = useState(false);
   const [orderRecorded, setOrderRecorded] = useState(false);
@@ -175,7 +177,7 @@ export function PaymentSuccess({
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 pt-4">
             <Button 
-              onClick={() => window.location.href = '/order-history'}
+              onClick={() => navigate('/order-history')}
               className="w-full"
               variant="default"
             >
@@ -189,7 +191,7 @@ export function PaymentSuccess({
               </Button>
             ) : showBackButton && (
               <Button 
-                onClick={() => window.location.href = '/'}
+                onClick={() => navigate('/')}
                 variant="outline" 
                 className="w-full"
               >

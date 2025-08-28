@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useOrderHistory } from '@/hooks/useOrderHistory';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { format } from 'date-fns';
 
 function OrderHistory() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { orders, loading, fetchOrders, getStatusColor, getStatusIcon } = useOrderHistory();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -64,7 +66,7 @@ function OrderHistory() {
         <Navbar />
         <div className="container mx-auto px-4 py-24 text-center">
           <h1 className="text-2xl font-bold mb-4">Please sign in to view your order history</h1>
-          <Button onClick={() => window.location.href = '/auth'}>Sign In</Button>
+          <Button onClick={() => navigate('/auth')}>Sign In</Button>
         </div>
       </div>
     );
@@ -175,7 +177,7 @@ function OrderHistory() {
                 }
               </p>
               {!searchTerm && statusFilter === 'all' && (
-                <Button onClick={() => window.location.href = '/'} variant="outline">
+                <Button onClick={() => navigate('/')} variant="outline">
                   Browse Services
                 </Button>
               )}

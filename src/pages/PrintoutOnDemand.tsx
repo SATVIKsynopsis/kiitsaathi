@@ -506,7 +506,7 @@ const PrintoutOnDemand = () => {
                     <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Sign In Required</h3>
                     <p className="text-muted-foreground mb-4">Please sign in to view your print orders</p>
-                    <Button onClick={() => window.location.href = '/auth'}>
+                    <Button onClick={() => navigate('/auth')}>
                       Sign In
                     </Button>
                   </CardContent>
@@ -553,7 +553,7 @@ const PrintoutOnDemand = () => {
                     <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Sign In Required</h3>
                     <p className="text-muted-foreground mb-4">Please sign in to start helping and earning</p>
-                    <Button onClick={() => window.location.href = '/auth'}>
+                    <Button onClick={() => navigate('/auth')}>
                       Sign In
                     </Button>
                   </CardContent>

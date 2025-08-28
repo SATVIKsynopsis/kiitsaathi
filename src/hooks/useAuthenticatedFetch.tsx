@@ -1,5 +1,6 @@
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { apiFetch } from '@/lib/api';
 
 export function useAuthenticatedFetch() {
   const { session, user } = useAuth();
@@ -9,16 +10,7 @@ export function useAuthenticatedFetch() {
       throw new Error('No authentication token available');
     }
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-      ...options.headers,
-    };
-
-    return fetch(url, {
-      ...options,
-      headers,
-    });
+    return apiFetch(url, options, session.access_token);
   };
 
   const invokeEdgeFunction = async (functionName: string, body: any) => {
@@ -33,7 +25,10 @@ export function useAuthenticatedFetch() {
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Edge function error', { functionName, error });
+      throw error;
+    }
     return data;
   };
 

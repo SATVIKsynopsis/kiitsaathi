@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from 'react-router-dom';
 import { useGuestForm } from "@/hooks/useGuestForm";
 import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
 import { 
@@ -66,6 +67,7 @@ type SellFormData = z.infer<typeof sellFormSchema>;
 
 export default function BookBuyback() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     formData: guestFormData,
     updateFormData: updateGuestFormData,
@@ -135,7 +137,7 @@ export default function BookBuyback() {
   const handleSellSubmit = async (data: SellFormData) => {
     if (!user) {
       // Redirect to auth for final submission
-      window.location.href = '/auth?redirect=/book-buyback';
+      navigate('/auth?redirect=/book-buyback');
       return;
     }
 
