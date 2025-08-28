@@ -85,8 +85,8 @@ To get a local copy of KiitSaathi up and running on your machine, follow these s
 
 2.  **Clone the repository**:
     ```bash
-    git clone https://github.com/KrishnaMohanty08/kiitsaathi1.git
-    cd kiitsaathi1
+    git clone https://github.com/adityash8997/kiitsaathi.git
+    cd kiitsaathi
     ```
 
 3.  **Install dependencies**:
@@ -178,8 +178,8 @@ We welcome contributions to KiitSaathi! If you're interested in improving the pl
 1.  **Fork the repository**: Click the "Fork" button at the top right of this page.
 2.  **Clone your forked repository**:
     ```bash
-    git clone https://github.com/YOUR_USERNAME/kiitsaathi1.git
-    cd kiitsaathi1
+    git clone https://github.com/adityash8997kiitsaathi.git
+    cd kiitsaathi
     ```
 3.  **Create a new branch**:
     ```bash
