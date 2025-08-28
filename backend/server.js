@@ -7,12 +7,16 @@ import { createClient } from '@supabase/supabase-js';
 
 const app = express();
 
-// Middlewares
-app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:8080', 'http://10.5.83.177:8080'],
-  credentials: true
+  origin: [
+    "http://localhost:8080",
+    "http://10.5.83.177:8080",
+    "https://kiitsaathi.vercel.app",
+    "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app/" // your Vercel frontend
+  ],
+  credentials: true,
 }));
+
 
 // Razorpay instance
 const razorpay = new Razorpay({
