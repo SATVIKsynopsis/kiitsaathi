@@ -10,24 +10,28 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:8080",
   "http://10.5.83.177:8080",
+  "http://localhost:5173",
   "https://kiitsaathi.vercel.app",
-  "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app",
+  "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+        callback(null, origin); // allow request
       } else {
-        callback(new Error("Not allowed by CORS: " + origin));
+        callback(new Error("Not allowed by CORS"));
       }
     },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
+
+// Handle preflight explicitly
+app.options("*", cors());
 
 
 app.use(express.json());
