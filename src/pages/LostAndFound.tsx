@@ -288,7 +288,7 @@ export default function LostAndFound() {
     // Check backend if already paid
     if (user?.id) {
       try {
-  const res = await fetch(`https://kiitsaathi-3.onrender.com/has-paid-contact?user_id=${user.id}&item_id=${item.id}&item_title=${encodeURIComponent(item.title)}`);
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${item.id}&item_title=${encodeURIComponent(item.title)}`);
         const result = await res.json();
         if (result.paid) {
           setPaidItemId(item.id);
@@ -305,7 +305,7 @@ export default function LostAndFound() {
     if (showPayment.item && user?.id) {
       // After payment, mark as paid in frontend and check backend for confirmation
       try {
-  const res = await fetch(`https://kiitsaathi-3.onrender.com/has-paid-contact?user_id=${user.id}&item_id=${showPayment.item.id}&item_title=${encodeURIComponent(showPayment.item.title)}`);
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${showPayment.item.id}&item_title=${encodeURIComponent(showPayment.item.title)}`);
         const result = await res.json();
         if (result.paid) {
           setPaidItemId(showPayment.item.id);

@@ -15,33 +15,26 @@ const allowedOrigins = [
   "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, origin); // allow request
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// Handle preflight explicitly
-app.options("*", cors());
-
+// Fixed CORS configuration
+app.use(cors());
 
 app.use(express.json());
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ error: 'CORS policy violation' });
+  }
+  next(err);
+});
+
 
 
 
 // Razorpay instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.VITE_RAZORPAY_KEY_ID,
+  key_secret: process.env.VITE_RAZORPAY_KEY_SECRET,
 });
 
 // Supabase instance

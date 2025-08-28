@@ -62,8 +62,7 @@ const App = () => (
           <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
           <Route path="/kiit-societies" element={<KiitSocieties />} />
 
-          <Route path="/auth" element={<Auth/>} />
-
+          
           <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
           <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
           <Route path="/fest-announcements" element={<FestAnnouncements />} />

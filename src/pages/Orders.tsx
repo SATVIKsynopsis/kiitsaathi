@@ -15,7 +15,7 @@ const Orders: React.FC = () => {
       setLoading(false);
       return;
     }
-  fetch(`https://kiitsaathi-3.onrender.com/orders?user_id=${user_id}`)
+  fetch(`${import.meta.env.VITE_API_URL}/orders?user_id=${user_id}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch orders');
         return res.json();
