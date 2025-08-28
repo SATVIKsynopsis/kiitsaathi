@@ -13,18 +13,22 @@ interface PaymentComponentProps {
 const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, service_name, subservice_name, payment_method, autoOpen = false }) => {
   const navigate = useNavigate();
   const handlePay = async () => {
+    console.log('Pay Now button clicked');
     // 1. Create order
+  console.log('Creating Razorpay order...');
   const orderRes = await fetch(`${import.meta.env.VITE_API_URL}/create-order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, receipt: `rcpt_${Date.now()}` }),
     });
-    const order = await orderRes.json();
+  const order = await orderRes.json();
+  console.log('Order response:', order);
 
   // Use actual values from props
 
     // 2. Open Razorpay Checkout
     const options = {
+      // Debug log for Razorpay key
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
       currency: order.currency,
@@ -67,8 +71,9 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, se
       },
       theme: { color: '#3399cc' },
     };
-    const rzp = new (window as any).Razorpay(options);
-    rzp.open();
+  const rzp = new (window as any).Razorpay(options);
+  console.log('Opening Razorpay window...');
+  rzp.open();
   };
 
   useEffect(() => {
