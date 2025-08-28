@@ -17,6 +17,10 @@ interface BookSelectionRequest {
     email: string;
     phone: string;
     address?: string;
+    rollNumber?: string;
+    branch?: string;
+    yearOfStudy?: string;
+    upiId?: string;
   };
 }
 
@@ -140,13 +144,15 @@ const handler = async (req: Request): Promise<Response> => {
           },
           total_estimated_price: totalAmount,
           full_name: userDetails.name,
+          roll_number: userDetails.rollNumber || 'N/A',
           email: userDetails.email,
           contact_number: userDetails.phone,
           pickup_location: userDetails.address || '',
           book_condition: 'good', // Default condition
-          year_of_study: `Semester ${semester}`,
-          branch: 'General', // Default branch
+          year_of_study: userDetails.yearOfStudy || `Semester ${semester}`,
+          branch: userDetails.branch || 'General',
           book_titles: selectedBooks?.join(', ') || selectedCombo || '',
+          upi_id: userDetails.upiId || null,
           terms_accepted: true,
           status: 'pending'
         })

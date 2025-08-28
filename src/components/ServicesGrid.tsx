@@ -147,7 +147,8 @@ export const ServicesGrid = () => {
       "Book Buyback & Resale": "/book-buyback-sell",
       "KIIT Saathi Celebrations": "/celebrations",
       "KIIT Saathi Meetups": "/meetups",
-      "AI Campus Assistant": "/chatbot"
+      "AI Campus Assistant": "/chatbot",
+      "Food and micro-essentials delivery": "/food-order-customer"
     };
 
     const route = routeMap[service.title];
