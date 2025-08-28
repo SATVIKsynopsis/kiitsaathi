@@ -1,632 +1,510 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   BookOpen, 
   FileQuestion, 
   Youtube, 
   MessageSquare, 
   Search, 
-  Filter,
   Plus,
-  Download,
   Eye,
   Star,
   Clock,
   Users,
   ChevronRight,
-  X
+  X,
+  Shield,
+  AlertTriangle,
+  Loader
 } from "lucide-react";
-import {Footer} from "../components/Footer";
+import { createClient } from '@supabase/supabase-js';
+import { Footer } from "../components/Footer";
 
-// Mock data for demonstration
-const studyMaterials = {
-  notes: [
-    {
-      id: 1,
-      title: "Digital System Design Complete Notes",
-      subject: "DSD",
-      semester: "4th",
-      branch: "CSE",
-      uploadedBy: "Rahul S. (Final Year)",
-      uploadDate: "2024-01-15",
-      views: 1234,
-      rating: 4.8,
-      pdfUrl: "/api/secure-pdf/dsd-notes.pdf"
-    },
-    {
-      id: 2,
-      title: "Mathematics-3 Full Course Notes",
-      subject: "M3",
-      semester: "3rd",
-      branch: "All",
-      uploadedBy: "Priya M. (Final Year)",
-      uploadDate: "2024-01-10",
-      views: 987,
-      rating: 4.9,
-      pdfUrl: "/api/secure-pdf/m3-notes.pdf"
-    },
-    {
-      id: 3,
-      title: "Basic Electronics Fundamentals",
-      subject: "Basic Electronics",
-      semester: "2nd",
-      branch: "All",
-      uploadedBy: "Amit K. (Final Year)",
-      uploadDate: "2024-01-08",
-      views: 756,
-      rating: 4.7,
-      pdfUrl: "/api/secure-pdf/electronics-notes.pdf"
-    },
-    {
-      id: 4,
-      title: "Data Structures and Algorithms",
-      subject: "DSA",
-      semester: "3rd",
-      branch: "CSE",
-      uploadedBy: "Sneha P. (Final Year)",
-      uploadDate: "2024-01-12",
-      views: 1456,
-      rating: 4.9,
-      pdfUrl: "/api/secure-pdf/dsa-notes.pdf"
-    },
-    {
-      id: 5,
-      title: "Operating Systems Complete Guide",
-      subject: "OS",
-      semester: "4th",
-      branch: "CSE",
-      uploadedBy: "Vikash M. (Final Year)",
-      uploadDate: "2024-01-20",
-      views: 1123,
-      rating: 4.8,
-      pdfUrl: "/api/secure-pdf/os-notes.pdf"
-    }
-  ],
-  pyqs: [
-    {
-      id: 1,
-      title: "DSD End Semester Exam Papers (2020-2023)",
-      subject: "DSD",
-      semester: "4th",
-      branch: "CSE",
-      year: "2020-2023",
-      uploadedBy: "Student Committee",
-      views: 2134,
-      pdfUrl: "/api/secure-pdf/dsd-pyqs.pdf"
-    },
-    {
-      id: 2,
-      title: "M3 Previous Year Question Papers",
-      subject: "M3",
-      semester: "3rd",
-      branch: "All",
-      year: "2019-2023",
-      uploadedBy: "Math Club KIIT",
-      views: 1876,
-      pdfUrl: "/api/secure-pdf/m3-pyqs.pdf"
-    },
-    {
-      id: 3,
-      title: "DSA Mid-Sem and End-Sem Papers",
-      subject: "DSA",
-      semester: "3rd",
-      branch: "CSE",
-      year: "2021-2023",
-      uploadedBy: "CSE Student Body",
-      views: 1654,
-      pdfUrl: "/api/secure-pdf/dsa-pyqs.pdf"
-    }
-  ],
-  playlists: [
-    {
-      id: 1,
-      title: "Complete DSD Course by Gate Lectures",
-      subject: "DSD",
-      youtubeId: "PLBlnK6fEyqRjMH3mWf6kwqiTbT798eAOm",
-      duration: "45 hours",
-      subscribers: "1.2M",
-      description: "Comprehensive digital system design course covering all topics"
-    },
-    {
-      id: 2,
-      title: "Mathematics-3 Full Playlist",
-      subject: "M3",
-      youtubeId: "PLU6SqdYcYsfI4IJGfYN65_rdJgSfVtEt6",
-      duration: "32 hours",
-      subscribers: "800K",
-      description: "Complete M3 coverage with solved examples"
-    },
-    {
-      id: 3,
-      title: "Data Structures Masterclass",
-      subject: "DSA",
-      youtubeId: "PLmjdcKkCqsVFqe-CxnvKOyKGLKg-Qz0Qa",
-      duration: "40 hours",
-      subscribers: "900K",
-      description: "Master data structures with practical examples"
-    }
-  ],
-  telegramGroups: [
-    {
-      id: 1,
-      name: "KIIT CSE Resources",
-      link: "https://t.me/kiitcseresources",
-      members: "12.5K",
-      description: "All CSE study materials and updates"
-    },
-    {
-      id: 2,
-      name: "KIIT Mathematics Hub",
-      link: "https://t.me/kiitmathshub",
-      members: "8.3K",
-      description: "Math resources for all branches"
-    },
-    {
-      id: 3,
-      name: "KIIT Electronics Corner",
-      link: "https://t.me/kiitelectronics",
-      members: "6.7K",
-      description: "Electronics and communication resources"
-    },
-    {
-      id: 4,
-      name: "KIIT Study Group",
-      link: "https://t.me/kiitstudygroup",
-      members: "15.2K",
-      description: "General study discussions and resources"
-    }
-  ]
-};
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY!
+);
 
-// Extract subjects and semesters from semesterSubjects
-const semesterSubjects = {
-  "1st": [
-    { code: "PH10001", name: "Physics" },
-    { code: "MA10001", name: "Differential Equations & Linear Algebra" },
-    { code: "LS10001", name: "Science of Living Systems" },
-    { code: "CH10003", name: "Environmental Science" },
-    { code: "EI10001", name: "Elements of Machine Learning" },
-    { code: "ME10001", name: "Engineering Mechanics" },
-    { code: "EC10003", name: "Biomedical Engineering" },
-    { code: "EI10003", name: "Basic Instrumentation" },
-    { code: "CH10005", name: "Nanoscience" },
-    { code: "PH10005", name: "Smart Materials" },
-    { code: "LS10003", name: "Molecular Diagnostics" },
-    { code: "PE10002", name: "Science of Public Health" },
-    { code: "MA10003", name: "Optimization Techniques" }
-  ],
-  "2nd": [
-    { code: "CH10001", name: "Chemistry" },
-    { code: "MA11002", name: "Transform Calculus & Numerical Analysis" },
-    { code: "HS10001", name: "English" },
-    { code: "EC10001", name: "Basic Electronics" },
-    { code: "CE10001", name: "Basic Civil Engineering" },
-    { code: "ME10003", name: "Basic Mechanical Engineering" },
-    { code: "EE10002", name: "Basic Electrical Engineering" },
-    { code: "HS10013", name: "Society, Science, and Technology" },
-    { code: "HS10202", name: "Essential of Management" },
-    { code: "HS10212", name: "Shades of Economics" },
-    { code: "HS10123", name: "India Economy Post Liberalisation" },
-    { code: "SO10043", name: "Socio-Political Environment" },
-    { code: "PS10043", name: "Thinking Perspectives" },
-    { code: "PS10045", name: "Creativity, Innovation and Entrepreneurship" },
-    { code: "EX17001", name: "Community/Environment-based Project" }
-  ],
-  "3rd": [
-    { code: "EX20003", name: "Scientific and Technical Writing" },
-    { code: "MA21001", name: "Probability and Statistics" },
-    { code: "EX20001", name: "Industry 4.0 Technologies 2" },
-    { code: "CS21001", name: "Data Structures" },
-    { code: "EC20005", name: "Digital Systems Design" },
-    { code: "CS21003", name: "Automata Theory and Formal Languages" },
-    { code: "HS20202", name: "Organizational Behavior" },
-    { code: "HS20120", name: "Economics of Development" },
-    { code: "HS20122", name: "International Economic Cooperation" }
-  ],
-  "4th": [
-    { code: "EX20003", name: "Scientific and Technical Writing" },
-    { code: "MA21002", name: "Discrete Structures" },
-    { code: "CS20002", name: "Operating Systems" },
-    { code: "CS20004", name: "Object Oriented Programming in JAVA" },
-    { code: "CS20006", name: "Database Management Systems" },
-    { code: "CS21002", name: "Computer Organization and Architecture" },
-    { code: "HS20202", name: "Organizational Behavior" },
-    { code: "HS20120", name: "Economics of Development" },
-    { code: "HS20122", name: "International Economic Cooperation" }
-  ],
-  "5th": [
-    { code: "CS31001", name: "Software Engineering" },
-    { code: "CS30003", name: "Computer Networks" },
-    { code: "CS30001", name: "Design & Analysis of Algorithms" },
-    { code: "HS30011", name: "Engineering Economics & Costing" },
-    { code: "CS30009", name: "Distributed Operating Systems" },
-    { code: "CS30011", name: "Computational Intelligence" },
-    { code: "CS30005", name: "High Performance Computing" },
-    { code: "EC30007", name: "ARM and Advanced Microprocessors" },
-    { code: "CS30007", name: "Multi-Core Programming" },
-    { code: "CM30006", name: "Compiler" },
-    { code: "CS30013", name: "Data Mining and Data Warehousing" },
-    { code: "CS30015", name: "Image Processing and Applications" }
-  ],
-  "6th": [
-    { code: "CS31002", name: "Machine Learning" },
-    { code: "CS30002", name: "Artificial Intelligence" },
-    { code: "HS30401", name: "Universal Human Values" },
-    { code: "CS30010", name: "Cloud Computing" },
-    { code: "CS30026", name: "Computer Vision" },
-    { code: "CS30012", name: "Software Project Management" },
-    { code: "CS30014", name: "Time Series Forecasting" },
-    { code: "CS30016", name: "Natural Language Processing" }
-  ],
-  "7th": [
-    { code: "EX40003", name: "Engineering Professional Practice" },
-    { code: "CS40001", name: "Deep Learning Techniques" },
-    { code: "CS40003", name: "Software Testing and Automation" },
-    { code: "CS40005", name: "Human Computer Interaction" },
-    { code: "CS40007", name: "Computer Graphics and Multimedia Systems" },
-    { code: "CS40009", name: "Principles of Cryptography" }
-  ],
-  "8th": [
-    { code: "CS40002", name: "Nature Inspired Computing" },
-    { code: "CS40004", name: "IOT and Applications" },
-    { code: "CS40006", name: "Agile Software Development" },
-    { code: "CS40008", name: "Social Network Analysis" },
-    { code: "CS40010", name: "Augmented and Virtual Reality" }
-  ]
-};
+// Types
+interface SecurePDFData {
+  pdfUrl: string;
+  filename: string;
+  timeRemaining: number;
+  expiresAt: string;
+  sessionId: string;
+  pdfId: number;
+  title?: string;
+}
 
-// Extract unique subjects from all semesters
-const subjects = [...new Set(Object.values(semesterSubjects).flat().map(subject => subject.name))];
-const semesters = Object.keys(semesterSubjects);
+interface StudyMaterial {
+  id: number;
+  pdf_id: number;
+  title: string;
+  subject: string;
+  semester: string;
+  branch: string;
+  uploaded_by: string;
+  upload_date?: string;
+  views: number;
+  rating?: number;
+  year?: string;
+  type: string;
+  file_path: string;
+  upload_user_id: string;
+  max_session_duration: number;
+  is_active: boolean;
+}
 
 export default function StudyMaterial() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedSemester, setSelectedSemester] = useState("all");
   const [activeSection, setActiveSection] = useState("notes");
-  const [selectedPdf, setSelectedPdf] = useState(null);
+  const [selectedPdf, setSelectedPdf] = useState<SecurePDFData | null>(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [notes, setNotes] = useState<StudyMaterial[]>([]);
+  const [pyqs, setPyqs] = useState<StudyMaterial[]>([]);
+  const [user, setUser] = useState<any>(null);
 
-  const handleResourceRequest = () => {
-    alert("Resource request submitted! We'll notify you when it's available.");
-    setRequestDialogOpen(false);
+  // Get current user session
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setError("Please login to access study materials");
+      }
+    };
+    getUser();
+  }, []);
+
+  // Hardcoded playlists and telegram groups (unchanged)
+  const studyMaterials = {
+    playlists: [
+      {
+        id: 1,
+        title: "Complete DSD Course by Gate Lectures",
+        subject: "DSD",
+        youtubeId: "PLBlnK6fEyqRjMH3mWf6kwqiTbT798eAOm",
+        duration: "45 hours",
+        subscribers: "1.2M",
+        description: "Comprehensive digital system design course covering all topics"
+      },
+      {
+        id: 2,
+        title: "Mathematics-3 Full Playlist",
+        subject: "M3",
+        youtubeId: "PLU6SqdYcYsfI4IJGfYN65_rdJgSfVtEt6",
+        duration: "32 hours",
+        subscribers: "800K",
+        description: "Complete M3 coverage with solved examples"
+      },
+      {
+        id: 3,
+        title: "Data Structures Masterclass",
+        subject: "DSA",
+        youtubeId: "PLmjdcKkCqsVFqe-CxnvKOyKGLKg-Qz0Qa",
+        duration: "40 hours",
+        subscribers: "900K",
+        description: "Master data structures with practical examples"
+      }
+    ],
+    telegramGroups: [
+      {
+        id: 1,
+        name: "KIIT CSE Resources",
+        link: "https://t.me/kiitcseresources"
+      }
+    ]
   };
 
-  const handleAddResource = () => {
-    alert("Resource submitted for review! It will be available after admin approval.");
-    setAddResourceDialogOpen(false);
+  const semesters = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('pdfs')
+          .select('*')
+          .eq('type', activeSection === 'notes' ? 'note' : 'pyq');
+          
+        if (error) {
+          setError(error.message);
+        } else if (data) {
+          const notesData = data.filter(d => d.type === 'note');
+          const pyqsData = data.filter(d => d.type === 'pyq');
+          setNotes(notesData);
+          setPyqs(pyqsData);
+        }
+      } catch (err: any) {
+        setError(`Failed to fetch data: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [activeSection, user]);
+
+  const openSecurePdfViewer = async (pdfId: number) => {
+    if (!user) {
+      setError("Please login to view PDFs");
+      return;
+    }
+
+    if (!pdfId) {
+      setError("Invalid PDF ID");
+      console.error("PDF ID is missing or invalid:", pdfId);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    
+    try {
+      // Get current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError("Authentication required. Please login again.");
+        return;
+      }
+
+      const ipAddress = await getUserIP();
+      const userAgent = navigator.userAgent;
+
+      console.log('Creating PDF session for PDF ID:', pdfId);
+      console.log('User ID:', user.id);
+      console.log('IP Address:', ipAddress);
+
+      // Step 1: Create/verify PDF session
+      const { data: sessionResponse, error: sessionError } = await supabase.functions.invoke('verify-pdf-session', {
+        body: { 
+          pdfId, 
+          ipAddress, 
+          userAgent,
+          duration: 1800 // 30 minutes
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        }
+      });
+
+      if (sessionError) {
+        console.error('Session creation error:', sessionError);
+        setError(`Session error: ${sessionError.message}`);
+        return;
+      }
+
+      if (!sessionResponse?.data?.sessionToken) {
+        console.error('Invalid session response:', sessionResponse);
+        setError('Failed to create secure session');
+        return;
+      }
+
+      console.log('Session created successfully:', sessionResponse.data.sessionToken);
+
+      // Step 2: Generate secure PDF URL
+      const { data: urlResponse, error: urlError } = await supabase.functions.invoke('gen-secure-pdf-url', {
+        body: { 
+          sessionToken: sessionResponse.data.sessionToken, 
+          ipAddress, 
+          userAgent 
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        }
+      });
+
+      if (urlError) {
+        console.error('URL generation error:', urlError);
+        setError(`URL generation error: ${urlError.message}`);
+        return;
+      }
+
+      if (!urlResponse?.data?.pdfUrl) {
+        console.error('Invalid URL response:', urlResponse);
+        setError('Failed to generate secure PDF URL');
+        return;
+      }
+
+      console.log('PDF URL generated successfully');
+
+      // Step 3: Open secure viewer in new window
+      const viewerUrl = `/secure-view?pdfUrl=${encodeURIComponent(urlResponse.data.pdfUrl)}&time=${urlResponse.data.timeRemaining}`;
+      window.open(viewerUrl, '_blank', 'noopener,noreferrer');
+
+    } catch (err: any) {
+      console.error('Error in openSecurePdfViewer:', err);
+      setError(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const openSecurePdfViewer = (pdfUrl) => {
-    setSelectedPdf(pdfUrl);
+  // Get user IP address
+  const getUserIP = async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || "127.0.0.1";
+    } catch (error) {
+      console.warn('Failed to get IP address:', error);
+      return "127.0.0.1";
+    }
   };
 
-  const filteredNotes = studyMaterials.notes.filter(note => {
-    const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         note.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSubject = selectedSubject === "all" || note.subject === selectedSubject;
-    const matchesSemester = selectedSemester === "all" || note.semester === selectedSemester;
-    return matchesSearch && matchesSubject && matchesSemester;
-  });
+  // Filter function for study materials
+  const filterMaterials = (materials: StudyMaterial[]) => {
+    return materials.filter(item => {
+      const matchesSearch = searchQuery === "" || 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.subject.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesSubject = selectedSubject === "all" || item.subject === selectedSubject;
+      const matchesSemester = selectedSemester === "all" || item.semester === selectedSemester;
+      
+      return matchesSearch && matchesSubject && matchesSemester;
+    });
+  };
 
-  const filteredPyqs = studyMaterials.pyqs.filter(pyq => {
-    const matchesSearch = pyq.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         pyq.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSubject = selectedSubject === "all" || pyq.subject === selectedSubject;
-    const matchesSemester = selectedSemester === "all" || pyq.semester === selectedSemester;
-    return matchesSearch && matchesSubject && matchesSemester;
-  });
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
-              <BookOpen className="w-4 h-4" />
-              Study Resources by Seniors
-            </div>
-            
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-4">
-              Study Material Hub
-              <span className="block text-2xl lg:text-3xl mt-2">By Seniors, For Students</span>
-            </h1>
-            
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Access curated notes, PYQs, and resources shared by your seniors. 
-              <span className="font-semibold text-green-600"> Because good notes are gold! 📚</span>
-            </p>
-          </div>
+  if (!user && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-4">Authentication Required</h2>
+          <p>Please login to access study materials.</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 p-6">
+        {/* Header and Search Bar */}
+        <div className="mb-6 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Study Materials</h1>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setRequestDialogOpen(true)} 
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
+            >
+              <MessageSquare className="w-4 h-4" /> Request
+            </button>
+            <button 
+              onClick={() => setAddResourceDialogOpen(true)} 
+              className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600"
+            >
+              <Plus className="w-4 h-4" /> Add
+            </button>
+          </div>
+        </div>
+
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search notes, subjects, or keywords..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-            
-            <div className="flex gap-4">
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="all">All Subjects</option>
-                {subjects.map(subject => (
-                  <option key={subject} value={subject}>{subject}</option>
-                ))}
-              </select>
-              
-              <select
-                value={selectedSemester}
-                onChange={(e) => setSelectedSemester(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="all">All Semesters</option>
-                {semesters.map(semester => (
-                  <option key={semester} value={semester}>{semester} Semester</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Section Navigation */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={() => setActiveSection("notes")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeSection === "notes" 
-                  ? "bg-green-500 text-white shadow-lg" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <BookOpen className="w-5 h-5" />
-              Study Notes
-            </button>
-            
-            <button
-              onClick={() => setActiveSection("pyqs")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeSection === "pyqs" 
-                  ? "bg-green-500 text-white shadow-lg" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <FileQuestion className="w-5 h-5" />
-              Previous Year Questions
-            </button>
-            
-            <button
-              onClick={() => setActiveSection("playlists")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeSection === "playlists" 
-                  ? "bg-green-500 text-white shadow-lg" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <Youtube className="w-5 h-5" />
-              YouTube Playlists
-            </button>
-            
-            <button
-              onClick={() => setActiveSection("telegram")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeSection === "telegram" 
-                  ? "bg-green-500 text-white shadow-lg" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <MessageSquare className="w-5 h-5" />
-              Telegram Groups
-            </button>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          <button
-            onClick={() => setRequestDialogOpen(true)}
-            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+        <div className="mb-6 flex gap-4 flex-wrap">
+          <input
+            type="text"
+            placeholder="Search by title or subject..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 min-w-64 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <FileQuestion className="w-5 h-5" />
-            Request Resource
-          </button>
-          
-          <button
-            onClick={() => setAddResourceDialogOpen(true)}
-            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            <option value="all">All Subjects</option>
+            <option value="DSD">DSD</option>
+            <option value="M3">M3</option>
+            <option value="DSA">DSA</option>
+          </select>
+          <select
+            value={selectedSemester}
+            onChange={(e) => setSelectedSemester(e.target.value)}
+            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <Plus className="w-5 h-5" />
-            Add Resource
-          </button>
-        </div>
-
-        {/* Notes Section */}
-        {activeSection === "notes" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {filteredNotes.map(note => (
-              <div key={note.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                      {note.subject} • {note.semester} Sem
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                      <span className="text-xs text-gray-500">{note.rating}</span>
-                    </div>
-                  </div>
-                  
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-green-600 transition-colors">
-                    {note.title}
-                  </h3>
-                  
-                  <div className="space-y-2 text-sm text-gray-500 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-3 h-3" />
-                      <span>By {note.uploadedBy}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3 h-3" />
-                      <span>{new Date(note.uploadDate).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-3 h-3" />
-                      <span>{note.views} views</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => openSecurePdfViewer(note.pdfUrl)}
-                      className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View Notes
-                    </button>
-                    
-                  </div>
-                </div>
-              </div>
+            <option value="all">All Semesters</option>
+            {semesters.map((s) => (
+              <option key={s} value={s.toString()}>{s} Semester</option>
             ))}
+          </select>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b mb-4">
+          <button
+            onClick={() => setActiveSection("notes")}
+            className={`px-4 py-2 ${activeSection === "notes" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            <BookOpen className="inline w-4 h-4 mr-2" /> Notes
+          </button>
+          <button
+            onClick={() => setActiveSection("pyqs")}
+            className={`px-4 py-2 ${activeSection === "pyqs" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            <FileQuestion className="inline w-4 h-4 mr-2" /> PYQs
+          </button>
+          <button
+            onClick={() => setActiveSection("playlists")}
+            className={`px-4 py-2 ${activeSection === "playlists" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            <Youtube className="inline w-4 h-4 mr-2" /> Playlists
+          </button>
+          <button
+            onClick={() => setActiveSection("groups")}
+            className={`px-4 py-2 ${activeSection === "groups" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            <Users className="inline w-4 h-4 mr-2" /> Groups
+          </button>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
+            <button onClick={() => setError("")} className="ml-auto">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
-        {/* PYQs Section */}
-        {activeSection === "pyqs" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {filteredPyqs.map(pyq => (
-              <div key={pyq.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                      {pyq.subject} • {pyq.semester} Sem
-                    </span>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                      {pyq.year}
-                    </span>
-                  </div>
-                  
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-green-600 transition-colors">
-                    {pyq.title}
-                  </h3>
-                  
-                  <div className="space-y-2 text-sm text-gray-500 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-3 h-3" />
-                      <span>By {pyq.uploadedBy}</span>
+        {/* Loading */}
+        {loading && (
+          <div className="flex justify-center py-8">
+            <Loader className="w-6 h-6 animate-spin text-blue-500" />
+          </div>
+        )}
+
+        {/* Content */}
+        {!loading && (
+          <div className="space-y-4">
+            {activeSection === "notes" && filterMaterials(notes).map((item) => (
+              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+                      <span>Subject: <span className="font-medium">{item.subject}</span></span>
+                      <span>Semester: <span className="font-medium">{item.semester}</span></span>
+                      <span>Uploaded by: <span className="font-medium">{item.uploaded_by}</span></span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-3 h-3" />
-                      <span>{pyq.views} views</span>
+                    <div className="flex gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" /> {item.views || 0} views
+                      </span>
+                      {item.rating && (
+                        <span className="flex items-center gap-1">
+                          <Star className="w-4 h-4" /> {item.rating}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  
                   <button 
-                    onClick={() => openSecurePdfViewer(pyq.pdfUrl)}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    onClick={() => openSecurePdfViewer(item.pdf_id)} 
+                    disabled={loading}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    <Eye className="w-4 h-4" />
-                    View PYQs
+                    <Shield className="w-4 h-4" />
+                    Secure View
                   </button>
                 </div>
               </div>
             ))}
-          </div>
-        )}
 
-        {/* YouTube Playlists Section */}
-        {activeSection === "playlists" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {studyMaterials.playlists.map(playlist => (
-              <div key={playlist.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-24 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Youtube className="w-8 h-8 text-white" />
+            {activeSection === "pyqs" && filterMaterials(pyqs).map((item) => (
+              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+                      <span>Subject: <span className="font-medium">{item.subject}</span></span>
+                      <span>Semester: <span className="font-medium">{item.semester}</span></span>
+                      <span>Uploaded by: <span className="font-medium">{item.uploaded_by}</span></span>
                     </div>
-                    
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2 group-hover:text-green-600 transition-colors">
-                        {playlist.title}
-                      </h3>
-                      
-                      <p className="text-sm text-gray-500 mb-3">
-                        {playlist.description}
-                      </p>
-                      
-                      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-                        <span>{playlist.duration}</span>
-                        <span>{playlist.subscribers} subscribers</span>
-                      </div>
-                      
-                      <button 
-                        onClick={() => window.open(`https://youtube.com/playlist?list=${playlist.youtubeId}`, '_blank')}
-                        className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2"
-                      >
-                        <Youtube className="w-4 h-4" />
-                        Watch Playlist
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                    <div className="flex gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" /> {item.views || 0} views
+                      </span>
+                      {item.rating && (
+                        <span className="flex items-center gap-1">
+                          <Star className="w-4 h-4" /> {item.rating}
+                        </span>
+                      )}
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Telegram Groups Section */}
-        {activeSection === "telegram" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {studyMaterials.telegramGroups.map(group => (
-              <div key={group.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="p-6">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-6 h-6 text-white" />
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold text-lg group-hover:text-green-600 transition-colors">
-                        {group.name}
-                      </h3>
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <Users className="w-3 h-3" />
-                        <span>{group.members} members</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-gray-500 mb-4">
-                    {group.description}
-                  </p>
-                  
+                   
                   <button 
-                    onClick={() => window.open(group.link, '_blank')}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    onClick={() => openSecurePdfViewer(item.pdf_id)} 
+                    disabled={loading}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    <MessageSquare className="w-4 h-4" />
-                    Join Group
-                    <ChevronRight className="w-4 h-4" />
+                    <Shield className="w-4 h-4" />
+                    Secure View
                   </button>
                 </div>
               </div>
             ))}
+
+            {activeSection === "playlists" && studyMaterials.playlists.map((item) => (
+              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                <div className="flex gap-4 text-sm text-gray-500 mb-3">
+                  <span>Subject: <span className="font-medium">{item.subject}</span></span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" /> {item.duration}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-4 h-4" /> {item.subscribers}
+                  </span>
+                </div>
+                <a 
+                  href={`https://www.youtube.com/playlist?list=${item.youtubeId}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-red-600 hover:text-red-700 inline-flex items-center gap-1 font-medium"
+                >
+                  <Youtube className="w-4 h-4" />
+                  View Playlist 
+                  <ChevronRight className="w-4 h-4" />
+                </a>
+              </div>
+            ))}
+
+            {activeSection === "groups" && studyMaterials.telegramGroups.map((item) => (
+              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <h3 className="font-semibold text-lg mb-3">{item.name}</h3>
+                <a 
+                  href={item.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 font-medium"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Join Group 
+                  <ChevronRight className="w-4 h-4" />
+                </a>
+              </div>
+            ))}
+
+            {/* Empty State */}
+            {((activeSection === "notes" && filterMaterials(notes).length === 0) ||
+              (activeSection === "pyqs" && filterMaterials(pyqs).length === 0)) && (
+              <div className="text-center py-12 text-gray-500">
+                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">No materials found</p>
+                <p>Try adjusting your search or filter criteria</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -641,42 +519,29 @@ export default function StudyMaterial() {
                 </button>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter subject name" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <option>Select semester</option>
-                    {semesters.map(sem => (
-                      <option key={sem} value={sem}>{sem} Semester</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
-                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <option>Study Notes</option>
-                    <option>Previous Year Questions</option>
-                    <option>YouTube Playlist</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Additional Details</label>
-                  <textarea className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" rows={3} placeholder="Any specific requirements..."></textarea>
-                </div>
+                <input type="text" placeholder="Title" className="w-full px-3 py-2 border rounded-lg" />
+                <input type="text" placeholder="Subject" className="w-full px-3 py-2 border rounded-lg" />
+                <select className="w-full px-3 py-2 border rounded-lg">
+                  <option>Select Semester</option>
+                  {semesters.map(s => <option key={s} value={s}>{s} Semester</option>)}
+                </select>
+                <select className="w-full px-3 py-2 border rounded-lg">
+                  <option>Study Notes</option>
+                  <option>PYQs</option>
+                  <option>YouTube Playlist</option>
+                </select>
+                <textarea placeholder="Additional details" rows={3} className="w-full px-3 py-2 border rounded-lg"></textarea>
               </div>
               <div className="flex gap-3 mt-6">
                 <button 
-                  onClick={handleResourceRequest}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors"
+                  onClick={() => { alert("Request submitted!"); setRequestDialogOpen(false); }} 
+                  className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
                 >
-                  Submit Request
+                  Submit
                 </button>
                 <button 
-                  onClick={() => setRequestDialogOpen(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors"
+                  onClick={() => setRequestDialogOpen(false)} 
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
                 >
                   Cancel
                 </button>
@@ -696,50 +561,30 @@ export default function StudyMaterial() {
                 </button>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Resource title" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Subject name" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <option>Select semester</option>
-                    {semesters.map(sem => (
-                      <option key={sem} value={sem}>{sem} Semester</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
-                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <option>Study Notes</option>
-                    <option>Previous Year Questions</option>
-                    <option>YouTube Playlist</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">File/Link</label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Upload file or paste link" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" rows={3} placeholder="Brief description of the resource..."></textarea>
-                </div>
+                <input type="text" placeholder="Title" className="w-full px-3 py-2 border rounded-lg" />
+                <input type="text" placeholder="Subject" className="w-full px-3 py-2 border rounded-lg" />
+                <select className="w-full px-3 py-2 border rounded-lg">
+                  <option>Select Semester</option>
+                  {semesters.map(s => <option key={s} value={s}>{s} Semester</option>)}
+                </select>
+                <select className="w-full px-3 py-2 border rounded-lg">
+                  <option>Study Notes</option>
+                  <option>PYQs</option>
+                  <option>YouTube Playlist</option>
+                </select>
+                <input type="file" accept=".pdf" className="w-full px-3 py-2 border rounded-lg" />
+                <textarea placeholder="Description" rows={3} className="w-full px-3 py-2 border rounded-lg"></textarea>
               </div>
               <div className="flex gap-3 mt-6">
                 <button 
-                  onClick={handleAddResource}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors"
+                  onClick={() => { alert("Resource submitted for review!"); setAddResourceDialogOpen(false); }} 
+                  className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
                 >
-                  Submit Resource
+                  Submit
                 </button>
                 <button 
-                  onClick={() => setAddResourceDialogOpen(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg transition-colors"
+                  onClick={() => setAddResourceDialogOpen(false)} 
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"
                 >
                   Cancel
                 </button>
@@ -747,29 +592,8 @@ export default function StudyMaterial() {
             </div>
           </div>
         )}
-
-        {/* PDF Viewer Modal */}
-        {selectedPdf && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-4xl w-full h-5/6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">PDF Viewer</h3>
-                <button onClick={() => setSelectedPdf(null)}>
-                  <X className="w-6 h-6 text-gray-400 hover:text-gray-600" />
-                </button>
-              </div>
-              <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">PDF content would be displayed here</p>
-                  <p className="text-sm text-gray-500 mt-2">File: {selectedPdf}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    <Footer/>
+      <Footer />
     </div>
   );
 }
