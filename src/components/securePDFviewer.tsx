@@ -67,7 +67,6 @@ export default function SecurePDFViewer() {
           file={pdfUrl}
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
           onLoadError={(error) => setError(`Failed to load PDF: ${error.message}`)}
-          options={{ disableTextLayer: true, disableAnnotationLayer: true }}
         >
           {Array.from({ length: numPages }, (_, index) => (
             <Page
