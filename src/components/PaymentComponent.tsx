@@ -14,7 +14,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, se
   const navigate = useNavigate();
   const handlePay = async () => {
     // 1. Create order
-    const orderRes = await fetch(`${import.meta.env.VITE_API_URL}/create-order`, {
+  const orderRes = await fetch(`https://kiitsaathi-3.onrender.com/create-order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, receipt: `rcpt_${Date.now()}` }),
@@ -32,7 +32,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ amount, user_id, se
       handler: async (response: any) => {
         try {
           console.log('Razorpay response:', response);
-          const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/verify-payment`, {
+          const verifyRes = await fetch(`https://kiitsaathi-3.onrender.com/verify-payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
