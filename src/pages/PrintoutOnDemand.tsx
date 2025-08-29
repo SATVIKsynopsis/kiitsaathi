@@ -400,13 +400,24 @@ const PrintoutOnDemand = () => {
                           />
                         </div>
 
-                         <Button 
-                           type="submit" 
-                           className="w-full py-6 text-lg"
-                           disabled={isLoading || !selectedFile || !privacyAccepted || !user}
-                         >
-                           {isLoading ? 'Submitting...' : user ? 'Pay & Confirm Order 💳' : 'Sign In to Submit Order'}
-                          </Button>
+                          <Button 
+                            type="submit" 
+                            className="w-full py-6 text-lg"
+                            disabled={isLoading || !selectedFile || !privacyAccepted || !user}
+                          >
+                            {isLoading ? 'Submitting...' : 
+                             !user ? 'Sign In to Submit Order' :
+                             !selectedFile ? 'Please Upload File' :
+                             !privacyAccepted ? 'Accept Privacy Notice' :
+                             'Pay & Confirm Order 💳'}
+                           </Button>
+                           
+                           {/* Debug info - remove in production */}
+                           {process.env.NODE_ENV === 'development' && (
+                             <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+                               Debug: User: {user ? '✓' : '✗'} | File: {selectedFile ? '✓' : '✗'} | Privacy: {privacyAccepted ? '✓' : '✗'} | Loading: {isLoading ? '✓' : '✗'}
+                             </div>
+                           )}
                        </form>
                    </CardContent>
                 </Card>
