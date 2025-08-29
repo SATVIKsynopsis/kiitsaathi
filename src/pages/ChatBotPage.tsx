@@ -1,71 +1,51 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, Sparkles, Bot, MessageCircle, Zap, Clock, BookOpen } from "lucide-react";
+import { ArrowLeft, MessageCircle, Zap, Clock, BookOpen } from "lucide-react";
 import kiitMascot from "@/assets/kiit-mascot.png";
 
 const ChatBotPage = () => {
   const navigate = useNavigate();
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hey there! 👋 I'm your KIIT Buddy. What can I help you with today?",
-      isBot: true,
-      timestamp: new Date()
-    }
-  ]);
 
-  const sampleQuestions = [
-    "How do I book a carton for hostel move?",
-    "Where's the nearest printer?", 
-    "Which seniors are available for mentoring?",
-    "What's happening in campus today?",
-    "Help me find my lost ID card",
-    "How to join societies?",
-    "What are the mess timings?",
-    "Where is the library located?"
-  ];
-
-  const handleSampleClick = (question: string) => {
-    setMessage(question);
-  };
-
-  const sendMessage = () => {
-    if (!message.trim()) return;
-    
-    const newMessage = {
-      id: messages.length + 1,
-      text: message,
-      isBot: false,
-      timestamp: new Date()
+  useEffect(() => {
+    // Ensure Botpress webchat is visible and configured for this page
+    const initializeBotpress = () => {
+      // Check if Botpress webchat is available
+      if (typeof window !== 'undefined' && (window as any).botpress) {
+        const bp = (window as any).botpress;
+        
+        // Show the webchat widget
+        bp.webchat.show();
+        
+        // Send a welcome message when the page loads
+        setTimeout(() => {
+          bp.webchat.sendEvent({
+            type: 'show',
+            channel: 'web',
+            payload: {}
+          });
+        }, 1000);
+      }
     };
-    
-    setMessages(prev => [...prev, newMessage]);
-    setMessage("");
-    
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
-        text: "Thanks for your question! I'm working on getting you the best answer. This AI assistant is currently under development, but I'll be able to help you with all your KIIT-related queries soon! 🤖",
-        isBot: true,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
-  };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      sendMessage();
-    }
-  };
+    // Try to initialize immediately
+    initializeBotpress();
+
+    // Also try after a short delay in case scripts are still loading
+    const timer = setTimeout(initializeBotpress, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      // Hide the webchat when leaving the page if needed
+      if (typeof window !== 'undefined' && (window as any).botpress) {
+        // Keep it visible for consistent experience across the site
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -86,7 +66,7 @@ const ChatBotPage = () => {
           <div className="inline-flex items-center gap-2 mb-4">
             <img src={kiitMascot} alt="KIIT Buddy" className="w-12 h-12" />
             <Badge variant="secondary" className="text-lg px-4 py-2">
-              AI Campus Assistant
+              KIIT Saathi (AI Assistant)
             </Badge>
           </div>
           
@@ -140,88 +120,46 @@ const ChatBotPage = () => {
         </div>
       </section>
 
-      {/* Chat Interface */}
+      {/* Botpress Chat Integration */}
       <section className="py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Card className="h-[600px] flex flex-col">
+          <Card className="min-h-[600px] flex flex-col">
             <CardHeader className="bg-gradient-to-r from-kiit-green to-campus-blue text-white">
               <div className="flex items-center gap-3">
                 <img src={kiitMascot} alt="KIIT Buddy" className="w-10 h-10" />
                 <div>
-                  <CardTitle className="text-white">KIIT Saathi Assistant</CardTitle>
+                  <CardTitle className="text-white">KIIT Saathi (AI Assistant)</CardTitle>
                   <CardDescription className="text-white/80">
-                    Your friendly campus companion
+                    Your intelligent campus companion - powered by AI
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             
-            <CardContent className="flex-1 flex flex-col p-0">
-              {/* Messages Area */}
-              <div className="flex-1 p-4 overflow-y-auto bg-muted/30">
-                <div className="space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div className={`max-w-[80%] ${msg.isBot ? 'flex items-start gap-2' : ''}`}>
-                        {msg.isBot && (
-                          <img src={kiitMascot} alt="KIIT Buddy" className="w-6 h-6 mt-1" />
-                        )}
-                        <div
-                          className={`p-3 rounded-lg ${
-                            msg.isBot
-                              ? 'bg-white shadow-sm text-foreground'
-                              : 'bg-primary text-primary-foreground'
-                          }`}
-                        >
-                          <p className="text-sm">{msg.text}</p>
-                          <p className="text-xs opacity-70 mt-1">
-                            {msg.timestamp.toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+            <div className="flex-1 flex items-center justify-center p-8 bg-muted/30">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-primary" />
                 </div>
-              </div>
-              
-              {/* Sample Questions */}
-              <div className="p-4 border-t bg-muted/20">
-                <p className="text-sm text-muted-foreground font-medium mb-2 flex items-center gap-1">
-                  <Sparkles className="w-4 h-4" />
-                  Try asking about:
+                <h3 className="text-xl font-semibold text-foreground">Ready to Help!</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Your AI assistant is ready to answer questions about KIIT campus, services, and more. 
+                  Look for the chat widget in the bottom right corner to start a conversation!
                 </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {sampleQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSampleClick(question)}
-                      className="text-left p-2 text-xs bg-background hover:bg-muted rounded-lg transition-colors border"
-                    >
-                      {question}
-                    </button>
-                  ))}
+                <div className="mt-6 p-4 bg-background/50 rounded-lg border border-primary/20">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>💬 Chat Features:</strong>
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 text-left">
+                    <li>• Ask about campus services and facilities</li>
+                    <li>• Get help with bookings and applications</li>
+                    <li>• Find information about societies and events</li>
+                    <li>• Get directions and location details</li>
+                    <li>• 24/7 availability for all your queries</li>
+                  </ul>
                 </div>
               </div>
-              
-              {/* Input Area */}
-              <div className="p-4 border-t">
-                <div className="flex gap-2">
-                  <Input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask me anything about KIIT campus..."
-                    className="flex-1"
-                  />
-                  <Button onClick={sendMessage} className="bg-kiit-green hover:bg-kiit-green-dark">
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
+            </div>
           </Card>
         </div>
       </section>
