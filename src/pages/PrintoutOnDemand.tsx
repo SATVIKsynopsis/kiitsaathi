@@ -125,6 +125,7 @@ const PrintoutOnDemand = () => {
     const costs = calculateCosts();
     
     const jobData = {
+      user_id: user.id, // Required for RLS policy
       file_name: selectedFile.name,
       file_url: '', // Will be set by upload
       file_size: selectedFile.size,
