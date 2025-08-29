@@ -14,36 +14,65 @@ const ChatBotPage = () => {
   useEffect(() => {
     // Ensure Botpress webchat is visible and configured for this page
     const initializeBotpress = () => {
-      // Check if Botpress webchat is available
-      if (typeof window !== 'undefined' && (window as any).botpress) {
-        const bp = (window as any).botpress;
-        
-        // Show the webchat widget
-        bp.webchat.show();
-        
-        // Send a welcome message when the page loads
-        setTimeout(() => {
-          bp.webchat.sendEvent({
-            type: 'show',
-            channel: 'web',
-            payload: {}
-          });
-        }, 1000);
+      try {
+        // Comprehensive check for Botpress availability
+        if (typeof window !== 'undefined' && 
+            (window as any).botpress && 
+            (window as any).botpress.webchat &&
+            typeof (window as any).botpress.webchat.show === 'function') {
+          
+          const bp = (window as any).botpress;
+          console.log('Botpress webchat found, initializing...');
+          
+          // Show the webchat widget
+          bp.webchat.show();
+          
+          // Optional: Send a welcome event after a delay
+          setTimeout(() => {
+            if (bp.webchat && typeof bp.webchat.sendEvent === 'function') {
+              bp.webchat.sendEvent({
+                type: 'show',
+                channel: 'web',
+                payload: {}
+              });
+            }
+          }, 1000);
+          
+          return true; // Successfully initialized
+        }
+        return false; // Not ready yet
+      } catch (error) {
+        console.log('Botpress not ready yet:', error);
+        return false;
       }
     };
 
     // Try to initialize immediately
-    initializeBotpress();
+    if (!initializeBotpress()) {
+      // If not successful, set up polling to wait for Botpress to load
+      let attempts = 0;
+      const maxAttempts = 10; // Try for up to 10 seconds
+      
+      const pollForBotpress = setInterval(() => {
+        attempts++;
+        console.log(`Checking for Botpress... attempt ${attempts}/${maxAttempts}`);
+        
+        if (initializeBotpress() || attempts >= maxAttempts) {
+          clearInterval(pollForBotpress);
+          if (attempts >= maxAttempts) {
+            console.log('Botpress webchat not found after maximum attempts. The floating chat widget should still be available.');
+          }
+        }
+      }, 1000);
 
-    // Also try after a short delay in case scripts are still loading
-    const timer = setTimeout(initializeBotpress, 2000);
+      return () => {
+        clearInterval(pollForBotpress);
+      };
+    }
 
+    // Cleanup function for successful immediate initialization
     return () => {
-      clearTimeout(timer);
-      // Hide the webchat when leaving the page if needed
-      if (typeof window !== 'undefined' && (window as any).botpress) {
-        // Keep it visible for consistent experience across the site
-      }
+      console.log('ChatBotPage unmounting');
     };
   }, []);
 
