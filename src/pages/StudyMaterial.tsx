@@ -153,100 +153,95 @@ export default function StudyMaterial() {
     fetchData();
   }, [activeSection, user]);
 
-  const openSecurePdfViewer = async (pdfId: number) => {
-    if (!user) {
-      setError("Please login to view PDFs");
+// Updated openSecurePdfViewer function in StudyMaterial.tsx
+// In gen-secure-pdf-url/index.ts
+
+
+const openSecurePdfViewer = async (pdfId: number) => {
+  if (!user) {
+    setError("Please login to view PDFs");
+    return;
+  }
+
+  if (!pdfId) {
+    setError("Invalid PDF ID");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+  
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setError("Authentication required. Please login again.");
       return;
     }
 
-    if (!pdfId) {
-      setError("Invalid PDF ID");
-      console.error("PDF ID is missing or invalid:", pdfId);
+    const ipAddress = await getUserIP();
+    const userAgent = navigator.userAgent;
+
+    // Fixed function call - let Supabase client handle JSON serialization
+    const { data: sessionResponse, error: sessionError } = await supabase.functions.invoke('verify-pdf-session', {
+      body: {  
+        pdfId: pdfId,
+        ipAddress: ipAddress,
+        userAgent: userAgent,
+        duration: 1800
+      }
+    });
+
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+      setError(`Session error: ${sessionError.message}`);
       return;
     }
 
-    setLoading(true);
-    setError("");
+    if (!sessionResponse?.success || !sessionResponse?.data?.sessionToken) {
+      console.error('Invalid session response:', sessionResponse);
+      setError('Failed to create secure session');
+      return;
+    }
+
+    // Generate PDF URL
+    const { data: urlResponse, error: urlError } = await supabase.functions.invoke('gen-secure-pdf-url', {
+  body: {
+    sessionToken: sessionResponse.data.sessionToken,
+    ipAddress: ipAddress,
+    userAgent: userAgent
+  }
+});
+
+console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
+
+    if (urlError) {
+      console.error('URL generation error:', urlError);
+      setError(`URL generation error: ${urlError.message}`);
+      return;
+    }
+
+    if (!urlResponse?.success || !urlResponse?.data?.pdfUrl) {
+      console.error('Invalid URL response:', urlResponse);
+      setError('Failed to generate secure PDF URL');
+      return;
+    }
+
+    // Open secure viewer
+    const viewerUrl = `/secure-view?pdfUrl=${encodeURIComponent(urlResponse.data.pdfUrl)}&time=${urlResponse.data.timeRemaining}`;
+    const newWindow = window.open(viewerUrl, '_blank', 'noopener,noreferrer');
     
-    try {
-      // Get current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setError("Authentication required. Please login again.");
-        return;
-      }
-
-      const ipAddress = await getUserIP();
-      const userAgent = navigator.userAgent;
-
-      console.log('Creating PDF session for PDF ID:', pdfId);
-      console.log('User ID:', user.id);
-      console.log('IP Address:', ipAddress);
-
-      // Step 1: Create/verify PDF session
-      const { data: sessionResponse, error: sessionError } = await supabase.functions.invoke('verify-pdf-session', {
-        body: { 
-          pdfId, 
-          ipAddress, 
-          userAgent,
-          duration: 1800 // 30 minutes
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        }
-      });
-
-      if (sessionError) {
-        console.error('Session creation error:', sessionError);
-        setError(`Session error: ${sessionError.message}`);
-        return;
-      }
-
-      if (!sessionResponse?.data?.sessionToken) {
-        console.error('Invalid session response:', sessionResponse);
-        setError('Failed to create secure session');
-        return;
-      }
-
-      console.log('Session created successfully:', sessionResponse.data.sessionToken);
-
-      // Step 2: Generate secure PDF URL
-      const { data: urlResponse, error: urlError } = await supabase.functions.invoke('gen-secure-pdf-url', {
-        body: { 
-          sessionToken: sessionResponse.data.sessionToken, 
-          ipAddress, 
-          userAgent 
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        }
-      });
-
-      if (urlError) {
-        console.error('URL generation error:', urlError);
-        setError(`URL generation error: ${urlError.message}`);
-        return;
-      }
-
-      if (!urlResponse?.data?.pdfUrl) {
-        console.error('Invalid URL response:', urlResponse);
-        setError('Failed to generate secure PDF URL');
-        return;
-      }
-
-      console.log('PDF URL generated successfully');
-
-      // Step 3: Open secure viewer in new window
-      const viewerUrl = `/secure-view?pdfUrl=${encodeURIComponent(urlResponse.data.pdfUrl)}&time=${urlResponse.data.timeRemaining}`;
-      window.open(viewerUrl, '_blank', 'noopener,noreferrer');
-
-    } catch (err: any) {
-      console.error('Error in openSecurePdfViewer:', err);
-      setError(`Error: ${err.message}`);
-    } finally {
-      setLoading(false);
+    if (!newWindow) {
+      setError('Please allow popups to view the PDF');
     }
-  };
+
+  } catch (err: any) {
+    console.error('Error in openSecurePdfViewer:', err);
+    setError(`Error: ${err.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Get user IP address
   const getUserIP = async (): Promise<string> => {
@@ -409,7 +404,7 @@ export default function StudyMaterial() {
                     </div>
                   </div>
                   <button 
-                    onClick={() => openSecurePdfViewer(item.pdf_id)} 
+                    onClick={() => openSecurePdfViewer(item.id)} 
                     disabled={loading}
                     className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
@@ -443,13 +438,13 @@ export default function StudyMaterial() {
                   </div>
                    
                   <button 
-                    onClick={() => openSecurePdfViewer(item.pdf_id)} 
-                    disabled={loading}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Secure View
-                  </button>
+  onClick={() => openSecurePdfViewer(item.id)}
+  disabled={loading}
+  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+>
+  <Shield className="w-4 h-4" />
+  Secure View
+</button>
                 </div>
               </div>
             ))}
