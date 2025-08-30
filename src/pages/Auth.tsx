@@ -331,16 +331,25 @@ export default function Auth() {
             </Tabs>
 
             {/* Divider */}
-            <div className="my-2 border-b-2 mx-4"></div>
+            <div className="relative my-6 mx-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-muted" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
 
             {/* Google Login Button */}
             <CardFooter>
               <Button 
                 onClick={handleGoogleLogin} 
-                className="w-full bg-White hover:bg-blue-600 text-black"
+                variant="outline"
+                className="w-full bg-card border-2 border-muted hover:bg-muted/50 text-foreground font-medium transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
+                disabled={loading}
               >
                 {/* Google SVG Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="inline-block mr-2 h-5 w-5" viewBox="0 0 48 48">
+                <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" viewBox="0 0 48 48">
                   <g>
                     <path fill="#4285F4" d="M24 9.5c3.54 0 6.73 1.22 9.24 3.22l6.91-6.91C36.44 2.34 30.65 0 24 0 14.64 0 6.27 5.48 1.98 13.44l8.51 6.62C12.81 13.13 17.96 9.5 24 9.5z"/>
                     <path fill="#34A853" d="M46.09 24.55c0-1.64-.15-3.22-.43-4.76H24v9.03h12.41c-.54 2.91-2.18 5.38-4.65 7.04l7.19 5.59C43.73 37.97 46.09 31.81 46.09 24.55z"/>
@@ -349,7 +358,14 @@ export default function Auth() {
                     <path fill="none" d="M0 0h48v48H0z"/>
                   </g>
                 </svg>
-                Continue with Google
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  'Sign in with Google'
+                )}
               </Button>
             </CardFooter>
           </Card>

@@ -125,6 +125,7 @@ const PrintoutOnDemand = () => {
     const costs = calculateCosts();
     
     const jobData = {
+      user_id: user.id, // Required for RLS policy
       file_name: selectedFile.name,
       file_url: '', // Will be set by upload
       file_size: selectedFile.size,
@@ -399,13 +400,24 @@ const PrintoutOnDemand = () => {
                           />
                         </div>
 
-                         <Button 
-                           type="submit" 
-                           className="w-full py-6 text-lg"
-                           disabled={isLoading || !selectedFile || !privacyAccepted || !user}
-                         >
-                           {isLoading ? 'Submitting...' : user ? 'Pay & Confirm Order 💳' : 'Sign In to Submit Order'}
-                          </Button>
+                          <Button 
+                            type="submit" 
+                            className="w-full py-6 text-lg"
+                            disabled={isLoading || !selectedFile || !privacyAccepted || !user}
+                          >
+                            {isLoading ? 'Submitting...' : 
+                             !user ? 'Sign In to Submit Order' :
+                             !selectedFile ? 'Please Upload File' :
+                             !privacyAccepted ? 'Accept Privacy Notice' :
+                             'Pay & Confirm Order 💳'}
+                           </Button>
+                           
+                           {/* Debug info - remove in production */}
+                           {process.env.NODE_ENV === 'development' && (
+                             <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+                               Debug: User: {user ? '✓' : '✗'} | File: {selectedFile ? '✓' : '✗'} | Privacy: {privacyAccepted ? '✓' : '✗'} | Loading: {isLoading ? '✓' : '✗'}
+                             </div>
+                           )}
                        </form>
                    </CardContent>
                 </Card>
@@ -506,7 +518,7 @@ const PrintoutOnDemand = () => {
                     <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Sign In Required</h3>
                     <p className="text-muted-foreground mb-4">Please sign in to view your print orders</p>
-                    <Button onClick={() => window.location.href = '/auth'}>
+                    <Button onClick={() => navigate('/auth')}>
                       Sign In
                     </Button>
                   </CardContent>
@@ -553,7 +565,7 @@ const PrintoutOnDemand = () => {
                     <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Sign In Required</h3>
                     <p className="text-muted-foreground mb-4">Please sign in to start helping and earning</p>
-                    <Button onClick={() => window.location.href = '/auth'}>
+                    <Button onClick={() => navigate('/auth')}>
                       Sign In
                     </Button>
                   </CardContent>

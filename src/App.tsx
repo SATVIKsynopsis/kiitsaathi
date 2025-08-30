@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ScrollToTop from "./components/ScrollToTop";
+import RouteLogger from "./components/RouteLogger";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CartonTransfer from "./pages/CartonTransfer";
@@ -45,40 +47,43 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
+          {/* Route change logging */}
+          <RouteLogger />
           <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/carton-transfer" element={<CartonTransfer />} />
-          <Route path="/senior-connect" element={<SeniorConnect />} />
-          <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
-          <Route path="/lost-and-found" element={<LostAndFound />} />
-          <Route path="/split-saathi" element={<SplitSaathi />} />
-          <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
-          <Route path="/study-material" element={<StudyMaterial />} />
-          <Route path="/book-buyback" element={<BookBuyback />} />
-          <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
-          <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
-          <Route path="/celebrations" element={<Celebrations />} />
-          <Route path="/printout-on-demand" element={<PrintoutOnDemand />} />
-          <Route path="/meetups" element={<Meetups />} />
-          <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
-          <Route path="/kiit-societies" element={<KiitSocieties />} />
-          <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
-          <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
-          <Route path="/fest-announcements" element={<FestAnnouncements />} />
-           <Route path="/sports-events-hub" element={<SportsEventsHub />} />
-           <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
-           <Route path="/food-order-helper" element={<FoodOrderHelper />} />
-           <Route path="/order-history" element={<OrderHistory />} />
-           <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/chatbot" element={<ChatBotPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route path="/" element={<Index />} />
+            <Route path="/carton-transfer" element={<CartonTransfer />} />
+            <Route path="/senior-connect" element={<SeniorConnect />} />
+            <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
+            <Route path="/lost-and-found" element={<LostAndFound />} />
+            <Route path="/split-saathi" element={<SplitSaathi />} />
+            <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
+            <Route path="/study-material" element={<StudyMaterial />} />
+            <Route path="/book-buyback" element={<BookBuyback />} />
+            <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
+            <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
+            <Route path="/celebrations" element={<Celebrations />} />
+            <Route path="/printout-on-demand" element={<PrintoutOnDemand />} />
+            <Route path="/meetups" element={<Meetups />} />
+            <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
+            <Route path="/kiit-societies" element={<KiitSocieties />} />
+            <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
+            <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
+            <Route path="/fest-announcements" element={<FestAnnouncements />} />
+            <Route path="/sports-events-hub" element={<SportsEventsHub />} />
+            <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
+            <Route path="/food-order-helper" element={<FoodOrderHelper />} />
+            <Route path="/order-history" element={<OrderHistory />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/chatbot" element={<ChatBotPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
+
 
 export default App;
