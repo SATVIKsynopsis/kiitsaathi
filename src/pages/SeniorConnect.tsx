@@ -195,32 +195,6 @@ const SeniorConnect = () => {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-kiit-green cursor-pointer">
-              <CardHeader className="text-center pb-4">
-                {/* <div className="p-3 rounded-2xl bg-gradient-to-r from-kiit-green to-campus-blue w-fit mx-auto mb-3">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div> */}
-                <BookMarked className="w-8 h-8 mx-auto mb-2 text-kiit-green-dark" />
-                <CardTitle className="text-lg">Study Materials by Seniors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-4">Seniors' notes, solved papers, lab manuals — shared with you.</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r from-kiit-green to-campus-blue text-white">
-                    ₹49/subject
-                  </span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="opacity-0 group-hover:opacity-100 transition-all duration-300"
-                    onClick={() => navigate('/study-material')}
-                  >
-                    View Materials
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>

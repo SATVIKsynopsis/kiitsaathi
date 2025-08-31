@@ -34,6 +34,7 @@ import FestAnnouncements from "./pages/FestAnnouncements";
 import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
 import FoodOrderHelper from "./pages/FoodOrderHelper";
+import CampusMap from "./pages/CampusMap";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/chatbot" element={<ChatBotPage />} />
+            <Route path="/campus-map" element={<CampusMap />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

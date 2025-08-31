@@ -61,7 +61,7 @@ const services = [
   },
   {
     icon: Bot,
-    title: "AI Campus Assistant",
+    title: "KIIT Saathi (AI Assistant)",
     description: "Lost? Hungry? Confused? Ask our chatbot — 24x7 KIIT help.",
     price: "Free",
     gradient: "from-campus-orange to-kiit-green",
@@ -72,6 +72,13 @@ const services = [
     description: "Struggling in class or life? Book a session with a real senior mentor.",
     price: "₹199/hour",
     gradient: "from-campus-blue to-campus-purple",
+  },
+  {
+    icon: BookOpen,
+    title: "Study Material (PYQs, Notes, YouTube Videos)",
+    description: "Seniors' notes, solved papers, lab manuals, and curated YouTube playlists — all in one place.",
+    price: "₹49/subject",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     icon: Shield,
@@ -147,8 +154,10 @@ export const ServicesGrid = () => {
       "Book Buyback & Resale": "/book-buyback-sell",
       "KIIT Saathi Celebrations": "/celebrations",
       "KIIT Saathi Meetups": "/meetups",
-      "AI Campus Assistant": "/chatbot",
-      "Food and micro-essentials delivery": "/food-order-customer"
+      "KIIT Saathi (AI Assistant)": "/chatbot",
+      "Food and micro-essentials delivery": "/food-order-customer",
+      "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
+      "Campus Map": "/campus-map"
     };
 
     const route = routeMap[service.title];
