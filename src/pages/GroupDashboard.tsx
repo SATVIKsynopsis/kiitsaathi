@@ -209,9 +209,16 @@ const GroupDashboard = () => {
       loadGroupData();
 
     } catch (error: any) {
+      console.error('Error adding expense:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.log('Current user ID:', user?.id);
+      console.log('Group ID:', groupId);
+      console.log('Members:', members);
+      console.log('Expense form:', expenseForm);
+      
       toast({
         title: "Error",
-        description: error.message,
+        description: `Failed to add expense: ${error.message}`,
         variant: "destructive"
       });
     }
