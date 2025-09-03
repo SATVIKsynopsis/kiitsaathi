@@ -1157,6 +1157,137 @@ export type Database = {
         }
         Relationships: []
       }
+      pdf_access_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_access_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          pdf_id: number | null
+          session_token: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          pdf_id?: number | null
+          session_token: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          pdf_id?: number | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      pdfs: {
+        Row: {
+          branch: string
+          created_at: string | null
+          file_path: string
+          id: number
+          is_active: boolean | null
+          max_session_duration: number | null
+          pdf_id: number
+          rating: number | null
+          semester: string
+          subject: string
+          title: string
+          type: string
+          upload_date: string | null
+          upload_user_id: string | null
+          uploaded_by: string
+          views: number | null
+          year: string | null
+        }
+        Insert: {
+          branch: string
+          created_at?: string | null
+          file_path: string
+          id: number
+          is_active?: boolean | null
+          max_session_duration?: number | null
+          pdf_id: number
+          rating?: number | null
+          semester: string
+          subject: string
+          title: string
+          type: string
+          upload_date?: string | null
+          upload_user_id?: string | null
+          uploaded_by: string
+          views?: number | null
+          year?: string | null
+        }
+        Update: {
+          branch?: string
+          created_at?: string | null
+          file_path?: string
+          id?: number
+          is_active?: boolean | null
+          max_session_duration?: number | null
+          pdf_id?: number
+          rating?: number | null
+          semester?: string
+          subject?: string
+          title?: string
+          type?: string
+          upload_date?: string | null
+          upload_user_id?: string | null
+          uploaded_by?: string
+          views?: number | null
+          year?: string | null
+        }
+        Relationships: []
+      }
       print_helpers: {
         Row: {
           contact: string
