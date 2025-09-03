@@ -84,6 +84,24 @@ const GroupDashboard = () => {
     try {
       setLoading(true);
       
+      // Ensure user has a profile entry (needed for RLS policies)
+      if (user?.id) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email || '',
+            full_name: user.user_metadata?.full_name || user.email || ''
+          }, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+          });
+        
+        if (profileError) {
+          console.warn("Profile upsert warning:", profileError);
+        }
+      }
+      
       // Load group details
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
