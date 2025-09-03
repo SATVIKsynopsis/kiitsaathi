@@ -138,6 +138,15 @@ const GroupDashboard = () => {
     }
 
     try {
+      console.log("Creating expense with data:", {
+        group_id: groupId,
+        title: expenseForm.title,
+        amount: parseFloat(expenseForm.amount),
+        paid_by_member_id: expenseForm.paid_by_member_id,
+        date: expenseForm.date,
+        notes: expenseForm.notes
+      });
+
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
@@ -154,7 +163,12 @@ const GroupDashboard = () => {
         `)
         .single();
 
-      if (expenseError) throw expenseError;
+      if (expenseError) {
+        console.error("Expense creation error:", expenseError);
+        throw expenseError;
+      }
+
+      console.log("Expense created successfully:", expense);
 
       // Add expense splits (equal split for now)
       const splitAmount = parseFloat(expenseForm.amount) / members.length;
@@ -164,11 +178,18 @@ const GroupDashboard = () => {
         amount: splitAmount
       }));
 
+      console.log("Creating expense splits:", splits);
+      console.log("Current user ID:", user?.id);
+      console.log("Group members:", members);
+
       const { error: splitsError } = await supabase
         .from('expense_splits')
         .insert(splits);
 
-      if (splitsError) throw splitsError;
+      if (splitsError) {
+        console.error("Splits creation error:", splitsError);
+        throw splitsError;
+      }
 
       toast({
         title: "Expense Added! 💰",
