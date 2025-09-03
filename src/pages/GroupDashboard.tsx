@@ -76,9 +76,41 @@ const GroupDashboard = () => {
       return;
     }
     if (groupId) {
+      // Ensure user has a profile first
+      ensureUserProfile();
       loadGroupData();
     }
   }, [groupId, user]);
+
+  const ensureUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      // Check if profile exists, if not create it
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profile && !profileError) {
+        // Create profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.email // fallback to email if no name
+          });
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+        }
+      }
+    } catch (error) {
+      console.error("Error ensuring profile:", error);
+    }
+  };
 
   const loadGroupData = async () => {
     try {
