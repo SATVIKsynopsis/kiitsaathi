@@ -1793,6 +1793,21 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_group_balances: {
+        Args: { _group_id: string }
+        Returns: {
+          member_email: string
+          member_id: string
+          member_name: string
+          net_balance: number
+          total_paid: number
+          total_share: number
+        }[]
+      }
+      export_group_summary: {
+        Args: { _group_id: string }
+        Returns: Json
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1832,6 +1847,16 @@ export type Database = {
       safe_table_query: {
         Args: { query_filters?: Json; table_name: string }
         Returns: Json
+      }
+      simplify_group_debts: {
+        Args: { _group_id: string }
+        Returns: {
+          amount: number
+          from_member_id: string
+          from_member_name: string
+          to_member_id: string
+          to_member_name: string
+        }[]
       }
     }
     Enums: {
