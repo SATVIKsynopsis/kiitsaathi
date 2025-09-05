@@ -52,46 +52,60 @@ export const ExportSummary = ({ groupId, groupName, currency }: ExportSummaryPro
     const lines: string[] = [];
     
     // Add group header
-    lines.push(`Group Summary: ${data.group_info.name}`);
+    lines.push(`SplitSaathi Group Summary`);
+    lines.push(`Group Name: "${data.group_info.name}"`);
+    lines.push(`Description: "${data.group_info.description || 'No description'}"`);
     lines.push(`Currency: ${data.group_info.currency}`);
     lines.push(`Export Date: ${new Date().toLocaleDateString()}`);
+    lines.push(`Created: ${new Date(data.group_info.created_at).toLocaleDateString()}`);
+    lines.push('');
+    
+    // Add members
+    lines.push('GROUP MEMBERS');
+    lines.push('Name,Contact');
+    if (data.members && data.members.length > 0) {
+      data.members.forEach((member: any) => {
+        lines.push(`"${member.name}","${member.email_phone}"`);
+      });
+    }
     lines.push('');
     
     // Add expenses
-    lines.push('EXPENSES');
+    lines.push('ALL EXPENSES');
     lines.push('Date,Title,Amount,Paid By,Notes');
     
     if (data.expenses && data.expenses.length > 0) {
       data.expenses.forEach((expense: any) => {
-        const notes = expense.notes ? expense.notes.replace(/,/g, ';') : '';
-        lines.push(`${expense.date},${expense.title},${expense.amount},${expense.paid_by},"${notes}"`);
+        const notes = expense.notes ? expense.notes.replace(/"/g, '""') : '';
+        lines.push(`${expense.date},"${expense.title}",${expense.amount},"${expense.paid_by}","${notes}"`);
       });
     }
-    
     lines.push('');
     
     // Add balances
-    lines.push('BALANCES');
-    lines.push('Member,Total Paid,Total Share,Net Balance');
+    lines.push('FINAL BALANCES');
+    lines.push('Member,Total Paid,Total Share,Net Balance,Status');
     
     if (data.balances && data.balances.length > 0) {
       data.balances.forEach((balance: any) => {
-        lines.push(`${balance.member_name},${balance.total_paid},${balance.total_share},${balance.net_balance}`);
+        const status = balance.net_balance > 0 ? 'Others owe them' : balance.net_balance < 0 ? 'They owe others' : 'Settled up';
+        lines.push(`"${balance.member_name}",${balance.total_paid},${balance.total_share},${balance.net_balance},"${status}"`);
       });
     }
-    
     lines.push('');
     
-    // Add simplified debts
-    lines.push('SIMPLIFIED DEBTS');
-    lines.push('From,To,Amount');
-    
+    // Add settlement instructions
     if (data.simplified_debts && data.simplified_debts.length > 0) {
-      data.simplified_debts.forEach((debt: any) => {
-        lines.push(`${debt.from},${debt.to},${debt.amount}`);
+      lines.push('SETTLEMENT INSTRUCTIONS');
+      lines.push('Step,Who Should Pay,Who Should Receive,Amount,Instructions');
+      data.simplified_debts.forEach((debt: any, index: number) => {
+        lines.push(`${index + 1},"${debt.from}","${debt.to}",${debt.amount},"${debt.from} should pay ${currency}${debt.amount} to ${debt.to}"`);
       });
+      lines.push('');
+      lines.push(`Total Transactions Required: ${data.simplified_debts.length}`);
     } else {
-      lines.push('No debts - all settled!');
+      lines.push('SETTLEMENT STATUS');
+      lines.push('Status: All debts are already settled!');
     }
     
     downloadFile(lines.join('\n'), `${groupName}-summary.csv`, 'text/csv');
@@ -99,9 +113,41 @@ export const ExportSummary = ({ groupId, groupName, currency }: ExportSummaryPro
 
   const exportAsJSON = (data: any) => {
     const exportData = {
-      ...data,
-      exported_at: new Date().toISOString(),
-      export_format: 'json'
+      group_summary: {
+        ...data.group_info,
+        export_date: new Date().toISOString(),
+        total_members: data.members?.length || 0,
+        total_expenses: data.expenses?.length || 0,
+        total_amount: data.expenses?.reduce((sum: number, exp: any) => sum + exp.amount, 0) || 0
+      },
+      members: data.members || [],
+      expenses: data.expenses || [],
+      balances: (data.balances || []).map((balance: any) => ({
+        ...balance,
+        status: balance.net_balance > 0 ? 'owed_money' : balance.net_balance < 0 ? 'owes_money' : 'settled',
+        amount_description: balance.net_balance > 0 
+          ? `Others owe ${currency}${Math.abs(balance.net_balance)}` 
+          : balance.net_balance < 0 
+          ? `Owes ${currency}${Math.abs(balance.net_balance)}`
+          : 'All settled up'
+      })),
+      settlement_plan: {
+        transactions_needed: data.simplified_debts?.length || 0,
+        status: (data.simplified_debts?.length || 0) === 0 ? 'all_settled' : 'pending_settlements',
+        instructions: (data.simplified_debts || []).map((debt: any, index: number) => ({
+          step: index + 1,
+          from: debt.from,
+          to: debt.to,
+          amount: debt.amount,
+          instruction: `${debt.from} should pay ${currency}${debt.amount} to ${debt.to}`
+        }))
+      },
+      export_metadata: {
+        exported_at: new Date().toISOString(),
+        exported_by: 'SplitSaathi',
+        version: '2.0',
+        format: 'json'
+      }
     };
     
     downloadFile(
@@ -161,12 +207,17 @@ export const ExportSummary = ({ groupId, groupName, currency }: ExportSummaryPro
         <div className="bg-muted/50 p-4 rounded-lg">
           <h4 className="font-medium mb-2">Export includes:</h4>
           <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Group information and members</li>
-            <li>• All expenses with details and splits</li>
-            <li>• Current member balances</li>
-            <li>• Simplified debt settlement plan</li>
-            <li>• Export timestamp for records</li>
+            <li>• Complete group information and member details</li>
+            <li>• All expenses with splits and payment details</li>
+            <li>• Current balances for each member</li>
+            <li>• Step-by-step settlement instructions</li>
+            <li>• Who-owes-whom breakdown for easy sharing</li>
+            <li>• Export timestamp and metadata</li>
           </ul>
+          
+          <div className="mt-3 p-2 bg-green-50 rounded text-sm text-green-700">
+            💡 <strong>Tip:</strong> Share the CSV file with your group so everyone knows exactly what to pay!
+          </div>
         </div>
         
         <Button 

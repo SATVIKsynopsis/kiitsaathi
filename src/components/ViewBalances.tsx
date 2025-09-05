@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, Users, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, DollarSign, ArrowRight, CheckCircle } from "lucide-react";
 
 interface Balance {
   member_id: string;
@@ -16,6 +17,12 @@ interface Balance {
   net_balance: number;
 }
 
+interface Settlement {
+  from_name: string;
+  to_name: string;
+  amount: number;
+}
+
 interface ViewBalancesProps {
   groupId: string;
   currency: string;
@@ -23,12 +30,49 @@ interface ViewBalancesProps {
 
 export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
   const [balances, setBalances] = useState<Balance[]>([]);
+  const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadBalances();
   }, [groupId]);
+
+  const calculateSettlements = (balances: Balance[]): Settlement[] => {
+    const creditors = balances.filter(b => b.net_balance > 0.01).sort((a, b) => b.net_balance - a.net_balance);
+    const debtors = balances.filter(b => b.net_balance < -0.01).sort((a, b) => a.net_balance - b.net_balance);
+    
+    const settlements: Settlement[] = [];
+    let creditorIndex = 0;
+    let debtorIndex = 0;
+    
+    // Create copies to avoid mutating original arrays
+    const creditorsCopy = creditors.map(c => ({ ...c }));
+    const debtorsCopy = debtors.map(d => ({ ...d }));
+    
+    while (creditorIndex < creditorsCopy.length && debtorIndex < debtorsCopy.length) {
+      const creditor = creditorsCopy[creditorIndex];
+      const debtor = debtorsCopy[debtorIndex];
+      
+      const settlementAmount = Math.min(creditor.net_balance, Math.abs(debtor.net_balance));
+      
+      if (settlementAmount > 0.01) {  // Only include settlements above 1 cent
+        settlements.push({
+          from_name: debtor.member_name,
+          to_name: creditor.member_name,
+          amount: settlementAmount
+        });
+      }
+      
+      creditor.net_balance -= settlementAmount;
+      debtor.net_balance += settlementAmount;
+      
+      if (Math.abs(creditor.net_balance) < 0.01) creditorIndex++;
+      if (Math.abs(debtor.net_balance) < 0.01) debtorIndex++;
+    }
+    
+    return settlements;
+  };
 
   const loadBalances = async () => {
     try {
@@ -38,7 +82,9 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
       });
 
       if (error) throw error;
-      setBalances(data || []);
+      const balanceData = data || [];
+      setBalances(balanceData);
+      setSettlements(calculateSettlements(balanceData));
     } catch (error: any) {
       toast({
         title: "Error loading balances",
@@ -155,11 +201,55 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
             </div>
           </div>
         ))}
+
+        {/* Settlement Suggestions */}
+        {settlements.length > 0 && (
+          <>
+            <Separator className="my-6" />
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <h3 className="text-lg font-semibold">Settlement Suggestions</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Here's how to settle all debts with {settlements.length} simple transaction{settlements.length !== 1 ? 's' : ''}:
+              </p>
+              
+              <div className="space-y-3">
+                {settlements.map((settlement, index) => (
+                  <div 
+                    key={`${settlement.from_name}-${settlement.to_name}-${index}`}
+                    className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg"
+                  >
+                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-xs font-semibold text-green-800">
+                      {index + 1}
+                    </div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="font-medium text-green-900">{settlement.from_name}</span>
+                      <ArrowRight className="w-4 h-4 text-green-600" />
+                      <span className="font-medium text-green-900">{settlement.to_name}</span>
+                    </div>
+                    <div className="font-bold text-green-700">
+                      {formatAmount(settlement.amount)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>💡 Tip:</strong> After these payments, everyone will be settled up! 
+                  Copy this list to share with your group.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
         
         <Button 
           variant="outline" 
           onClick={loadBalances} 
-          className="w-full"
+          className="w-full mt-4"
         >
           Refresh Balances
         </Button>
