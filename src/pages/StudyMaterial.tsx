@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import { 
-  BookOpen, 
-  FileQuestion, 
-  Youtube, 
-  MessageSquare, 
-  Search, 
   Plus,
-  Eye,
-  Star,
+  MessageSquare, 
+  X,
+  AlertTriangle,
+  Loader,
+  Youtube,
+  ChevronRight,
   Clock,
   Users,
-  ChevronRight,
-  X,
-  Shield,
-  AlertTriangle,
-  Loader
+  Star,
+  Eye
 } from "lucide-react";
 import { createClient } from '@supabase/supabase-js';
 import { Footer } from "../components/Footer";
+import { FilterBar } from "@/components/study-materials/FilterBar";
+import { DataTable } from "@/components/study-materials/DataTable";
+import { TabNavigation } from "@/components/study-materials/TabNavigation";
+import { dummyStudyMaterials, subjects, semesters, years, StudyMaterialItem } from "@/data/studyMaterials";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -59,6 +59,7 @@ export default function StudyMaterial() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedSemester, setSelectedSemester] = useState("all");
+  const [selectedYear, setSelectedYear] = useState("all");
   const [activeSection, setActiveSection] = useState("notes");
   const [selectedPdf, setSelectedPdf] = useState<SecurePDFData | null>(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
@@ -66,8 +67,6 @@ export default function StudyMaterial() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [notes, setNotes] = useState<StudyMaterial[]>([]);
-  const [pyqs, setPyqs] = useState<StudyMaterial[]>([]);
   const [user, setUser] = useState<any>(null);
 
   // Get current user session
@@ -123,39 +122,37 @@ export default function StudyMaterial() {
     ]
   };
 
-  const semesters = [1, 2, 3, 4, 5, 6, 7, 8];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
+  // Filter function for study materials
+  const filterMaterials = (materials: StudyMaterialItem[]) => {
+    return materials.filter(item => {
+      const matchesSearch = searchQuery === "" || 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.subject.toLowerCase().includes(searchQuery.toLowerCase());
       
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('pdfs')
-          .select('*')
-          .eq('type', activeSection === 'notes' ? 'note' : 'pyq');
-          
-        if (error) {
-          setError(error.message);
-        } else if (data) {
-          const notesData = data.filter(d => d.type === 'note');
-          const pyqsData = data.filter(d => d.type === 'pyq');
-          setNotes(notesData);
-          setPyqs(pyqsData);
-        }
-      } catch (err: any) {
-        setError(`Failed to fetch data: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [activeSection, user]);
+      const matchesSubject = selectedSubject === "all" || item.subject === selectedSubject;
+      const matchesSemester = selectedSemester === "all" || item.semester === selectedSemester;
+      const matchesYear = selectedYear === "all" || item.year === selectedYear;
+      
+      return matchesSearch && matchesSubject && matchesSemester && matchesYear;
+    });
+  };
 
-// Updated openSecurePdfViewer function in StudyMaterial.tsx
-// In gen-secure-pdf-url/index.ts
+  // Get filtered materials for current section
+  const getCurrentMaterials = () => {
+    const filteredMaterials = dummyStudyMaterials.filter(item => item.type === (activeSection === 'notes' ? 'note' : 'pyq'));
+    return filterMaterials(filteredMaterials);
+  };
 
+  // Handle PDF viewing (using the existing secure viewer logic)
+  const handleViewPDF = (id: number) => {
+    // Find the material by id and use its pdf_id if available
+    const material = dummyStudyMaterials.find(m => m.id === id);
+    if (material) {
+      // For now, just show an alert since we're using dummy data
+      alert(`Opening PDF: ${material.title}\nThis will be connected to secure PDF viewer once real data is available.`);
+      // In the future: openSecurePdfViewer(material.pdf_id);
+    }
+  };
 
 const openSecurePdfViewer = async (pdfId: number) => {
   if (!user) {
@@ -242,7 +239,6 @@ console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
   }
 };
 
-
   // Get user IP address
   const getUserIP = async (): Promise<string> => {
     try {
@@ -253,20 +249,6 @@ console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
       console.warn('Failed to get IP address:', error);
       return "127.0.0.1";
     }
-  };
-
-  // Filter function for study materials
-  const filterMaterials = (materials: StudyMaterial[]) => {
-    return materials.filter(item => {
-      const matchesSearch = searchQuery === "" || 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.subject.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesSubject = selectedSubject === "all" || item.subject === selectedSubject;
-      const matchesSemester = selectedSemester === "all" || item.semester === selectedSemester;
-      
-      return matchesSearch && matchesSubject && matchesSemester;
-    });
   };
 
   if (!user && !loading) {
@@ -281,180 +263,92 @@ console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-1 p-6">
-        {/* Header and Search Bar */}
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Study Materials</h1>
-          <div className="flex gap-2">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Study Materials</h1>
+            <p className="text-muted-foreground">Access notes, previous year questions, and study resources</p>
+          </div>
+          <div className="flex gap-3">
             <button 
               onClick={() => setRequestDialogOpen(true)} 
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
+              className="bg-kiit-secondary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-kiit-secondary/90 transition-colors shadow-md hover:shadow-lg"
             >
-              <MessageSquare className="w-4 h-4" /> Request
+              <MessageSquare className="w-4 h-4" /> Request Resource
             </button>
             <button 
               onClick={() => setAddResourceDialogOpen(true)} 
-              className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600"
+              className="bg-kiit-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-kiit-primary/90 transition-colors shadow-md hover:shadow-lg"
             >
-              <Plus className="w-4 h-4" /> Add
+              <Plus className="w-4 h-4" /> Add Resource
             </button>
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
-        <div className="mb-6 flex gap-4 flex-wrap">
-          <input
-            type="text"
-            placeholder="Search by title or subject..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 min-w-64 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <select
-            value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
-            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Subjects</option>
-            <option value="DSD">DSD</option>
-            <option value="M3">M3</option>
-            <option value="DSA">DSA</option>
-          </select>
-          <select
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Semesters</option>
-            {semesters.map((s) => (
-              <option key={s} value={s.toString()}>{s} Semester</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex border-b mb-4">
-          <button
-            onClick={() => setActiveSection("notes")}
-            className={`px-4 py-2 ${activeSection === "notes" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            <BookOpen className="inline w-4 h-4 mr-2" /> Notes
-          </button>
-          <button
-            onClick={() => setActiveSection("pyqs")}
-            className={`px-4 py-2 ${activeSection === "pyqs" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            <FileQuestion className="inline w-4 h-4 mr-2" /> PYQs
-          </button>
-          <button
-            onClick={() => setActiveSection("playlists")}
-            className={`px-4 py-2 ${activeSection === "playlists" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            <Youtube className="inline w-4 h-4 mr-2" /> Playlists
-          </button>
-          <button
-            onClick={() => setActiveSection("groups")}
-            className={`px-4 py-2 ${activeSection === "groups" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            <Users className="inline w-4 h-4 mr-2" /> Groups
-          </button>
-        </div>
+        {/* Tab Navigation */}
+        <TabNavigation 
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+        />
 
         {/* Error Display */}
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-destructive">
             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
             <span>{error}</span>
-            <button onClick={() => setError("")} className="ml-auto">
+            <button onClick={() => setError("")} className="ml-auto hover:opacity-70">
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="flex justify-center py-8">
-            <Loader className="w-6 h-6 animate-spin text-blue-500" />
-          </div>
+        {/* Content */}
+        {(activeSection === "notes" || activeSection === "pyqs") && (
+          <>
+            {/* Filter Bar */}
+            <FilterBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedSubject={selectedSubject}
+              setSelectedSubject={setSelectedSubject}
+              selectedSemester={selectedSemester}
+              setSelectedSemester={setSelectedSemester}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              subjects={subjects}
+              semesters={semesters}
+              years={years}
+            />
+
+            {/* Loading */}
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader className="w-8 h-8 animate-spin text-kiit-primary" />
+              </div>
+            ) : (
+              /* Data Table */
+              <DataTable
+                materials={getCurrentMaterials()}
+                onViewPDF={handleViewPDF}
+                loading={loading}
+              />
+            )}
+          </>
         )}
 
-        {/* Content */}
-        {!loading && (
-          <div className="space-y-4">
-            {activeSection === "notes" && filterMaterials(notes).map((item) => (
-              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-                      <span>Subject: <span className="font-medium">{item.subject}</span></span>
-                      <span>Semester: <span className="font-medium">{item.semester}</span></span>
-                      <span>Uploaded by: <span className="font-medium">{item.uploaded_by}</span></span>
-                    </div>
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-4 h-4" /> {item.views || 0} views
-                      </span>
-                      {item.rating && (
-                        <span className="flex items-center gap-1">
-                          <Star className="w-4 h-4" /> {item.rating}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => openSecurePdfViewer(item.id)} 
-                    disabled={loading}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Secure View
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {activeSection === "pyqs" && filterMaterials(pyqs).map((item) => (
-              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-                      <span>Subject: <span className="font-medium">{item.subject}</span></span>
-                      <span>Semester: <span className="font-medium">{item.semester}</span></span>
-                      <span>Uploaded by: <span className="font-medium">{item.uploaded_by}</span></span>
-                    </div>
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-4 h-4" /> {item.views || 0} views
-                      </span>
-                      {item.rating && (
-                        <span className="flex items-center gap-1">
-                          <Star className="w-4 h-4" /> {item.rating}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                   
-                  <button 
-  onClick={() => openSecurePdfViewer(item.id)}
-  disabled={loading}
-  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
->
-  <Shield className="w-4 h-4" />
-  Secure View
-</button>
-                </div>
-              </div>
-            ))}
-
-            {activeSection === "playlists" && studyMaterials.playlists.map((item) => (
-              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                <div className="flex gap-4 text-sm text-gray-500 mb-3">
-                  <span>Subject: <span className="font-medium">{item.subject}</span></span>
+        {/* Playlists Section */}
+        {activeSection === "playlists" && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {studyMaterials.playlists.map((item) => (
+              <div key={item.id} className="glass-card p-6 hover:shadow-lg transition-all hover-lift">
+                <h3 className="font-semibold text-lg mb-3 text-foreground">{item.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
+                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
+                  <span className="bg-accent px-2 py-1 rounded">
+                    Subject: <span className="font-medium">{item.subject}</span>
+                  </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" /> {item.duration}
                   </span>
@@ -466,7 +360,7 @@ console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
                   href={`https://www.youtube.com/playlist?list=${item.youtubeId}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-red-600 hover:text-red-700 inline-flex items-center gap-1 font-medium"
+                  className="inline-flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors font-medium"
                 >
                   <Youtube className="w-4 h-4" />
                   View Playlist 
@@ -474,36 +368,32 @@ console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
                 </a>
               </div>
             ))}
+          </div>
+        )}
 
-            {activeSection === "groups" && studyMaterials.telegramGroups.map((item) => (
-              <div key={item.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                <h3 className="font-semibold text-lg mb-3">{item.name}</h3>
+        {/* Groups Section */}
+        {activeSection === "groups" && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {studyMaterials.telegramGroups.map((item) => (
+              <div key={item.id} className="glass-card p-6 hover:shadow-lg transition-all hover-lift">
+                <h3 className="font-semibold text-lg mb-4 text-foreground">{item.name}</h3>
                 <a 
                   href={item.link} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 font-medium"
+                  className="inline-flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  Join Group 
+                  Join Group
                   <ChevronRight className="w-4 h-4" />
                 </a>
               </div>
             ))}
-
-            {/* Empty State */}
-            {((activeSection === "notes" && filterMaterials(notes).length === 0) ||
-              (activeSection === "pyqs" && filterMaterials(pyqs).length === 0)) && (
-              <div className="text-center py-12 text-gray-500">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg mb-2">No materials found</p>
-                <p>Try adjusting your search or filter criteria</p>
-              </div>
-            )}
           </div>
         )}
+      </div>
 
-        {/* Request Dialog */}
+      {/* Request Dialog */}
         {requestDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl p-6 max-w-md w-full">
@@ -587,7 +477,6 @@ console.log('gen-secure-pdf-url response:', { urlResponse, urlError });
             </div>
           </div>
         )}
-      </div>
       <Footer />
     </div>
   );
