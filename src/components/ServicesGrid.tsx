@@ -147,7 +147,7 @@ export const ServicesGrid = () => {
       "Printouts on Demand": "/printout-on-demand", 
       "Senior Connect": "/senior-connect",
       "Handwritten Assignments": "/handwritten-assignments",
-      "KIIT Societies, Fests and Sports": "/kiit-societies",
+      "KIIT Societies, Fests and Sports": "/interview-deadlines-tracker",
       "Lost & Found Portal": "/lost-and-found",
       "Campus Tour Booking": "/campus-tour-booking",
       "SplitSaathi – Group Expense Manager": "/split-saathi",
