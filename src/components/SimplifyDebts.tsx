@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calculator, ArrowRight, CheckCircle, Info } from "lucide-react";
+import { Calculator, ArrowRight, CheckCircle, Info, RefreshCw } from "lucide-react";
 
 interface SimplifiedDebt {
   from_member_id: string;
@@ -27,6 +27,40 @@ export const SimplifyDebts = ({ groupId, currency }: SimplifyDebtsProps) => {
 
   useEffect(() => {
     loadSimplifiedDebts();
+    
+    // Set up realtime subscription for expense changes
+    const channel = supabase
+      .channel('simplified-debts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expenses',
+          filter: `group_id=eq.${groupId}`
+        },
+        () => {
+          console.log('Expense changed, reloading simplified debts...');
+          loadSimplifiedDebts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expense_splits',
+        },
+        () => {
+          console.log('Expense splits changed, reloading simplified debts...');
+          loadSimplifiedDebts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [groupId]);
 
   const loadSimplifiedDebts = async () => {
@@ -169,8 +203,10 @@ export const SimplifyDebts = ({ groupId, currency }: SimplifyDebtsProps) => {
           variant="outline" 
           onClick={loadSimplifiedDebts} 
           className="w-full mt-4"
+          disabled={loading}
         >
-          Recalculate Debts
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? 'Recalculating...' : 'Recalculate Debts'}
         </Button>
       </CardContent>
     </Card>

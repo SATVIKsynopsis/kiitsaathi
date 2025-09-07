@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, Users, DollarSign, ArrowRight, CheckCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, DollarSign, ArrowRight, CheckCircle, RefreshCw } from "lucide-react";
 
 interface Balance {
   member_id: string;
@@ -36,27 +36,68 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
 
   useEffect(() => {
     loadBalances();
+    
+    // Set up realtime subscription for expense changes
+    const channel = supabase
+      .channel('expense-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expenses',
+          filter: `group_id=eq.${groupId}`
+        },
+        () => {
+          console.log('Expense changed, reloading balances...');
+          loadBalances();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expense_splits',
+        },
+        () => {
+          console.log('Expense splits changed, reloading balances...');
+          loadBalances();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [groupId]);
 
   const calculateSettlements = (balances: Balance[]): Settlement[] => {
-    const creditors = balances.filter(b => b.net_balance > 0.01).sort((a, b) => b.net_balance - a.net_balance);
-    const debtors = balances.filter(b => b.net_balance < -0.01).sort((a, b) => a.net_balance - b.net_balance);
+    // Filter out members with minimal balances (within 1 cent)
+    const creditors = balances
+      .filter(b => b.net_balance > 0.01)
+      .sort((a, b) => b.net_balance - a.net_balance)
+      .map(c => ({ ...c })); // Create copies
+
+    const debtors = balances
+      .filter(b => b.net_balance < -0.01)
+      .sort((a, b) => a.net_balance - b.net_balance)
+      .map(d => ({ ...d })); // Create copies
     
     const settlements: Settlement[] = [];
     let creditorIndex = 0;
     let debtorIndex = 0;
     
-    // Create copies to avoid mutating original arrays
-    const creditorsCopy = creditors.map(c => ({ ...c }));
-    const debtorsCopy = debtors.map(d => ({ ...d }));
-    
-    while (creditorIndex < creditorsCopy.length && debtorIndex < debtorsCopy.length) {
-      const creditor = creditorsCopy[creditorIndex];
-      const debtor = debtorsCopy[debtorIndex];
+    while (creditorIndex < creditors.length && debtorIndex < debtors.length) {
+      const creditor = creditors[creditorIndex];
+      const debtor = debtors[debtorIndex];
       
-      const settlementAmount = Math.min(creditor.net_balance, Math.abs(debtor.net_balance));
+      const settlementAmount = Math.min(
+        Math.round(creditor.net_balance * 100) / 100,
+        Math.round(Math.abs(debtor.net_balance) * 100) / 100
+      );
       
-      if (settlementAmount > 0.01) {  // Only include settlements above 1 cent
+      if (settlementAmount > 0.01) {
         settlements.push({
           from_name: debtor.member_name,
           to_name: creditor.member_name,
@@ -64,8 +105,8 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
         });
       }
       
-      creditor.net_balance -= settlementAmount;
-      debtor.net_balance += settlementAmount;
+      creditor.net_balance = Math.round((creditor.net_balance - settlementAmount) * 100) / 100;
+      debtor.net_balance = Math.round((debtor.net_balance + settlementAmount) * 100) / 100;
       
       if (Math.abs(creditor.net_balance) < 0.01) creditorIndex++;
       if (Math.abs(debtor.net_balance) < 0.01) debtorIndex++;
@@ -84,8 +125,15 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
       if (error) throw error;
       const balanceData = data || [];
       setBalances(balanceData);
-      setSettlements(calculateSettlements(balanceData));
+      
+      // Calculate settlements with the updated balance data
+      const settlements = calculateSettlements(balanceData);
+      setSettlements(settlements);
+      
+      console.log('Balance data loaded:', balanceData);
+      console.log('Settlements calculated:', settlements);
     } catch (error: any) {
+      console.error('Error loading balances:', error);
       toast({
         title: "Error loading balances",
         description: error.message,
@@ -250,8 +298,10 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
           variant="outline" 
           onClick={loadBalances} 
           className="w-full mt-4"
+          disabled={loading}
         >
-          Refresh Balances
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? 'Refreshing...' : 'Refresh Balances'}
         </Button>
       </CardContent>
     </Card>
