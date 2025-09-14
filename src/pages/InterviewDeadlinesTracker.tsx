@@ -104,6 +104,8 @@ const InterviewDeadlinesTracker = () => {
     };
   };
 
+  const viewOptions: View[] = [Views.MONTH, Views.WEEK, Views.DAY];
+
   const CustomToolbar = ({ label, onNavigate, onView }: any) => (
     <div className="flex flex-col lg:flex-row items-center justify-between mb-6 gap-4">
       <div className="flex items-center gap-4">
@@ -137,7 +139,7 @@ const InterviewDeadlinesTracker = () => {
       </div>
       
       <div className="flex items-center gap-2">
-        {Object.values(Views).map((viewOption) => (
+        {viewOptions.map((viewOption) => (
           <Button
             key={viewOption}
             variant={view === viewOption ? "default" : "outline"}
