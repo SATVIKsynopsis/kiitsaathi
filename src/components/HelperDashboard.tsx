@@ -5,13 +5,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PrintJobCard } from './PrintJobCard';
+import { HelperPreferences } from './HelperPreferences';
 import { usePrintJobManager } from '@/hooks/usePrintJobManager';
 import { useAuth } from '@/hooks/useAuth';
-import { DollarSign, FileText, Clock, CheckCircle } from 'lucide-react';
+import { DollarSign, FileText, Clock, CheckCircle, Settings } from 'lucide-react';
 
 export function HelperDashboard() {
   const { user } = useAuth();
-  const { acceptJob, updateJobStatus, downloadFile, fetchJobs, isLoading } = usePrintJobManager();
+  const { 
+    acceptJob, 
+    updateJobStatus, 
+    downloadFile, 
+    sendToShopkeeper,
+    notifyStatusUpdate,
+    fetchJobs, 
+    isLoading 
+  } = usePrintJobManager();
   const [availableJobs, setAvailableJobs] = useState<any[]>([]);
   const [myJobs, setMyJobs] = useState<any[]>([]);
   const [completedJobs, setCompletedJobs] = useState<any[]>([]);
@@ -70,6 +79,10 @@ export function HelperDashboard() {
   const handleAcceptJob = async (jobId: string) => {
     const success = await acceptJob(jobId);
     if (success) {
+      // Send notification to customer
+      if (user) {
+        await notifyStatusUpdate(jobId, 'accepted', user.email || 'Helper');
+      }
       loadJobs();
     }
   };
@@ -77,12 +90,20 @@ export function HelperDashboard() {
   const handleUpdateStatus = async (jobId: string, status: string) => {
     const success = await updateJobStatus(jobId, status);
     if (success) {
+      // Send notification to customer
+      if (user) {
+        await notifyStatusUpdate(jobId, status, user.email || 'Helper');
+      }
       loadJobs();
     }
   };
 
   const handleDownloadFile = async (filePath: string, fileName: string) => {
     await downloadFile(filePath, fileName);
+  };
+
+  const handleSendToShopkeeper = async (jobId: string, method: 'email' | 'whatsapp') => {
+    await sendToShopkeeper(jobId, method);
   };
 
   return (
@@ -148,7 +169,7 @@ export function HelperDashboard() {
 
       {/* Job Management Tabs */}
       <Tabs defaultValue="available" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="available" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
             Available Jobs
@@ -175,6 +196,10 @@ export function HelperDashboard() {
                 {stats.totalJobs}
               </Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="preferences" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Settings
           </TabsTrigger>
         </TabsList>
 
@@ -236,6 +261,7 @@ export function HelperDashboard() {
                       userType="helper"
                       onUpdateStatus={handleUpdateStatus}
                       onDownload={handleDownloadFile}
+                      onSendToShopkeeper={handleSendToShopkeeper}
                       isLoading={isLoading}
                     />
                   ))}
@@ -275,6 +301,11 @@ export function HelperDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Helper Preferences */}
+        <TabsContent value="preferences" className="space-y-4">
+          <HelperPreferences />
         </TabsContent>
       </Tabs>
 
