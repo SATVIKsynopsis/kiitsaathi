@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StudyMaterialItem } from "@/data/studyMaterials";
 
 interface DataTableProps {
   materials: StudyMaterialItem[];

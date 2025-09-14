@@ -29,7 +29,8 @@ interface StudyMaterialItem {
   title: string;
   subject: string;
   semester: string;
-  year?: string;
+  year: string;
+  type: 'note' | 'pyq';
   views: number;
   uploadedBy: string;
   uploadDate: string;
