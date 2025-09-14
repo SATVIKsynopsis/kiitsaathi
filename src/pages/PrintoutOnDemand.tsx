@@ -16,6 +16,7 @@ import { Footer } from '@/components/Footer';
 import { HelperDashboard } from '@/components/HelperDashboard';
 import { PrintJobCard } from '@/components/PrintJobCard';
 import { PrintJobTester } from '@/components/PrintJobTester';
+import { SystemStatus } from '@/components/SystemStatus';
 import { usePrintJobManager } from '@/hooks/usePrintJobManager';
 import { useAuth } from '@/hooks/useAuth';
 import { GuestBrowsingBanner } from '@/components/GuestBrowsingBanner';
@@ -241,6 +242,19 @@ const PrintoutOnDemand = () => {
       {/* Main Content */}
       <section className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
+          
+          {/* System Status Check */}
+          <div className="mb-8">
+            <SystemStatus />
+          </div>
+          
+          {/* Debug Tools - Visible for logged in users */}
+          {user && (
+            <div className="mb-8">
+              <PrintJobTester />
+            </div>
+          )}
+          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="student" className="flex items-center gap-2">
