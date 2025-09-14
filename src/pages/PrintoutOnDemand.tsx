@@ -15,6 +15,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { HelperDashboard } from '@/components/HelperDashboard';
 import { PrintJobCard } from '@/components/PrintJobCard';
+import { PrintJobTester } from '@/components/PrintJobTester';
 import { usePrintJobManager } from '@/hooks/usePrintJobManager';
 import { useAuth } from '@/hooks/useAuth';
 import { GuestBrowsingBanner } from '@/components/GuestBrowsingBanner';
@@ -83,32 +84,46 @@ const PrintoutOnDemand = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 20 * 1024 * 1024) {
-        toast.error('File size must be less than 20MB');
+      console.log('File selected:', { name: file.name, size: file.size, type: file.type });
+      
+      // File type validation
+      if (file.type !== 'application/pdf') {
+        toast.error('Only PDF files are allowed');
+        e.target.value = ''; // Clear the input
         return;
       }
       
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Only PDF, JPG, and PNG files are allowed');
+      // File size validation (20MB limit)
+      const maxSize = 20 * 1024 * 1024; // 20MB
+      if (file.size > maxSize) {
+        toast.error('File size must be less than 20MB');
+        e.target.value = ''; // Clear the input
         return;
       }
       
       setSelectedFile(file);
-      // Simulate page count calculation
+      
+      // Simulate page count calculation - in production, you'd use a PDF parsing library
       if (file.type === 'application/pdf') {
-        setPageCount(Math.floor(Math.random() * 10) + 1);
+        // For now, estimate based on file size (rough approximation)
+        const estimatedPages = Math.max(1, Math.floor(file.size / (100 * 1024))); // ~100KB per page
+        setPageCount(Math.min(estimatedPages, 50)); // Cap at 50 pages for safety
+        console.log('Estimated page count:', estimatedPages);
       } else {
         setPageCount(1);
       }
+      
+      toast.success('File uploaded successfully! 📄');
     }
   };
 
   const handleStudentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', { formData, selectedFile, pageCount, privacyAccepted });
+    
     if (!selectedFile) {
-      toast.error('Please select a file to print');
+      toast.error('Please select a PDF file to print');
       return;
     }
 
@@ -122,23 +137,37 @@ const PrintoutOnDemand = () => {
       return;
     }
 
+    // Validate required fields
+    if (!formData.studentName.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+
+    if (!formData.studentContact.trim()) {
+      toast.error('Please enter your contact number');
+      return;
+    }
+
+    if (!formData.deliveryLocation.trim()) {
+      toast.error('Please enter delivery/pickup location');
+      return;
+    }
+
     const costs = calculateCosts();
     
     const jobData = {
-      user_id: user.id, // Required for RLS policy
       file_name: selectedFile.name,
-      file_url: '', // Will be set by upload
       file_size: selectedFile.size,
       page_count: pageCount,
       copies: formData.copies,
       print_type: formData.printType,
       paper_size: formData.paperSize,
-      binding_option: formData.bindingOption,
+      binding_option: formData.bindingOption || null,
       delivery_location: formData.deliveryLocation,
-      delivery_time: formData.deliveryTime,
+      delivery_time: formData.deliveryTime || null,
       delivery_type: formData.deliveryType,
       delivery_fee: costs.delivery,
-      additional_notes: formData.additionalNotes,
+      additional_notes: formData.additionalNotes || null,
       student_name: formData.studentName,
       student_contact: formData.studentContact,
       total_cost: costs.total,
@@ -148,10 +177,13 @@ const PrintoutOnDemand = () => {
       privacy_acknowledged: true
     };
 
+    console.log('Submitting job with calculated costs:', costs);
+    console.log('Final job data:', jobData);
+
     const success = await createPrintJob(jobData, selectedFile);
     
     if (success) {
-      // Reset form
+      // Reset form on success
       setFormData({
         studentName: '',
         studentContact: '',
@@ -170,7 +202,12 @@ const PrintoutOnDemand = () => {
       
       // Switch to orders tab to see the job
       setActiveTab('orders');
-      loadMyJobs();
+      // Reload user jobs
+      if (user) {
+        setTimeout(() => {
+          loadMyJobs();
+        }, 1000); // Give time for the job to be created
+      }
     }
   };
 
@@ -191,6 +228,15 @@ const PrintoutOnDemand = () => {
           </p>
         </div>
       </section>
+
+      {/* Debug Tools - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <section className="container mx-auto px-4 mb-8">
+          <div className="max-w-4xl mx-auto">
+            <PrintJobTester />
+          </div>
+        </section>
+      )}
 
       {/* Main Content */}
       <section className="container mx-auto px-4 py-8">
@@ -282,21 +328,29 @@ const PrintoutOnDemand = () => {
                         </div>
 
                         <div>
-                          <Label htmlFor="file">Upload File (PDF, JPG, PNG - Max 20MB)</Label>
+                          <Label htmlFor="file">Upload PDF File (Max 20MB)</Label>
                           <Input
                             id="file"
                             type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
+                            accept=".pdf"
                             onChange={handleFileChange}
                             className="cursor-pointer"
                             required
                           />
                           {selectedFile && (
-                            <div className="mt-2 p-3 bg-campus-blue/10 rounded-lg">
-                              <p className="text-sm font-medium">{selectedFile.name}</p>
-                              <p className="text-sm text-muted-foreground">
+                            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex items-center gap-2 text-green-800">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <p className="text-sm font-medium">✅ {selectedFile.name}</p>
+                              </div>
+                              <p className="text-sm text-green-600 mt-1">
                                 Pages: {pageCount} | Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                               </p>
+                              {selectedFile.type === 'application/pdf' && (
+                                <p className="text-xs text-green-500 mt-1">
+                                  PDF ready for printing
+                                </p>
+                              )}
                             </div>
                           )}
                         </div>
@@ -400,17 +454,28 @@ const PrintoutOnDemand = () => {
                           />
                         </div>
 
-                          <Button 
-                            type="submit" 
-                            className="w-full py-6 text-lg"
-                            disabled={isLoading || !selectedFile || !privacyAccepted || !user}
-                          >
-                            {isLoading ? 'Submitting...' : 
-                             !user ? 'Sign In to Submit Order' :
-                             !selectedFile ? 'Please Upload File' :
-                             !privacyAccepted ? 'Accept Privacy Notice' :
-                             'Pay & Confirm Order 💳'}
-                           </Button>
+                            <Button 
+                              type="submit" 
+                              className="w-full py-6 text-lg bg-gradient-to-r from-campus-blue to-campus-purple hover:from-campus-blue/90 hover:to-campus-purple/90"
+                              disabled={isLoading || !selectedFile || !privacyAccepted || !user}
+                            >
+                              {isLoading ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  Submitting Print Job...
+                                </div>
+                              ) : !user ? (
+                                'Sign In to Submit Order'
+                              ) : !selectedFile ? (
+                                'Please Upload PDF File'
+                              ) : !privacyAccepted ? (
+                                'Accept Privacy Notice First'
+                              ) : (
+                                <>
+                                  🖨️ Submit Print Job (₹{costs.total})
+                                </>
+                              )}
+                            </Button>
                            
                            {/* Debug info - remove in production */}
                            {process.env.NODE_ENV === 'development' && (

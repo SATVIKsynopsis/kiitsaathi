@@ -1505,7 +1505,7 @@ export type Database = {
           token_expires_at: string | null
           total_cost: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           accepted_at?: string | null
@@ -1539,7 +1539,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost: number
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           accepted_at?: string | null
@@ -1573,7 +1573,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
