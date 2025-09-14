@@ -264,7 +264,6 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { 
           'Content-Type': 'application/json', 
           ...corsHeaders,
-          // Additional security headers
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'DENY',
           'X-XSS-Protection': '1; mode=block'
@@ -317,9 +316,8 @@ async function logAccess(
       });
   } catch (error) {
     console.error('Failed to log access:', error);
-    // Don't throw error here as it's just logging
+    
   }
 }
 
-// Start the server
 serve(handler);
