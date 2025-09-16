@@ -24,6 +24,10 @@ Beautiful, vibrant colors inspired by campus life and modern design
     --campus-blue: 210 80% 55%;
     --campus-orange: 25 90% 60%;
     --campus-purple: 270 70% 60%;
+    
+    /* KIIT Primary/Secondary for compatibility */
+    --kiit-primary: var(--kiit-green);
+    --kiit-secondary: var(--campus-blue);
     --glass-white: 0 0% 100%;
     --glass-overlay: 0 0% 100% / 0.1;
 
