@@ -12,6 +12,7 @@ import {
 import { createClient } from '@supabase/supabase-js';
 import { DataTable } from "@/components/study-materials/DataTable";
 import { Footer } from "../components/Footer";
+import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/study-materials/FilterBar";
 import { TabNavigation } from "@/components/study-materials/TabNavigation";
 import { Button } from "@/components/ui/button";
