@@ -10,11 +10,13 @@ import { Calculator, Download, RotateCcw, TrendingUp, BookOpen } from 'lucide-re
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { curriculum } from '@/data/curriculum';
 import { toast } from 'sonner';
+import { Navbar } from '@/components/Navbar';
 
 interface Subject {
   name: string;
   credits: number;
-  grade?: number;
+  grade?: string;
+  gradePoints?: number;
 }
 
 interface SemesterData {
@@ -30,14 +32,31 @@ const SGPACalculator = () => {
   const [semesterHistory, setSemesterHistory] = useState<SemesterData[]>([]);
   const [currentSGPA, setCurrentSGPA] = useState<number>(0);
   const [cgpa, setCGPA] = useState<number>(0);
+  const [showResults, setShowResults] = useState<boolean>(false);
 
   const branches = Object.keys(curriculum);
   const semesters = selectedBranch ? Object.keys(curriculum[selectedBranch]) : [];
+  
+  const gradeOptions = [
+    { label: 'O', value: 'O', points: 10 },
+    { label: 'E', value: 'E', points: 9 },
+    { label: 'A', value: 'A', points: 8 },
+    { label: 'B', value: 'B', points: 7 },
+    { label: 'C', value: 'C', points: 6 },
+    { label: 'D', value: 'D', points: 5 },
+    { label: 'F', value: 'F', points: 0 }
+  ];
+
+  const getGradePoints = (grade: string): number => {
+    const gradeOption = gradeOptions.find(g => g.value === grade);
+    return gradeOption ? gradeOption.points : 0;
+  };
 
   useEffect(() => {
     if (selectedBranch && selectedSemester) {
       const semesterSubjects = curriculum[selectedBranch][selectedSemester] || [];
-      setSubjects(semesterSubjects.map(sub => ({ ...sub, grade: undefined })));
+      setSubjects(semesterSubjects.map(sub => ({ ...sub, grade: undefined, gradePoints: undefined })));
+      setShowResults(false);
     }
   }, [selectedBranch, selectedSemester]);
 
@@ -50,14 +69,17 @@ const SGPACalculator = () => {
   }, [semesterHistory]);
 
   const calculateSGPA = () => {
-    const validGrades = subjects.filter(sub => sub.grade !== undefined && sub.grade !== null);
+    const validGrades = subjects.filter(sub => sub.grade !== undefined && sub.grade !== null && sub.grade !== '');
     if (validGrades.length === 0) {
       setCurrentSGPA(0);
       return;
     }
 
     const totalCredits = validGrades.reduce((sum, sub) => sum + sub.credits, 0);
-    const totalPoints = validGrades.reduce((sum, sub) => sum + (sub.credits * (sub.grade || 0)), 0);
+    const totalPoints = validGrades.reduce((sum, sub) => {
+      const gradePoints = getGradePoints(sub.grade || '');
+      return sum + (sub.credits * gradePoints);
+    }, 0);
     
     const sgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0;
     setCurrentSGPA(Math.round(sgpa * 100) / 100);
@@ -75,7 +97,8 @@ const SGPACalculator = () => {
 
     const totalPoints = semesterHistory.reduce((sum, sem) => {
       return sum + sem.subjects.reduce((subSum, sub) => {
-        return subSum + (sub.credits * (sub.grade || 0));
+        const gradePoints = getGradePoints(sub.grade || '');
+        return subSum + (sub.credits * gradePoints);
       }, 0);
     }, 0);
 
@@ -84,15 +107,22 @@ const SGPACalculator = () => {
   };
 
   const handleGradeChange = (index: number, grade: string) => {
-    const gradeValue = parseFloat(grade);
-    if (gradeValue < 0 || gradeValue > 10) {
-      toast.error('Grade must be between 0 and 10');
+    const updatedSubjects = [...subjects];
+    updatedSubjects[index].grade = grade;
+    updatedSubjects[index].gradePoints = getGradePoints(grade);
+    setSubjects(updatedSubjects);
+  };
+
+  const calculateResults = () => {
+    const validGrades = subjects.filter(sub => sub.grade && sub.grade !== '');
+    if (validGrades.length === 0) {
+      toast.error('Please select grades for at least one subject');
       return;
     }
-
-    const updatedSubjects = [...subjects];
-    updatedSubjects[index].grade = gradeValue || undefined;
-    setSubjects(updatedSubjects);
+    
+    calculateSGPA();
+    setShowResults(true);
+    toast.success('SGPA calculated successfully!');
   };
 
   const addSemesterToHistory = () => {
@@ -103,7 +133,7 @@ const SGPACalculator = () => {
 
     const semesterData: SemesterData = {
       semester: parseInt(selectedSemester),
-      subjects: subjects.filter(sub => sub.grade !== undefined),
+      subjects: subjects.filter(sub => sub.grade !== undefined && sub.grade !== ''),
       sgpa: currentSGPA
     };
 
@@ -126,6 +156,7 @@ const SGPACalculator = () => {
     setSemesterHistory([]);
     setCurrentSGPA(0);
     setCGPA(0);
+    setShowResults(false);
     toast.success('Calculator reset successfully');
   };
 
@@ -143,8 +174,9 @@ const SGPACalculator = () => {
     let csvContent = 'Semester,Subject,Credits,Grade,Points\n';
     semesterHistory.forEach(sem => {
       sem.subjects.forEach(sub => {
-        const points = sub.credits * (sub.grade || 0);
-        csvContent += `${sem.semester},"${sub.name}",${sub.credits},${sub.grade || 0},${points}\n`;
+        const gradePoints = getGradePoints(sub.grade || '');
+        const points = sub.credits * gradePoints;
+        csvContent += `${sem.semester},"${sub.name}",${sub.credits},${sub.grade || ''},${points}\n`;
       });
     });
 
@@ -167,8 +199,10 @@ const SGPACalculator = () => {
   const lowestSGPA = Math.min(...semesterHistory.map(s => s.sgpa));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
-      <div className="container mx-auto px-4 py-8">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 pt-20">
+        <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center items-center gap-3 mb-4">
@@ -227,51 +261,65 @@ const SGPACalculator = () => {
 
             {/* Subjects Table */}
             {subjects.length > 0 && (
-              <Card>
+              <Card className="bg-card/80 backdrop-blur-sm border-2">
                 <CardHeader>
-                  <CardTitle>Subject Grades</CardTitle>
+                  <CardTitle className="text-xl font-bold">Subject Grades</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Select grades for each subject. Leave blank if you don't have this subject.
+                  </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Subject</TableHead>
-                          <TableHead className="text-center">Credits</TableHead>
-                          <TableHead className="text-center">Grade (0-10)</TableHead>
-                          <TableHead className="text-center">Points</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {subjects.map((subject, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{subject.name}</TableCell>
-                            <TableCell className="text-center">{subject.credits}</TableCell>
-                            <TableCell className="text-center">
-                              <Input
-                                type="number"
-                                min="0"
-                                max="10"
-                                step="0.1"
-                                value={subject.grade || ''}
-                                onChange={(e) => handleGradeChange(index, e.target.value)}
-                                className="w-20 text-center"
-                                placeholder="0.0"
-                              />
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {subject.grade ? (subject.credits * subject.grade).toFixed(1) : '0.0'}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  <div className="space-y-4">
+                    {subjects.map((subject, index) => (
+                      <div 
+                        key={index} 
+                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 border rounded-lg bg-background/50"
+                      >
+                        <div className="flex-1 mb-2 md:mb-0">
+                          <div className="font-semibold text-lg">{subject.name}</div>
+                          <div className="text-sm text-muted-foreground">Credit: {subject.credits}</div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Select
+                            value={subject.grade || ''}
+                            onValueChange={(value) => handleGradeChange(index, value)}
+                          >
+                            <SelectTrigger className="w-24 bg-background">
+                              <SelectValue placeholder="Grade" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {gradeOptions.map((grade) => (
+                                <SelectItem key={grade.value} value={grade.value}>
+                                  {grade.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="text-sm text-muted-foreground w-16 text-center">
+                            {subject.grade ? `${(subject.credits * getGradePoints(subject.grade)).toFixed(1)} pts` : '0.0 pts'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                   
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={addSemesterToHistory} disabled={currentSGPA === 0}>
-                      Add to CGPA Calculation
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button 
+                      onClick={calculateResults}
+                      className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6"
+                    >
+                      Calculate
                     </Button>
+                    {showResults && (
+                      <Button 
+                        onClick={addSemesterToHistory} 
+                        disabled={currentSGPA === 0}
+                        variant="outline"
+                        className="border-green-600 text-green-600 hover:bg-green-50"
+                      >
+                        Add to CGPA Calculation
+                      </Button>
+                    )}
                     <Button variant="outline" onClick={resetCalculator}>
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Reset
@@ -285,43 +333,51 @@ const SGPACalculator = () => {
           {/* Right Column - Results */}
           <div className="space-y-6">
             {/* SGPA Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Current SGPA</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {currentSGPA.toFixed(2)}
+            {showResults && (
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardHeader>
+                  <CardTitle className="text-green-800">Current SGPA</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-green-700 mb-3">
+                      {currentSGPA.toFixed(2)}
+                    </div>
+                    <Badge 
+                      variant={currentSGPA >= 8.5 ? "default" : currentSGPA >= 7.0 ? "secondary" : "destructive"}
+                      className="text-lg px-4 py-1"
+                    >
+                      {currentSGPA >= 8.5 ? "Excellent" : currentSGPA >= 7.0 ? "Good" : currentSGPA > 0 ? "Average" : "Not Calculated"}
+                    </Badge>
                   </div>
-                  <Badge variant={currentSGPA >= 8.5 ? "default" : currentSGPA >= 7.0 ? "secondary" : "destructive"}>
-                    {currentSGPA >= 8.5 ? "Excellent" : currentSGPA >= 7.0 ? "Good" : currentSGPA > 0 ? "Average" : "Not Calculated"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* CGPA Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Overall CGPA</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {cgpa.toFixed(2)}
-                  </div>
-                  <Badge variant={cgpa >= 8.5 ? "default" : cgpa >= 7.0 ? "secondary" : "destructive"}>
-                    {cgpa >= 8.5 ? "Excellent" : cgpa >= 7.0 ? "Good" : cgpa > 0 ? "Average" : "Not Calculated"}
-                  </Badge>
-                  {semesterHistory.length > 0 && (
-                    <div className="mt-3 text-sm text-muted-foreground">
+            {semesterHistory.length > 0 && (
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardHeader>
+                  <CardTitle className="text-blue-800">Overall CGPA</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-blue-700 mb-3">
+                      {cgpa.toFixed(2)}
+                    </div>
+                    <Badge 
+                      variant={cgpa >= 8.5 ? "default" : cgpa >= 7.0 ? "secondary" : "destructive"}
+                      className="text-lg px-4 py-1"
+                    >
+                      {cgpa >= 8.5 ? "Excellent" : cgpa >= 7.0 ? "Good" : cgpa > 0 ? "Average" : "Not Calculated"}
+                    </Badge>
+                    <div className="mt-3 text-sm text-blue-600 font-medium">
                       Based on {semesterHistory.length} semester(s)
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Export Options */}
             <Card>
@@ -407,12 +463,12 @@ const SGPACalculator = () => {
                       <Badge variant="outline">SGPA: {sem.sgpa.toFixed(2)}</Badge>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
-                      {sem.subjects.map((sub, subIndex) => (
-                        <div key={subIndex} className="flex justify-between">
-                          <span className="truncate mr-2">{sub.name}</span>
-                          <span>{sub.grade?.toFixed(1)}</span>
-                        </div>
-                      ))}
+                    {sem.subjects.map((sub, subIndex) => (
+                      <div key={subIndex} className="flex justify-between">
+                        <span className="truncate mr-2">{sub.name}</span>
+                        <span className="font-semibold">{sub.grade}</span>
+                      </div>
+                    ))}
                     </div>
                   </div>
                 ))}
@@ -420,8 +476,9 @@ const SGPACalculator = () => {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

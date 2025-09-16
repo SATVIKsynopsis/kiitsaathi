@@ -67,6 +67,14 @@ const services = [
     gradient: "from-green-500 to-emerald-600",
   },
   {
+    icon: Calculator,
+    title: "SGPA & CGPA Calculator",
+    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
+    price: "Free",
+    gradient: "from-blue-500 to-purple-600",
+    action: () => window.location.href = "/sgpa-calculator",
+  },
+  {
     icon: Printer,
     title: "Printouts on Demand",
     description: "Too lazy to go out? Just send a PDF and get it printed and delivered.",
@@ -128,13 +136,6 @@ const services = [
     description: "Find your people, create your moments - campus meetups made easy",
     price: "Free",
     gradient: "from-pink-500 to-purple-600",
-  },
-  {
-    icon: Calculator,
-    title: "SGPA & CGPA Calculator",
-    description: "Calculate your SGPA and CGPA with accurate KIIT curriculum. Track academic performance with visual insights.",
-    price: "Free",
-    gradient: "from-campus-blue to-kiit-green",
   },
   {
     icon: ShoppingBag,

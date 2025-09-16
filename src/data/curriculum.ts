@@ -1,83 +1,84 @@
 export const curriculum: Record<string, Record<string, Array<{ name: string; credits: number }>>> = {
   CSE: {
     "1": [
-      { name: "Mathematics I", credits: 4 },
-      { name: "Physics", credits: 3 },
-      { name: "Chemistry", credits: 3 },
-      { name: "Programming for Problem Solving", credits: 4 },
-      { name: "English", credits: 3 },
-      { name: "Environmental Science", credits: 3 },
-      { name: "Physics Lab", credits: 1 },
-      { name: "Chemistry Lab", credits: 1 },
-      { name: "Programming Lab", credits: 2 }
+      { name: "PHYSICS", credits: 3 },
+      { name: "Differential Equations and Linear Algebra", credits: 4 },
+      { name: "SCIENCE OF LIVING SYSTEMS", credits: 2 },
+      { name: "ENVIRONMENTAL SCIENCE", credits: 2 },
+      { name: "PHYSICS LAB", credits: 1 },
+      { name: "PROGRAMMING LAB", credits: 4 },
+      { name: "ENGINEERING DRAWING & GRAPHICS", credits: 1 },
+      { name: "ENGINEERING ELECTIVE-II", credits: 2 },
+      { name: "SCIENCE ELECTIVE", credits: 2 }
     ],
     "2": [
-      { name: "Mathematics II", credits: 4 },
-      { name: "Basic Electronics", credits: 3 },
-      { name: "Engineering Mechanics", credits: 3 },
-      { name: "Data Structures", credits: 4 },
-      { name: "Digital Logic", credits: 3 },
-      { name: "Professional Communication", credits: 3 },
-      { name: "Electronics Lab", credits: 1 },
-      { name: "Data Structures Lab", credits: 2 },
-      { name: "Digital Logic Lab", credits: 1 }
+      { name: "CHEMISTRY", credits: 3 },
+      { name: "Transform Calculus and Numerical Analysis", credits: 4 },
+      { name: "ENGLISH", credits: 2 },
+      { name: "BASIC ELECTRONICS", credits: 2 },
+      { name: "CHEMISTRY LAB", credits: 1 },
+      { name: "YOGA", credits: 1 },
+      { name: "ENGINEERING LAB", credits: 1 },
+      { name: "WORKSHOP", credits: 1 },
+      { name: "COMMUNICATION LAB", credits: 1 },
+      { name: "ENGINEERING ELECTIVE-I", credits: 2 },
+      { name: "SOCIAL SCIENCE ELECTIVE", credits: 2 }
     ],
     "3": [
-      { name: "Mathematics III", credits: 4 },
-      { name: "Computer Organization", credits: 3 },
-      { name: "Object Oriented Programming", credits: 4 },
-      { name: "Database Management System", credits: 4 },
-      { name: "Discrete Mathematics", credits: 3 },
-      { name: "Economics", credits: 3 },
-      { name: "OOP Lab", credits: 2 },
-      { name: "DBMS Lab", credits: 2 }
+      { name: "DS", credits: 4 },
+      { name: "Digital Systems Design", credits: 3 },
+      { name: "Scientific and Technical Writing", credits: 2 },
+      { name: "Industry 4.0 Technologies", credits: 2 },
+      { name: "Automata Theory and Formal Languages", credits: 4 },
+      { name: "PS", credits: 4 },
+      { name: "DSA LAB", credits: 1 },
+      { name: "Digital Systems Design LAB", credits: 1 }
     ],
     "4": [
-      { name: "Analysis of Algorithms", credits: 4 },
-      { name: "Computer Networks", credits: 4 },
-      { name: "Operating Systems", credits: 4 },
-      { name: "Software Engineering", credits: 3 },
-      { name: "Theory of Computation", credits: 3 },
-      { name: "Probability & Statistics", credits: 3 },
-      { name: "Networks Lab", credits: 2 },
-      { name: "OS Lab", credits: 2 }
+      { name: "Scientific and Technical Writing", credits: 2 },
+      { name: "HASS Elective - II", credits: 3 },
+      { name: "OOPJ", credits: 3 },
+      { name: "OS", credits: 3 },
+      { name: "Discrete Structures", credits: 4 },
+      { name: "COA", credits: 4 },
+      { name: "DBMS", credits: 3 },
+      { name: "OOPJ LAB", credits: 1 },
+      { name: "OS LAB", credits: 1 },
+      { name: "DBMS LAB", credits: 1 },
+      { name: "Vocational Electives", credits: 1 }
     ],
     "5": [
-      { name: "Compiler Design", credits: 4 },
-      { name: "Machine Learning", credits: 4 },
-      { name: "Web Technology", credits: 3 },
-      { name: "Computer Graphics", credits: 3 },
-      { name: "Elective I", credits: 3 },
-      { name: "Management", credits: 3 },
-      { name: "ML Lab", credits: 2 },
-      { name: "Web Technology Lab", credits: 2 },
-      { name: "Graphics Lab", credits: 1 }
+      { name: "COMPUTER NETWORKS", credits: 3 },
+      { name: "DESIGN & ANALYSIS OF ALGO", credits: 3 },
+      { name: "SOFTWARE ENGINEERING", credits: 4 },
+      { name: "Engineering Economics", credits: 3 },
+      { name: "NETWORK LAB", credits: 1 },
+      { name: "ALGORITHM LAB", credits: 1 },
+      { name: "Professional Elective-1", credits: 3 },
+      { name: "Professional Elective-2", credits: 3 },
+      { name: "K-Explore Open Elective-I", credits: 1 }
     ],
     "6": [
-      { name: "Information Security", credits: 4 },
-      { name: "Data Mining", credits: 3 },
-      { name: "Mobile Computing", credits: 3 },
-      { name: "Elective II", credits: 3 },
-      { name: "Elective III", credits: 3 },
-      { name: "Minor Project", credits: 4 },
-      { name: "Security Lab", credits: 2 },
-      { name: "Data Mining Lab", credits: 2 }
+      { name: "UHV", credits: 3 },
+      { name: "AI", credits: 3 },
+      { name: "ML", credits: 4 },
+      { name: "AI LAB", credits: 1 },
+      { name: "MINI PROJECT", credits: 2 },
+      { name: "Application Development LAB", credits: 2 },
+      { name: "Professional Elective-III", credits: 3 },
+      { name: "HASS Elective- III", credits: 3 },
+      { name: "Open Elective-II/MI-1", credits: 3 }
     ],
     "7": [
-      { name: "Distributed Systems", credits: 3 },
-      { name: "Cloud Computing", credits: 3 },
-      { name: "Elective IV", credits: 3 },
-      { name: "Elective V", credits: 3 },
-      { name: "Major Project I", credits: 6 },
-      { name: "Industrial Training", credits: 2 },
-      { name: "Cloud Lab", credits: 2 }
+      { name: "HRM", credits: 3 },
+      { name: "PROFESSIONAL PRACTICE, LAW & ETHICS", credits: 2 },
+      { name: "PROJECT 1/INTERNSHIP", credits: 3 },
+      { name: "PRACTICAL TRAINING", credits: 2 },
+      { name: "Coursera Elective", credits: 3 }
     ],
     "8": [
-      { name: "Entrepreneurship", credits: 2 },
-      { name: "Elective VI", credits: 3 },
-      { name: "Major Project II", credits: 10 },
-      { name: "Seminar", credits: 2 },
-      { name: "Comprehensive Viva", credits: 3 }
+      { name: "Major Project", credits: 10 },
+      { name: "Comprehensive Viva", credits: 2 }
     ]
   },
   IT: {
