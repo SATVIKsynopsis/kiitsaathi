@@ -1360,6 +1360,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ppts: {
+        Row: {
+          branch: string
+          created_at: string | null
+          id: number
+          ppt_url: string
+          rating: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at: string | null
+          upload_date: string | null
+          uploaded_by: string
+          user_id: string | null
+          views: number | null
+        }
+        Insert: {
+          branch: string
+          created_at?: string | null
+          id?: number
+          ppt_url: string
+          rating?: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by: string
+          user_id?: string | null
+          views?: number | null
+        }
+        Update: {
+          branch?: string
+          created_at?: string | null
+          id?: number
+          ppt_url?: string
+          rating?: number | null
+          semester?: string
+          subject?: string
+          title?: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by?: string
+          user_id?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       print_helpers: {
         Row: {
           contact: string
@@ -1539,7 +1587,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost: number
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           accepted_at?: string | null
