@@ -130,6 +130,13 @@ const services = [
     gradient: "from-pink-500 to-purple-600",
   },
   {
+    icon: Calculator,
+    title: "SGPA & CGPA Calculator",
+    description: "Calculate your SGPA and CGPA with accurate KIIT curriculum. Track academic performance with visual insights.",
+    price: "Free",
+    gradient: "from-campus-blue to-kiit-green",
+  },
+  {
     icon: ShoppingBag,
     title: "Food and micro-essentials delivery",
     description: "From wholesome mini meals to everyday essentials - delivered from trusted campus and nearby stores.",
@@ -155,6 +162,7 @@ export const ServicesGrid = () => {
       "KIIT Saathi Celebrations": "/celebrations",
       "KIIT Saathi Meetups": "/meetups",
       "KIIT Saathi (AI Assistant)": "/chatbot",
+      "SGPA & CGPA Calculator": "/sgpa-calculator",
       "Food and micro-essentials delivery": "/food-order-customer",
       "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
       "Campus Map": "/campus-map"

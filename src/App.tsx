@@ -35,6 +35,7 @@ import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
 import FoodOrderHelper from "./pages/FoodOrderHelper";
 import CampusMap from "./pages/CampusMap";
+import SGPACalculator from "./pages/SGPACalculator";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/chatbot" element={<ChatBotPage />} />
             <Route path="/campus-map" element={<CampusMap />} />
+            <Route path="/sgpa-calculator" element={<SGPACalculator />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
