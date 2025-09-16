@@ -1,4 +1,5 @@
 import React from "react";
+import { Societies } from "@/assets/Societies/societiesLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -60,11 +61,11 @@ const KiitSocieties = () => {
       brief: "Fostering innovation and development through hackathons, workshops, and tech-driven projects.",
       category: "Innovation",
       members: "1,200+",
-      gradient: "from-blue-600 via-purple-600 to-indigo-700",
+      gradient: "from-black via-zinc-900 to-orange-700",
       website: "https://www.fedkiit.com/",
       instagram: "https://www.instagram.com/fedkiit/?hl=en",
       upcomingEvent: { title: "TechFest Hackathon 2024", date: "March 15-17" },
-      logoPlaceholder: "🚀"
+      logoPlaceholder: "fedkiit"
     },
     {
       name: "KIIT E-Cell",
@@ -72,11 +73,11 @@ const KiitSocieties = () => {
       brief: "Promoting entrepreneurship through mentorship, startup incubations, and networking.",
       category: "Entrepreneurship",
       members: "800+",
-      gradient: "from-orange-500 via-red-500 to-pink-600",
+      gradient: "from-black via-neutral-900 to-sky-600",
       website: "https://www.kiitecell.org/",
       instagram: "https://www.instagram.com/ecell_kiit/?hl=en",
       upcomingEvent: { title: "Startup Pitch Competition", date: "April 5-7" },
-      logoPlaceholder: "💡"
+      logoPlaceholder: "ecell"
     },
     {
       name: "USC KIIT",
@@ -84,11 +85,11 @@ const KiitSocieties = () => {
       brief: "Uniting students across cultures with leadership programs, global events, and community initiatives.",
       category: "RPA",
       members: "1,500+",
-      gradient: "from-emerald-500 via-teal-500 to-cyan-600",
+      gradient: "from-orange-500 via-orange-400 to-yellow-300",
       website: "#",
       instagram: "https://www.instagram.com/usc.kiit/?hl=en",
       upcomingEvent: { title: "International Cultural Night", date: "March 22" },
-      logoPlaceholder: "🌍"
+      logoPlaceholder: "usc"
     },
     {
       name: "IEEE CTSoC KIIT",
@@ -96,11 +97,11 @@ const KiitSocieties = () => {
       brief: "The IEEE Consumer Technology Society KIIT chapter promotes innovation in consumer electronics, IoT, AR/VR, and smart devices through research and student projects.",
       category: "Research & Technology",
       members: "120+",
-      gradient: "from-blue-600 via-sky-600 to-indigo-700",
+      gradient: "from-black via-slate-900 to-cyan-700",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "Consumer Tech Innovation Summit", date: "Coming Soon" },
-      logoPlaceholder: "📱"
+      logoPlaceholder: "ctsoc"
     },
     {
       name: "IoT Lab KIIT",
@@ -108,11 +109,11 @@ const KiitSocieties = () => {
       brief: "A student-driven research and development lab focused on Internet of Things, Embedded Systems, AI, and Robotics.",
       category: "Technical",
       members: "200+",
-      gradient: "from-blue-500 via-cyan-500 to-green-500",
+      gradient: "from-blue-500 via-cyan-500 to-white-100",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "IoT Hackathon", date: "Coming Soon" },
-      logoPlaceholder: "🔌"
+      logoPlaceholder: "iot"
     },
     {
       name: "CyberVault KIIT",
@@ -120,11 +121,11 @@ const KiitSocieties = () => {
       brief: "The official Cybersecurity & Ethical Hacking Society of KIIT, working on CTFs, penetration testing, and security research.",
       category: "Cybersecurity",
       members: "150+",
-      gradient: "from-gray-700 via-slate-800 to-black",
+      gradient: "from-black via-neutral-900 to-green-900",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "CTF Competition", date: "Coming Soon" },
-      logoPlaceholder: "🛡️"
+      logoPlaceholder: "cybervault"
     },
     {
       name: "KITPD2S",
@@ -132,35 +133,35 @@ const KiitSocieties = () => {
       brief: "KIIT’s Power Distribution & Smart Systems research group focusing on smart grids, energy systems, and sustainable power solutions.",
       category: "Research",
       members: "100+",
-      gradient: "from-yellow-400 via-orange-500 to-red-600",
+      gradient: "from-yellow-400 via-gray-800 to-black",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "Smart Grid Workshop", date: "Coming Soon" },
-      logoPlaceholder: "⚡"
+      logoPlaceholder: "kitpd2s"
     },
     {
-      name: "AI SOC KIIT",
+      name: "AISoC KIIT",
       section: "aisoc",
       brief: "Artificial Intelligence Society of KIIT, fostering learning in Machine Learning, Deep Learning, and AI research.",
       category: "AI/ML",
       members: "180+",
-      gradient: "from-purple-500 via-indigo-600 to-blue-700",
+      gradient: "from-black via-gray-700 to-gray-900",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "AI Summit", date: "Coming Soon" },
-      logoPlaceholder: "🤖"
+      logoPlaceholder: "aisoc"
     },
     {
-      name: "Microsoft Learn Student Ambassadors (MLSA KIIT)",
+      name: "MLSA KIIT",
       section: "mlsa",
       brief: "MLSA KIIT Chapter empowering students with workshops, hackathons, and resources on Microsoft technologies and beyond.",
       category: "Developer Community",
       members: "250+",
-      gradient: "from-sky-500 via-blue-600 to-indigo-700",
+      gradient: "from-indigo-700 via-indigo-900 to-black",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "MS Tech Week", date: "Coming Soon" },
-      logoPlaceholder: "🟦"
+      logoPlaceholder: "mlsa"
     },
     {
       name: "Google Developer Group (GDG) KIIT",
@@ -168,11 +169,11 @@ const KiitSocieties = () => {
       brief: "A Google-backed developer community in KIIT, exploring technologies like Android, Firebase, Flutter, and Web Dev.",
       category: "Developer Community",
       members: "300+",
-      gradient: "from-green-500 via-blue-500 to-red-500",
+      gradient: "from-yellow-500 via-yellow-400 to-gray-300",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "DevFest KIIT", date: "Coming Soon" },
-      logoPlaceholder: "🌐"
+      logoPlaceholder: "gdg"
     },
     {
       name: "Coding Ninjas KIIT Chapter",
@@ -180,11 +181,11 @@ const KiitSocieties = () => {
       brief: "A coding club supported by Coding Ninjas, conducting coding contests, DSA sessions, and interview prep workshops.",
       category: "Programming",
       members: "220+",
-      gradient: "from-orange-500 via-red-600 to-pink-600",
+      gradient: "from-orange-600 via-grey-800 to-black",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "Ninja Coding Contest", date: "Coming Soon" },
-      logoPlaceholder: "💻"
+      logoPlaceholder: "cn"
     },
     {
       name: "GeeksforGeeks KIIT Chapter",
@@ -192,11 +193,11 @@ const KiitSocieties = () => {
       brief: "The official GeeksforGeeks student chapter, focusing on coding, problem-solving, and tech interview readiness.",
       category: "Programming",
       members: "200+",
-      gradient: "from-green-600 via-emerald-500 to-teal-500",
+      gradient: "from-black via-emerald-900 to-emerald-700",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "Coding Bootcamp", date: "Coming Soon" },
-      logoPlaceholder: "📗"
+      logoPlaceholder: "gfg"
     },
     {
       name: "Model UN Society",
@@ -204,11 +205,11 @@ const KiitSocieties = () => {
       brief: "The debating and diplomacy society of KIIT, simulating UN committees to hone public speaking and leadership.",
       category: "Debate",
       members: "300+",
-      gradient: "from-blue-400 via-indigo-500 to-purple-600",
+      gradient: "from-black via-amber-900 to-amber-600",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "KIIT MUN", date: "Coming Soon" },
-      logoPlaceholder: "🌍"
+      logoPlaceholder: "mun"
     },
     {
       name: "Qutopia",
@@ -216,11 +217,11 @@ const KiitSocieties = () => {
       brief: "The official Quizzing Society of KIIT, fostering curiosity and knowledge through quizzes.",
       category: "Quiz",
       members: "250+",
-      gradient: "from-green-400 via-emerald-500 to-teal-600",
+      gradient: "from-black to-yellow-900",
       website: "#",
       instagram: "#",
       upcomingEvent: { title: "Qutopia Quiz League", date: "Coming Soon" },
-      logoPlaceholder: "❓"
+      logoPlaceholder: "qu"
     },
     {
       name: "Korus",
@@ -228,11 +229,47 @@ const KiitSocieties = () => {
       brief: "The Music & Dance Society of KIIT, nurturing talent through rhythm and performance.",
       category: "Cultural",
       members: "500+",
-      gradient: "from-pink-500 via-red-500 to-yellow-500",
+      gradient: "from-indigo-900 via-purple-600 to-pink-500",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Annual Cultural Fest", date: "Coming Soon" },
-      logoPlaceholder: "🎶"
+      upcomingEvent: { title: "Annual Cultural Fest", date: "November 21-23" },
+      logoPlaceholder: "korus"
+    },
+    {
+      name: "Kalliope",
+      section: "kalliope",
+      brief: "The official literary and public speaking society of KIIT, dedicated to eloquence, debate, and the art of words.",
+      category: "Literature & Debate",
+      members: "400+",
+      gradient: "from-indigo-900 via-blue-900 to-red-600",
+      website: "#",
+      instagram: "https://www.instagram.com/kalliope_kiit/",
+      upcomingEvent: { title: "Annual Literary Fest", date: "October 10-12" },
+      logoPlaceholder: "kalliope"
+    },
+    {
+      name: "Kronicle",
+      section: "kronicle",
+      brief: "The official literary and debating society of KIIT, fostering skills in argumentation, conflict, and convincing discourse.",
+      category: "Debate & Literature",
+      members: "350+",
+      gradient: "from-black via-gray-900 to-stone-500",
+      website: "#",
+      instagram: "#",
+      upcomingEvent: { title: "Parliamentary Debate", date: "September 26-28" },
+      logoPlaceholder: "kronicle"
+    },
+    {
+      name: "Khwaab",
+      section: "khwaab",
+      brief: "The official Social Service Society of KIIT, inspired by the 'Art of Giving', focusing on rural development and humanitarian work.",
+      category: "Social Service",
+      members: "500+",
+      gradient: "from-sky-500 via-blue-600 to-indigo-700",
+      website: "#",
+      instagram: "#",
+      upcomingEvent: { title: "Rural Outreach Program", date: "October 2" },
+      logoPlaceholder: "khwaab"
     },
     {
       name: "KIIT Automobile Society",
@@ -240,11 +277,11 @@ const KiitSocieties = () => {
       brief: "Automobile engineering enthusiasts building vehicles and exploring automotive technologies.",
       category: "Engineering",
       members: "400+",
-      gradient: "from-gray-700 via-gray-800 to-black",
+      gradient: "from-black via-slate-800 to-red-700",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Auto Expo", date: "Coming Soon" },
-      logoPlaceholder: "🚗"
+      upcomingEvent: { title: "Auto Expo 2026", date: "February 7-8" },
+      logoPlaceholder: "automobile"
     },
     {
       name: "Apogeio",
@@ -252,11 +289,11 @@ const KiitSocieties = () => {
       brief: "The Aeronautical Society of KIIT, working on aerospace technology and innovation.",
       category: "Engineering",
       members: "300+",
-      gradient: "from-sky-400 via-blue-500 to-indigo-600",
+      gradient: "from-sky-400 via-blue-600 to-indigo-900",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Aero Exhibition", date: "Coming Soon" },
-      logoPlaceholder: "✈️"
+      upcomingEvent: { title: "Aero Exhibition 2026", date: "March 15" },
+      logoPlaceholder: "apogeio"
     },
     {
       name: "KIIT Robotics Society",
@@ -264,11 +301,11 @@ const KiitSocieties = () => {
       brief: "The official Robotics Society of KIIT, pioneering automation, AI, and robotics projects.",
       category: "Engineering",
       members: "600+",
-      gradient: "from-emerald-400 via-green-500 to-teal-600",
+      gradient: "from-black via-emerald-600 to-cyan-400",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Robotics Championship", date: "Coming Soon" },
-      logoPlaceholder: "🤖"
+      upcomingEvent: { title: "Robotics Championship", date: "October 24-26" },
+      logoPlaceholder: "krs"
     },
     {
       name: "Keurig",
@@ -276,11 +313,11 @@ const KiitSocieties = () => {
       brief: "The official Cooking Society of KIIT, celebrating culinary arts and food culture.",
       category: "Food",
       members: "450+",
-      gradient: "from-orange-400 via-amber-500 to-yellow-600",
+      gradient: "from-black via-teal-800 to-cyan-500",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Food Fest", date: "Coming Soon" },
-      logoPlaceholder: "🍴"
+      upcomingEvent: { title: "Campus Food Fest", date: "November 1" },
+      logoPlaceholder: "keurig"
     },
     {
       name: "Kreative Eye",
@@ -288,23 +325,11 @@ const KiitSocieties = () => {
       brief: "Photography and Painting Society capturing moments and imagination through art.",
       category: "Arts",
       members: "600+",
-      gradient: "from-green-400 via-teal-500 to-blue-600",
+      gradient: "from-yellow-400 via-red-600 to-rose-800",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Photography Exhibition", date: "Coming Soon" },
-      logoPlaceholder: "📸"
-    },
-    {
-      name: "Karma",
-      section: "karma",
-      brief: "Society for Differently Abled, spreading inclusivity and awareness.",
-      category: "Social",
-      members: "200+",
-      gradient: "from-purple-500 via-pink-500 to-red-500",
-      website: "#",
-      instagram: "#",
-      upcomingEvent: { title: "Awareness Drive", date: "Coming Soon" },
-      logoPlaceholder: "♿"
+      upcomingEvent: { title: "Photography Exhibition", date: "September 27" },
+      logoPlaceholder: "ke"
     },
     {
       name: "Kartavya",
@@ -312,11 +337,11 @@ const KiitSocieties = () => {
       brief: "Social Responsibility Cell engaging students in social service and awareness programs.",
       category: "Social",
       members: "400+",
-      gradient: "from-teal-500 via-cyan-600 to-blue-700",
+      gradient: "from-black via-fuchsia-600 to-sky-400",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Social Impact Week", date: "Coming Soon" },
-      logoPlaceholder: "🤝"
+      upcomingEvent: { title: "Social Impact Week", date: "January 20-26, 2026" },
+      logoPlaceholder: "kartavya"
     },
     {
       name: "Kamakshi",
@@ -324,11 +349,11 @@ const KiitSocieties = () => {
       brief: "The Women’s Society of KIIT, working towards empowerment and equality.",
       category: "Social",
       members: "300+",
-      gradient: "from-pink-400 via-fuchsia-500 to-purple-600",
+      gradient: "from-purple-800 via-violet-700 to-green-500",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Women Empowerment Drive", date: "Coming Soon" },
-      logoPlaceholder: "♀️"
+      upcomingEvent: { title: "Women Empowerment Drive", date: "October 5" },
+      logoPlaceholder: "kamakshi"
     },
     {
       name: "Khetshan",
@@ -339,8 +364,8 @@ const KiitSocieties = () => {
       gradient: "from-indigo-400 via-blue-500 to-teal-600",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Global Students Meet", date: "Coming Soon" },
-      logoPlaceholder: "🌐"
+      upcomingEvent: { title: "Global Students Meet", date: "November 14" },
+      logoPlaceholder: "kintlnew"
     },
     {
       name: "Khwahishein",
@@ -348,23 +373,23 @@ const KiitSocieties = () => {
       brief: "The official Hindi Society of KIIT, celebrating Hindi literature, music, and arts.",
       category: "Cultural",
       members: "300+",
-      gradient: "from-yellow-500 via-orange-600 to-red-700",
+      gradient: "from-red-500 via-purple-600 to-blue-500",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Hindi Poetry Night", date: "Coming Soon" },
-      logoPlaceholder: "📝"
+      upcomingEvent: { title: "Hindi Poetry Night", date: "September 20" },
+      logoPlaceholder: "khwahishein"
     },
     {
-      name: "Film Society",
+      name: "KIIT Film Society",
       section: "filmsociety",
       brief: "The official film appreciation and filmmaking society of KIIT.",
       category: "Arts",
       members: "250+",
-      gradient: "from-gray-600 via-gray-700 to-black",
+      gradient: "from-black via-neutral-800 to-stone-400",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Film Festival", date: "Coming Soon" },
-      logoPlaceholder: "🎬"
+      upcomingEvent: { title: "24-Hour Film Festival", date: "October 18-19" },
+      logoPlaceholder: "kfs"
     },
     {
       name: "Kalakaar",
@@ -372,11 +397,11 @@ const KiitSocieties = () => {
       brief: "The official Dramatic Society of KIIT, organizing plays, theater, and street performances.",
       category: "Drama",
       members: "400+",
-      gradient: "from-purple-600 via-indigo-600 to-blue-700",
+      gradient: "from-amber-900 via-red-800 to-yellow-600",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Stage Play Festival", date: "Coming Soon" },
-      logoPlaceholder: "🎭"
+      upcomingEvent: { title: "Stage Play Festival", date: "December 5-7" },
+      logoPlaceholder: "kalakaar"
     },
     {
       name: "Konnexions",
@@ -384,11 +409,11 @@ const KiitSocieties = () => {
       brief: "The Web Development & IT Society of KIIT, promoting coding and digital skills.",
       category: "Tech",
       members: "500+",
-      gradient: "from-blue-400 via-cyan-500 to-teal-600",
+      gradient: "from-black via-blue-900 to-cyan-800",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Hackathon", date: "Coming Soon" },
-      logoPlaceholder: "💻"
+      upcomingEvent: { title: "KIIT Hackathon", date: "October 4-5" },
+      logoPlaceholder: "konnexions"
     },
     {
       name: "K-Konnect",
@@ -396,11 +421,11 @@ const KiitSocieties = () => {
       brief: "The Alumni Connect Society, bridging students and KIIT alumni worldwide.",
       category: "Networking",
       members: "200+",
-      gradient: "from-amber-500 via-orange-600 to-red-700",
+      gradient: "from-red-500 via-blue-500 to-lime-500",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Alumni Meet", date: "Coming Soon" },
-      logoPlaceholder: "🔗"
+      upcomingEvent: { title: "Annual Alumni Meet", date: "December 21" },
+      logoPlaceholder: "konnect"
     },
     {
       name: "KIIT Wordsmith",
@@ -408,11 +433,11 @@ const KiitSocieties = () => {
       brief: "The Writing Society of KIIT, encouraging literature, blogs, and creative writing.",
       category: "Literature",
       members: "350+",
-      gradient: "from-fuchsia-400 via-purple-500 to-indigo-600",
+      gradient: "from-black via-red-800 to-stone-200",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Open Mic Poetry", date: "Coming Soon" },
-      logoPlaceholder: "✒️"
+      upcomingEvent: { title: "Open Mic Poetry", date: "September 24" },
+      logoPlaceholder: "wordsmith"
     },
     {
       name: "Kzarshion",
@@ -420,11 +445,11 @@ const KiitSocieties = () => {
       brief: "The official Fashion Society of KIIT, redefining style and creativity on campus.",
       category: "Fashion",
       members: "350+",
-      gradient: "from-rose-500 via-pink-600 to-purple-700",
+      gradient: "from-black via-purple-800 to-rose-400",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Fashion Walk", date: "Coming Soon" },
-      logoPlaceholder: "👗"
+      upcomingEvent: { title: "Annual Fashion Walk", date: "November 8" },
+      logoPlaceholder: "kzarshion"
     },
     {
       name: "Kraya Kuber",
@@ -432,11 +457,11 @@ const KiitSocieties = () => {
       brief: "Marketing Society of KIIT, focusing on brand, strategy, and market awareness.",
       category: "Business",
       members: "300+",
-      gradient: "from-green-500 via-lime-600 to-yellow-700",
+      gradient: "from-blue-600 via-cyan-500 to-orange-400",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Marketing Hackfest", date: "Coming Soon" },
-      logoPlaceholder: "📊"
+      upcomingEvent: { title: "Marketing Hackfest", date: "October 11" },
+      logoPlaceholder: "kk"
     },
     {
       name: "Kimaya",
@@ -444,23 +469,11 @@ const KiitSocieties = () => {
       brief: "Medical Society of KIIT, spreading medical awareness and first aid training.",
       category: "Health",
       members: "300+",
-      gradient: "from-red-400 via-rose-500 to-pink-600",
+      gradient: "from-teal-900 via-emerald-800 to-cyan-700",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Medical Awareness Camp", date: "Coming Soon" },
-      logoPlaceholder: "⚕️"
-    },
-    {
-      name: "Science & Spiritual Society",
-      section: "sciencespiritual",
-      brief: "Exploring science and spirituality for holistic growth.",
-      category: "Wellness",
-      members: "200+",
-      gradient: "from-indigo-500 via-violet-600 to-purple-700",
-      website: "#",
-      instagram: "#",
-      upcomingEvent: { title: "Mind & Science Talk", date: "Coming Soon" },
-      logoPlaceholder: "🕉️"
+      upcomingEvent: { title: "First Aid Workshop", date: "September 29" },
+      logoPlaceholder: "kimaya"
     },
     {
       name: "Society for Civil Engineering",
@@ -468,11 +481,11 @@ const KiitSocieties = () => {
       brief: "The Civil Engineering Society of KIIT for innovation in infrastructure and design.",
       category: "Engineering",
       members: "350+",
-      gradient: "from-blue-500 via-sky-600 to-cyan-700",
+      gradient: "from-emerald-800 via-green-600 to-emerald-700",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Civil Tech Fest", date: "Coming Soon" },
-      logoPlaceholder: "🏗️"
+      upcomingEvent: { title: "Civil Tech Fest 2026", date: "February 21-22" },
+      logoPlaceholder: "ksce"
     },
     {
       name: "NCC",
@@ -480,11 +493,11 @@ const KiitSocieties = () => {
       brief: "National Cadet Corps at KIIT, instilling discipline, unity, and leadership.",
       category: "Discipline",
       members: "200+",
-      gradient: "from-green-600 via-emerald-700 to-teal-800",
+      gradient: "from-red-600 via-blue-900 to-sky-500",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Parade Training", date: "Coming Soon" },
-      logoPlaceholder: "🎖️"
+      upcomingEvent: { title: "Annual Training Camp", date: "December 15-24" },
+      logoPlaceholder: "ncc"
     },
     {
       name: "NSS",
@@ -492,11 +505,11 @@ const KiitSocieties = () => {
       brief: "National Service Scheme at KIIT, focusing on community service and development.",
       category: "Social",
       members: "300+",
-      gradient: "from-orange-500 via-red-600 to-rose-700",
+      gradient: "from-blue-900 via-indigo-800 to-red-700",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Community Service Drive", date: "Coming Soon" },
-      logoPlaceholder: "🫱"
+      upcomingEvent: { title: "Community Service Drive", date: "October 2" },
+      logoPlaceholder: "nss"
     },
     {
       name: "Youth Red Cross KIIT",
@@ -504,11 +517,11 @@ const KiitSocieties = () => {
       brief: "The Youth Red Cross KIIT chapter works for humanitarian service, social welfare, disaster relief, blood donation, and community health awareness.",
       category: "Social Service",
       members: "300+",
-      gradient: "from-red-600 via-rose-600 to-pink-600",
+      gradient: "from-rose-100 via-red-600 to-slate-800",
       website: "#",
       instagram: "#",
-      upcomingEvent: { title: "Blood Donation Camp", date: "Coming Soon" },
-      logoPlaceholder: "🚑"
+      upcomingEvent: { title: "Blood Donation Camp", date: "October 1" },
+      logoPlaceholder: "yrc"
     }
   ]
 
@@ -641,7 +654,15 @@ const KiitSocieties = () => {
                   {/* Society Logo Placeholder */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl border border-white/30">
-                      {society.logoPlaceholder}
+                      {Societies[society.logoPlaceholder as keyof typeof Societies] ? (
+                        <img
+                          src={Societies[society.logoPlaceholder as keyof typeof Societies]}
+                          alt={society.name}
+                          className="w-12 h-12 object-contain rounded-md"
+                        />
+                      ) : (
+                        <span>{society.logoPlaceholder}</span>
+                      )}
                     </div>
                     {/* Instagram Icon */}
                     <button
