@@ -8,21 +8,24 @@ import {
   Youtube,
   ChevronRight,
   Clock,
-  Users
+  Users,
+  Upload,
+  File
 } from "lucide-react";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/study-materials/FilterBar";
 import { DataTable } from "@/components/study-materials/DataTable";
 import { TabNavigation } from "@/components/study-materials/TabNavigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { semesters, years } from "@/data/studyMaterials";
-
-// Initialize Supabase client
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY!
-);
 
 // Types
 interface StudyMaterialItem {
@@ -51,6 +54,15 @@ export default function StudyMaterial() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [user, setUser] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadForm, setUploadForm] = useState({
+    title: "",
+    subject: "",
+    semester: "",
+    branch: "",
+    year: "",
+    file: null as File | null
+  });
 
   // Get current user session
   useEffect(() => {
@@ -145,6 +157,117 @@ export default function StudyMaterial() {
       window.open(material.downloadUrl, '_blank');
     } catch (error) {
       console.error("Download error:", error);
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error("Please login to upload files");
+      return;
+    }
+
+    if (!uploadForm.file || !uploadForm.title || !uploadForm.subject || !uploadForm.semester || !uploadForm.branch) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    // Validate file type based on active section
+    const allowedTypes = activeSection === "ppts" 
+      ? ['.pptx', '.pdf'] 
+      : ['.pdf'];
+    
+    const fileExtension = uploadForm.file.name.toLowerCase().substring(uploadForm.file.name.lastIndexOf('.'));
+    
+    if (!allowedTypes.includes(fileExtension)) {
+      if (activeSection === "ppts") {
+        toast.error("Only .pptx and .pdf files are allowed in PPTs section.");
+      } else {
+        toast.error("Only .pdf files are allowed.");
+      }
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Upload file to storage
+      const fileName = `${Date.now()}_${uploadForm.file.name}`;
+      const bucketName = activeSection === "ppts" ? "ppts" : "study-materials";
+      
+      // Set correct content type for PPTX files
+      const contentType = fileExtension === '.pptx' 
+        ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        : 'application/pdf';
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(fileName, uploadForm.file, {
+          contentType,
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        toast.error("Failed to upload file");
+        return;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(fileName);
+
+      // Save to database
+      const dbData = {
+        title: uploadForm.title,
+        subject: uploadForm.subject,
+        semester: uploadForm.semester,
+        branch: uploadForm.branch,
+        year: uploadForm.year || new Date().getFullYear().toString(),
+        uploaded_by: user.email || "Anonymous",
+        user_id: user.id,
+        views: 0
+      };
+
+      if (activeSection === "ppts") {
+        await supabase.from("ppts").insert({
+          ...dbData,
+          ppt_url: publicUrl
+        });
+      } else if (activeSection === "notes") {
+        await supabase.from("notes").insert({
+          ...dbData,
+          pdf_url: publicUrl
+        });
+      } else if (activeSection === "pyqs") {
+        await supabase.from("pyqs").insert({
+          ...dbData,
+          pdf_url: publicUrl
+        });
+      }
+
+      toast.success("File uploaded successfully!");
+      setAddResourceDialogOpen(false);
+      setUploadForm({
+        title: "",
+        subject: "",
+        semester: "",
+        branch: "",
+        year: "",
+        file: null
+      });
+      
+      // Refresh materials
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -255,6 +378,122 @@ export default function StudyMaterial() {
           </div>
         )}
       </div>
+
+      {/* Upload Dialog */}
+      <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload {activeSection === "ppts" ? "PPT" : activeSection === "notes" ? "Notes" : "PYQ"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleFileUpload} className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={uploadForm.title}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter title"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="subject">Subject *</Label>
+              <Input
+                id="subject"
+                value={uploadForm.subject}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, subject: e.target.value }))}
+                placeholder="Enter subject"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="semester">Semester *</Label>
+              <Select value={uploadForm.semester} onValueChange={(value) => setUploadForm(prev => ({ ...prev, semester: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select semester" />
+                </SelectTrigger>
+                <SelectContent>
+                  {semesters.map(sem => (
+                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="branch">Branch *</Label>
+              <Input
+                id="branch"
+                value={uploadForm.branch}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, branch: e.target.value }))}
+                placeholder="Enter branch (e.g., CSE, ECE)"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="year">Year</Label>
+              <Select value={uploadForm.year} onValueChange={(value) => setUploadForm(prev => ({ ...prev, year: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map(year => (
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="file">
+                File * {activeSection === "ppts" ? "(.pptx, .pdf)" : "(.pdf)"}
+              </Label>
+              <Input
+                id="file"
+                type="file"
+                accept={activeSection === "ppts" ? ".pptx,.pdf" : ".pdf"}
+                onChange={(e) => setUploadForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
+                required
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setAddResourceDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={uploading}>
+                {uploading ? <Loader className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                {uploading ? "Uploading..." : "Upload"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Dialog */}
+      <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request Resource</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-6">
+            <File className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Request Study Material</h3>
+            <p className="text-muted-foreground mb-4">
+              Need specific study materials? Contact us and we'll try to add them.
+            </p>
+            <Button onClick={() => {
+              window.open('mailto:contact@kiitsaathi.com?subject=Study Material Request', '_blank');
+              setRequestDialogOpen(false);
+            }}>
+              Send Request
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
