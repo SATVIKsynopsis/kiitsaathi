@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { createClient } from '@supabase/supabase-js';
 import { Footer } from "../components/Footer";
+import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/study-materials/FilterBar";
 import { DataTable } from "@/components/study-materials/DataTable";
 import { TabNavigation } from "@/components/study-materials/TabNavigation";
@@ -29,10 +30,12 @@ interface StudyMaterialItem {
   title: string;
   subject: string;
   semester: string;
+  branch?: string;
   year?: string;
+  type?: 'note' | 'pyq' | 'ppt';
   views: number;
   uploadedBy: string;
-  uploadDate: string;
+  uploadDate?: string;
   downloadUrl: string;
 }
 
@@ -73,6 +76,8 @@ export default function StudyMaterial() {
         query = supabase.from("notes").select("*").order("created_at", { ascending: false });
       } else if (activeSection === "pyqs") {
         query = supabase.from("pyqs").select("*").order("created_at", { ascending: false });
+      } else if (activeSection === "ppts") {
+        query = supabase.from("ppts").select("*").order("created_at", { ascending: false });
       }
 
       if (!query) {
@@ -94,11 +99,12 @@ export default function StudyMaterial() {
         title: item.title,
         subject: item.subject,
         semester: item.semester,
-        year: item.year ?? "",
+        branch: item.branch || "",
+        year: item.year || "",
         views: item.views ?? 0,
         uploadedBy: item.uploaded_by,
         uploadDate: item.upload_date ?? item.created_at,
-        downloadUrl: item.pdf_url,
+        downloadUrl: activeSection === "ppts" ? item.ppt_url : item.pdf_url,
       }));
 
       setMaterials(mapped);
@@ -117,10 +123,29 @@ export default function StudyMaterial() {
 
       const matchesSubject = selectedSubject === "all" || item.subject === selectedSubject;
       const matchesSemester = selectedSemester === "all" || item.semester === selectedSemester;
-      const matchesYear = selectedYear === "all" || item.year === selectedYear;
+      const matchesYear = selectedYear === "all" || (item.year && item.year === selectedYear);
 
       return matchesSearch && matchesSubject && matchesSemester && matchesYear;
     });
+  };
+
+  // Handle file download
+  const handleDownload = async (material: StudyMaterialItem) => {
+    try {
+      // Update view count
+      if (activeSection === "notes") {
+        await supabase.from("notes").update({ views: material.views + 1 }).eq("id", material.id);
+      } else if (activeSection === "pyqs") {
+        await supabase.from("pyqs").update({ views: material.views + 1 }).eq("id", material.id);
+      } else if (activeSection === "ppts") {
+        await supabase.from("ppts").update({ views: material.views + 1 }).eq("id", material.id);
+      }
+
+      // Download file
+      window.open(material.downloadUrl, '_blank');
+    } catch (error) {
+      console.error("Download error:", error);
+    }
   };
 
   if (!user && !loading) {
@@ -136,12 +161,13 @@ export default function StudyMaterial() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 pt-24">
         {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Study Materials</h1>
-            <p className="text-muted-foreground">Access notes, previous year questions, and study resources</p>
+            <p className="text-muted-foreground">Access notes, previous year questions, presentations, and study resources</p>
           </div>
           <div className="flex gap-3">
             <button 
@@ -177,7 +203,7 @@ export default function StudyMaterial() {
         )}
 
         {/* Content */}
-        {(activeSection === "notes" || activeSection === "pyqs") && (
+        {(activeSection === "notes" || activeSection === "pyqs" || activeSection === "ppts") && (
           <>
             {/* Filter Bar */}
             <FilterBar
@@ -204,9 +230,29 @@ export default function StudyMaterial() {
                 materials={filterMaterials(materials)}
                 onViewPDF={(id) => console.log("View PDF", id)}
                 loading={loading}
+                materialType={activeSection as "notes" | "pyqs" | "ppts"}
+                onDownload={handleDownload}
               />
             )}
           </>
+        )}
+
+        {/* Playlists Section */}
+        {activeSection === "playlists" && (
+          <div className="text-center py-12">
+            <Youtube className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-xl font-semibold mb-2">YouTube Playlists</h3>
+            <p className="text-muted-foreground">Coming soon - curated study playlists</p>
+          </div>
+        )}
+
+        {/* Groups Section */}
+        {activeSection === "groups" && (
+          <div className="text-center py-12">
+            <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-xl font-semibold mb-2">Study Groups</h3>
+            <p className="text-muted-foreground">Coming soon - collaborative study groups</p>
+          </div>
         )}
       </div>
 

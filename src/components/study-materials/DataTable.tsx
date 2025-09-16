@@ -1,139 +1,163 @@
-import { useState } from "react";
-import { Eye, Download, Calendar, User } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+// DataTable.tsx
+import React, { useState } from "react";
+import { Eye, Download, Loader2, Presentation } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
+interface StudyMaterialItem {
+  id: number;
+  title: string;
+  subject: string;
+  semester: string;
+  branch?: string;
+  year?: string;
+  type?: 'note' | 'pyq' | 'ppt';
+  views: number;
+  uploadedBy: string;
+  uploadDate?: string;
+  downloadUrl: string;
+}
 
 interface DataTableProps {
   materials: StudyMaterialItem[];
   onViewPDF?: (id: number) => void;
   loading?: boolean;
+  materialType?: "notes" | "pyqs" | "ppts";
+  onDownload?: (material: StudyMaterialItem) => void;
 }
 
-export function DataTable({ materials, onViewPDF, loading = false }: DataTableProps) {
+export const DataTable: React.FC<DataTableProps> = ({ 
+  materials, 
+  onViewPDF, 
+  loading = false,
+  materialType = "notes",
+  onDownload
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Calculate pagination
   const totalPages = Math.ceil(materials.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentMaterials = materials.slice(startIndex, endIndex);
 
-  const handleViewPDF = (id: number) => {
-    if (onViewPDF) {
-      onViewPDF(id);
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const getFileIcon = () => {
+    switch (materialType) {
+      case "ppts":
+        return <Presentation className="w-4 h-4 text-orange-600" />;
+      case "pyqs":
+        return <Eye className="w-4 h-4 text-blue-600" />;
+      default:
+        return <Eye className="w-4 h-4 text-green-600" />;
     }
   };
 
-  const handleDownload = (url: string, title: string) => {
-    // Placeholder for download functionality
-    console.log(`Downloading: ${title} from ${url}`);
+  const getFileTypeLabel = () => {
+    switch (materialType) {
+      case "ppts":
+        return "PPT";
+      case "pyqs":
+        return "PYQ";
+      default:
+        return "Note";
+    }
   };
 
   if (materials.length === 0) {
     return (
-      <div className="glass-card p-8 text-center">
-        <div className="text-muted-foreground">
-          <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-2">No materials found</h3>
-          <p>Try adjusting your search or filter criteria</p>
+      <div className="text-center py-12">
+        <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+          {getFileIcon()}
         </div>
+        <h3 className="text-lg font-medium text-muted-foreground mb-2">
+          No {materialType} found
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Try adjusting your search or filter criteria
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="glass-card overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="space-y-4">
+      {/* Table */}
+      <div className="rounded-lg border bg-card overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-border/50">
-              <TableHead className="font-semibold text-foreground">Title</TableHead>
-              <TableHead className="font-semibold text-foreground">Subject</TableHead>
-              <TableHead className="font-semibold text-foreground">Semester</TableHead>
-              <TableHead className="font-semibold text-foreground">Year</TableHead>
-              <TableHead className="font-semibold text-foreground">Views</TableHead>
-              <TableHead className="font-semibold text-foreground">Uploaded By</TableHead>
-              <TableHead className="font-semibold text-foreground text-right">Actions</TableHead>
+            <TableRow className="bg-muted/50">
+              <TableHead className="font-semibold">Title</TableHead>
+              <TableHead className="font-semibold">Subject</TableHead>
+              <TableHead className="font-semibold">Semester</TableHead>
+              {materialType === "ppts" && <TableHead className="font-semibold">Branch</TableHead>}
+              <TableHead className="font-semibold">Views</TableHead>
+              <TableHead className="font-semibold">Uploaded By</TableHead>
+              <TableHead className="font-semibold">Upload Date</TableHead>
+              <TableHead className="font-semibold text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentMaterials.map((material) => (
-              <TableRow 
-                key={material.id} 
-                className="hover:bg-accent/50 transition-colors cursor-pointer"
-                onClick={() => handleViewPDF(material.id)}
-              >
+              <TableRow key={material.id} className="hover:bg-muted/50">
                 <TableCell className="font-medium">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-foreground">{material.title}</span>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(material.uploadDate).toLocaleDateString()}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    {getFileIcon()}
+                    <span className="truncate max-w-xs">{material.title}</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="font-medium">
+                  <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full">
                     {material.subject}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {material.semester}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="font-medium text-kiit-primary">
-                    {material.year}
                   </span>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Eye className="w-4 h-4" />
-                    <span>{material.views.toLocaleString()}</span>
+                  <span className="text-sm font-medium">
+                    {material.semester}
+                  </span>
+                </TableCell>
+                {materialType === "ppts" && (
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {material.branch || "N/A"}
+                    </span>
+                  </TableCell>
+                )}
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Eye className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-sm">{material.views}</span>
                   </div>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {material.uploadedBy}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {formatDate(material.uploadDate)}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1 text-sm">
-                    <User className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">{material.uploadedBy}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center gap-2 justify-center">
                     <Button
                       size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewPDF(material.id);
-                      }}
-                      disabled={loading}
-                      className="hover-lift"
+                      variant="ghost"
+                      onClick={() => onViewPDF && onViewPDF(material.id)}
+                      className="h-8 px-2 hover:bg-primary/10"
+                      title={`View ${getFileTypeLabel()}`}
                     >
-                      <Eye className="w-4 h-4 mr-1" />
-                      View
+                      <Eye className="w-3 h-3" />
                     </Button>
                     <Button
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDownload(material.downloadUrl, material.title);
-                      }}
-                      disabled={loading}
-                      className="hover-lift"
+                      variant="ghost"
+                      onClick={() => onDownload && onDownload(material)}
+                      className="h-8 px-2 hover:bg-green-100 hover:text-green-700"
+                      title={`Download ${getFileTypeLabel()}`}
                     >
-                      <Download className="w-4 h-4 mr-1" />
-                      Download
+                      <Download className="w-3 h-3" />
                     </Button>
                   </div>
                 </TableCell>
@@ -145,36 +169,58 @@ export function DataTable({ materials, onViewPDF, loading = false }: DataTablePr
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between p-4 border-t border-border/50">
+        <div className="flex items-center justify-between px-2">
           <div className="text-sm text-muted-foreground">
-            Showing {startIndex + 1} to {Math.min(endIndex, materials.length)} of {materials.length} materials
+            Showing {startIndex + 1} to {Math.min(endIndex, materials.length)} of{" "}
+            {materials.length} results
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
             >
               Previous
             </Button>
+            
+            {/* Page numbers */}
             <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0"
-                >
-                  {page}
-                </Button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  );
+                } else if (
+                  page === currentPage - 2 ||
+                  page === currentPage + 2
+                ) {
+                  return (
+                    <span key={page} className="px-2 text-muted-foreground">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
             </div>
+
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
             >
               Next
@@ -184,4 +230,4 @@ export function DataTable({ materials, onViewPDF, loading = false }: DataTablePr
       )}
     </div>
   );
-}
+};

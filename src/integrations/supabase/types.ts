@@ -1052,6 +1052,39 @@ export type Database = {
         }
         Relationships: []
       }
+      helper_preferences: {
+        Row: {
+          created_at: string
+          email_notifications: boolean | null
+          id: string
+          shopkeeper_email: string | null
+          shopkeeper_whatsapp: string | null
+          updated_at: string
+          user_id: string
+          whatsapp_notifications: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          shopkeeper_email?: string | null
+          shopkeeper_whatsapp?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp_notifications?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          shopkeeper_email?: string | null
+          shopkeeper_whatsapp?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp_notifications?: boolean | null
+        }
+        Relationships: []
+      }
       lost_and_found_items: {
         Row: {
           category: string
@@ -1327,6 +1360,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ppts: {
+        Row: {
+          branch: string
+          created_at: string | null
+          id: number
+          ppt_url: string
+          rating: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at: string | null
+          upload_date: string | null
+          uploaded_by: string
+          user_id: string | null
+          views: number | null
+        }
+        Insert: {
+          branch: string
+          created_at?: string | null
+          id?: number
+          ppt_url: string
+          rating?: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by: string
+          user_id?: string | null
+          views?: number | null
+        }
+        Update: {
+          branch?: string
+          created_at?: string | null
+          id?: number
+          ppt_url?: string
+          rating?: number | null
+          semester?: string
+          subject?: string
+          title?: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by?: string
+          user_id?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       print_helpers: {
         Row: {
           contact: string
@@ -1401,6 +1482,44 @@ export type Database = {
           },
         ]
       }
+      print_job_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          job_id: string
+          message: string
+          notification_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          job_id: string
+          message: string
+          notification_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          job_id?: string
+          message?: string
+          notification_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_job_notifications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "print_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       print_jobs: {
         Row: {
           accepted_at: string | null
@@ -1434,7 +1553,7 @@ export type Database = {
           token_expires_at: string | null
           total_cost: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           accepted_at?: string | null
@@ -1468,7 +1587,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Update: {
           accepted_at?: string | null
@@ -1502,7 +1621,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1738,6 +1857,36 @@ export type Database = {
           },
         ]
       }
+      shopkeeper_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       lost_and_found_items_public: {
@@ -1842,6 +1991,15 @@ export type Database = {
           total_paid: number
           total_share: number
         }[]
+      }
+      create_print_job_notification: {
+        Args: {
+          p_job_id: string
+          p_message: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
       }
       export_group_summary: {
         Args: { _group_id: string }

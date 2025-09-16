@@ -32,7 +32,7 @@ const KiitSocieties = () => {
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
       emoji: "🗓️",
-      route: "/interview-deadlines"
+      route: "/interview-deadlines-tracker"
     },
     {
       icon: PartyPopper,
