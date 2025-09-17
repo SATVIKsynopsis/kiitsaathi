@@ -13,13 +13,15 @@ import {
   MessageSquare,
   Instagram,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Rocket,
+  Calendar1,
+  TrophyIcon
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
 
 const KiitSocieties = () => {
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ const KiitSocieties = () => {
       description: "Track every interview and onboarding deadline.",
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
-      emoji: "🗓️",
+      emoji: <Calendar className="w-6 h-6 text-white" />,
       route: "/interview-deadlines-tracker"
     },
     {
@@ -40,7 +42,7 @@ const KiitSocieties = () => {
       description: "All fest updates, registrations, and event highlights — in one place.",
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
-      emoji: "🎊",
+      emoji: <PartyPopper className="w-6 h-6 text-white" />,
       route: "/fest-announcements"
     },
     {
@@ -48,8 +50,8 @@ const KiitSocieties = () => {
       title: "Sports Events Hub",
       description: "See tryout dates, match schedules, and urgent team alerts.",
       price: "Free",
-      gradient: "from-kiit-green to-campus-blue",
-      emoji: "🎾",
+      gradient: "from-campus-purple to-campus-orange",
+      emoji: <TrophyIcon className="w-6 h-6 text-white" />,
       route: "/sports-events"
     }
   ];
@@ -530,7 +532,7 @@ const KiitSocieties = () => {
     if (route) {
       navigate(route);
     } else {
-      alert("🚀 Coming Soon! This service is under development and will be available soon.");
+      alert("Coming Soon! This service is under development and will be available soon.");
     }
   };
 
@@ -567,7 +569,7 @@ const KiitSocieties = () => {
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold text-kiit-green mb-6 animate-fade-in">
-              📣 KIIT Societies, Fests and Sports
+              KIIT Societies, Fests and Sports
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-4">
               Your gateway to campus societies, events, and opportunities
@@ -580,7 +582,7 @@ const KiitSocieties = () => {
 
             <div className="relative mb-12">
               <div className="w-64 h-64 mx-auto bg-gradient-to-br from-kiit-green-light to-purple-200 rounded-full flex items-center justify-center mb-8">
-                <div className="text-6xl">🏛️</div>
+                <div className="text-6xl"></div>
               </div>
             </div>
           </div>
@@ -591,9 +593,13 @@ const KiitSocieties = () => {
       <section className="py-16 px-4 bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-kiit-green mb-4">🚀 Quick Access</h2>
+            <div className="flex items-center justify-center gap-2">
+              <Rocket className="w-6 h-6 text-kiit-green" />
+              <h2 className="text-3xl font-bold text-kiit-green">Quick Access</h2>
+            </div>
             <p className="text-gray-600">Track deadlines, events, and announcements</p>
           </div>
+
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             {societyServices.map((service, index) => {
@@ -638,7 +644,7 @@ const KiitSocieties = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-kiit-green mb-4">🏛️ All KIIT Societies</h2>
+            <h2 className="text-3xl font-bold text-kiit-green mb-4">All KIIT Societies</h2>
             <p className="text-gray-600">Discover societies that match your interests and passions</p>
           </div>
 
@@ -751,21 +757,21 @@ const KiitSocieties = () => {
       <section className="py-16 px-4 bg-gradient-to-br from-kiit-green-soft to-purple-100">
         <div className="container mx-auto text-center">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold text-kiit-green mb-6">📅 Never Miss an Opportunity</h2>
+            <h2 className="text-3xl font-bold text-kiit-green mb-6"><Calendar1 className="w-4 h-4" /> Never Miss an Opportunity</h2>
             <p className="text-gray-600 mb-8">
               Stay updated with all society interviews, fest announcements, and sports events in one place.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <Button
                 className="bg-kiit-green hover:bg-kiit-green-dark text-white px-8 py-3"
-                onClick={() => alert("🚀 Coming Soon! Interview tracker is under development.")}
+                onClick={() => alert("Coming Soon! Interview tracker is under development.")}
               >
                 Track Interviews
               </Button>
               <Button
                 variant="outline"
                 className="border-kiit-green text-kiit-green hover:bg-kiit-green hover:text-white px-8 py-3"
-                onClick={() => alert("🚀 Coming Soon! Event calendar is under development.")}
+                onClick={() => alert("Coming Soon! Event calendar is under development.")}
               >
                 View All Events
               </Button>
