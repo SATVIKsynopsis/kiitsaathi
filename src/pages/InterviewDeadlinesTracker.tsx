@@ -50,7 +50,6 @@ const InterviewDeadlinesTracker = () => {
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [formData, setFormData] = useState({
     society_name: "",
     event_name: "",
@@ -82,22 +81,34 @@ const InterviewDeadlinesTracker = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
+      
+      // Debug: Check authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session);
+      
       const { data, error } = await supabase
         .from("calendar_events")
         .select("*")
+        .eq("validation", true) // Only fetch validated events
         .order("event_date", { ascending: true });
       
+      console.log("Query response:", { data, error });
+      
       if (error) {
-        console.error("Error fetching events:", error.message);
-        setError("Failed to load events: " + error.message);
+        console.error("Supabase error:", error);
+        setError(`Database error: ${error.message}`);
+      } else if (!data || data.length === 0) {
+        console.log("No events found in database");
+        setEvents([]);
+        setError(null);
       } else {
-        console.log("Fetched events:", data); // Debug log
-        setEvents(data || []);
+        console.log("Successfully fetched events:", data);
+        setEvents(data);
         setError(null);
       }
     } catch (err) {
-      console.error("Unexpected error fetching events:", err);
-      setError("Failed to load events");
+      console.error("Network/fetch error:", err);
+      setError("Network error - check your connection");
     } finally {
       setLoading(false);
     }
@@ -145,6 +156,29 @@ const InterviewDeadlinesTracker = () => {
     setSelectedEvent(event.resource);
   };
 
+  // Add to Calendar functionality (Google Calendar only)
+  const handleAddToCalendar = (event: CalendarEvent) => {
+    const startDate = new Date(`${event.event_date}T${event.start_time || '09:00'}`);
+    const endDate = event.end_time 
+      ? new Date(`${event.event_date}T${event.end_time}`)
+      : new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour default
+
+    const eventData = {
+      title: event.event_name,
+      start: startDate,
+      end: endDate,
+      description: `${event.description || ''}\n\nSociety: ${event.society_name}\nVenue: ${event.venue}\nOrganiser: ${event.organiser}`,
+      location: event.venue,
+    };
+
+    // Create Google Calendar URL
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventData.title)}&dates=${startDate.toISOString().replace(/[:-]|\.\d{3}/g, '')}/${endDate.toISOString().replace(/[:-]|\.\d{3}/g, '')}&details=${encodeURIComponent(eventData.description)}&location=${encodeURIComponent(eventData.location)}`;
+
+    // Open Google Calendar in new tab
+    window.open(googleCalendarUrl, '_blank');
+    setSelectedEvent(null);
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,18 +192,19 @@ const InterviewDeadlinesTracker = () => {
       : [];
 
     try {
-      const { error } = await supabase.from("calendar_events").insert([
+      const { data, error } = await supabase.from("calendar_events").insert([
         { 
           ...formData, 
           requirements: reqs,
           validation: formData.validation
         }
-      ]);
+      ]).select();
 
       if (error) {
         console.error("Insert error:", error);
         alert("Error adding event: " + error.message);
       } else {
+        console.log("Event inserted:", data);
         alert("Event added successfully!");
         setAddEventOpen(false);
         // Reset form
@@ -257,7 +292,7 @@ const InterviewDeadlinesTracker = () => {
         </div>
 
         {/* Calendar */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+        <div className="bg-gradient-to-br from-blue-50 to-purple-100 rounded-lg shadow-lg overflow-hidden mb-8">
           <Calendar
             localizer={localizer}
             events={calendarEvents}
@@ -285,7 +320,7 @@ const InterviewDeadlinesTracker = () => {
           />
         </div>
 
-        {/* Upcoming Events - NOW SHOWS DATABASE DATA */}
+        {/* Upcoming Events - Gradient Cards */}
         <section>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Upcoming Events ({upcomingEvents.length})</h2>
@@ -295,8 +330,8 @@ const InterviewDeadlinesTracker = () => {
           </div>
           
           {upcomingEvents.length === 0 ? (
-            <Card className="text-center py-12 bg-gray-50">
-              <CalendarIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Card className="text-center py-12 bg-gradient-to-r from-blue-50 to-purple-50">
+              <CalendarIcon className="w-12 h-12 text-blue-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming events</h3>
               <p className="text-gray-500 mb-4">No events match your current filters</p>
               <Button variant="outline" onClick={() => {
@@ -308,51 +343,64 @@ const InterviewDeadlinesTracker = () => {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {upcomingEvents.slice(0, 6).map((event) => (
-                <Card key={event.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedEvent(event)}>
-                  <CardHeader className="pb-3">
+              {upcomingEvents.slice(0, 6).map((event, index) => (
+                <Card 
+                  key={event.id} 
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  style={{
+                    background: `linear-gradient(135deg, ${event.category === "Technical" ? "#3B82F6" : "#10B981"} 0%, ${event.category === "Technical" ? "#1D4ED8" : "#059669"} 100%)`,
+                    color: "white"
+                  }}
+                  onClick={() => setSelectedEvent(event)}
+                >
+                  <CardHeader className="pb-3 bg-white/10 backdrop-blur-sm">
                     <div className="flex items-center justify-between">
-                      <Badge variant={event.validation ? "default" : "secondary"}>
+                      <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                         {event.category}
                       </Badge>
-                      {event.validation && <CheckCircle className="w-4 h-4 text-green-500" />}
+                      {event.validation && (
+                        <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full">
+                          <CheckCircle className="w-3 h-3 text-green-300" />
+                          <span className="text-xs">Verified</span>
+                        </div>
+                      )}
                     </div>
-                    <CardTitle className="text-lg truncate">{event.event_name}</CardTitle>
+                    <CardTitle className="text-white text-lg truncate font-semibold">{event.event_name}</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0 pb-4">
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Users className="w-4 h-4 text-gray-500" />
+                      <div className="flex items-center gap-2 text-white/90 text-sm">
+                        <Users className="w-4 h-4 text-white/70" />
                         <span className="font-medium">{event.society_name}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <CalendarIcon className="w-4 h-4 text-gray-500" />
+                      <div className="flex items-center gap-2 text-white/90 text-sm">
+                        <CalendarIcon className="w-4 h-4 text-white/70" />
                         <span className="font-medium">
                           {moment(event.event_date).format("MMM DD, YYYY")}
                         </span>
                       </div>
                       {event.start_time && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="w-4 h-4 text-gray-500" />
+                        <div className="flex items-center gap-2 text-white/90 text-sm">
+                          <Clock className="w-4 h-4 text-white/70" />
                           <span>{event.start_time} - {event.end_time || "TBD"}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-gray-500" />
+                      <div className="flex items-center gap-2 text-white/90 text-sm">
+                        <MapPin className="w-4 h-4 text-white/70" />
                         <span className="truncate">{event.venue}</span>
                       </div>
                       {event.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
+                        <p className="text-white/80 text-sm line-clamp-2">{event.description}</p>
                       )}
                       {event.requirements && event.requirements.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {event.requirements.slice(0, 2).map((req, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
+                            <Badge key={idx} variant="secondary" className="text-xs bg-white/20 text-white border-white/30">
                               {req}
                             </Badge>
                           ))}
                           {event.requirements.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">
                               +{event.requirements.length - 2} more
                             </Badge>
                           )}
@@ -366,71 +414,91 @@ const InterviewDeadlinesTracker = () => {
           )}
         </section>
 
-        {/* Selected Event Modal */}
+        {/* Selected Event Modal - Gradient Blue UI */}
         {selectedEvent && (
           <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>{selectedEvent.event_name}</DialogTitle>
+            <DialogContent className="bg-gradient-to-br from-blue-900 to-purple-900 text-white max-w-2xl">
+              <DialogHeader className="text-center">
+                <DialogTitle className="text-white text-2xl font-bold">{selectedEvent.event_name}</DialogTitle>
+                <Badge variant="secondary" className="mt-2 bg-white/20 text-white border-white/30">
+                  {selectedEvent.category} • {selectedEvent.society_name}
+                </Badge>
               </DialogHeader>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-500 mb-1">Society</h3>
-                    <p className="text-lg font-medium">{selectedEvent.society_name}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-500 mb-1">Organiser</h3>
-                    <p className="text-sm">{selectedEvent.organiser}</p>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-500 mb-2">Date & Time</h3>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">Date</p>
-                      <p className="font-semibold">{moment(selectedEvent.event_date).format("MMM DD, YYYY")}</p>
+              
+              <div className="space-y-6 text-white">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-white/10 rounded-lg">
+                      <CalendarIcon className="w-5 h-5 text-blue-300" />
+                      <div>
+                        <h4 className="font-semibold text-sm opacity-90">Date</h4>
+                        <p className="text-white">{moment(selectedEvent.event_date).format("MMMM DD, YYYY")}</p>
+                      </div>
                     </div>
                     {selectedEvent.start_time && (
-                      <div className="text-center">
-                        <p className="text-sm text-gray-500">Time</p>
-                        <p className="font-semibold">{selectedEvent.start_time} - {selectedEvent.end_time || "TBD"}</p>
+                      <div className="flex items-center gap-3 p-3 bg-white/10 rounded-lg">
+                        <Clock className="w-5 h-5 text-blue-300" />
+                        <div>
+                          <h4 className="font-semibold text-sm opacity-90">Time</h4>
+                          <p className="text-white">{selectedEvent.start_time} - {selectedEvent.end_time || "TBD"}</p>
+                        </div>
                       </div>
                     )}
                   </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-white/10 rounded-lg">
+                      <MapPin className="w-5 h-5 text-blue-300" />
+                      <div>
+                        <h4 className="font-semibold text-sm opacity-90">Venue</h4>
+                        <p className="text-white">{selectedEvent.venue}</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-white/10 rounded-lg">
+                      <h4 className="font-semibold text-sm opacity-90 mb-2">Organiser</h4>
+                      <p className="text-white">{selectedEvent.organiser}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-500 mb-2">Venue</h3>
-                  <p className="text-gray-700">{selectedEvent.venue}</p>
-                </div>
+
                 {selectedEvent.requirements?.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-500 mb-2">Requirements</h3>
-                    <div className="space-y-1">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-sm opacity-90 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-300" />
+                      Requirements
+                    </h4>
+                    <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                       {selectedEvent.requirements.map((req, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-gray-700">{req}</span>
+                        <div key={idx} className="flex items-start gap-2 p-2 bg-white/10 rounded">
+                          <CheckCircle className="w-4 h-4 text-green-300 flex-shrink-0 mt-0.5" />
+                          <span className="text-white text-sm">{req}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
+
                 {selectedEvent.description && (
-                  <div>
-                    <h3 className="font-semibold text-sm text-gray-500 mb-2">Description</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedEvent.description}</p>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-sm opacity-90">Description</h4>
+                    <div className="p-3 bg-white/10 rounded-lg">
+                      <p className="text-white/90 whitespace-pre-wrap text-sm">{selectedEvent.description}</p>
+                    </div>
                   </div>
                 )}
-                <div className="flex gap-3 pt-4">
+
+                <div className="flex gap-3 pt-6 border-t border-white/20">
                   <Button 
                     variant="outline" 
                     onClick={() => setSelectedEvent(null)}
-                    className="flex-1"
+                    className="flex-1 bg-white/10 text-white border-white/20 hover:bg-white/20"
                   >
                     Close
                   </Button>
-                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    onClick={() => handleAddToCalendar(selectedEvent)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <CalendarIcon className="w-4 h-4 mr-2" />
                     Add to Calendar
                   </Button>
                 </div>
@@ -439,19 +507,33 @@ const InterviewDeadlinesTracker = () => {
           </Dialog>
         )}
 
-        {/* Add Event Dialog */}
+        {/* Add Event Dialog - Gradient Blue UI */}
         <Dialog open={addEventOpen} onOpenChange={setAddEventOpen}>
           <DialogContent className="bg-gradient-to-br from-purple-900 to-blue-900 text-white max-w-2xl">
-            <DialogHeader>
+            <DialogHeader className="text-center">
               <DialogTitle className="text-white">Add New Event</DialogTitle>
+              <p className="text-white/70 text-sm mt-1">Create a new society event</p>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <Input 
-                placeholder="Society Name" 
-                value={formData.society_name}
-                onChange={(e) => setFormData({ ...formData, society_name: e.target.value })}
-                className="bg-white/10 text-white placeholder-white/50 border-white/20"
-              />
+
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <Input 
+                  placeholder="Society Name" 
+                  value={formData.society_name}
+                  onChange={(e) => setFormData({ ...formData, society_name: e.target.value })}
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20 h-10"
+                />
+                <Input 
+                  placeholder="Category" 
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20 h-10"
+                />
+              </div>
+              
               <Input 
                 placeholder="Event Name *" 
                 value={formData.event_name}
@@ -459,62 +541,63 @@ const InterviewDeadlinesTracker = () => {
                 className="bg-white/10 text-white placeholder-white/50 border-white/20"
                 required
               />
-              <Input 
-                type="date" 
-                value={formData.event_date}
-                onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
-                className="bg-white/10 text-white placeholder-white/50 border-white/20"
-                required
-              />
-              <div className="flex gap-2">
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Input 
+                  type="date" 
+                  value={formData.event_date}
+                  onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20"
+                  required
+                />
                 <Input 
                   type="time" 
                   value={formData.start_time}
                   onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                  className="bg-white/10 text-white placeholder-white/50 border-white/20 flex-1"
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20"
                   placeholder="Start Time"
                 />
                 <Input 
                   type="time" 
                   value={formData.end_time}
                   onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                  className="bg-white/10 text-white placeholder-white/50 border-white/20 flex-1"
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20"
                   placeholder="End Time"
                 />
               </div>
-              <Input 
-                placeholder="Venue *" 
-                value={formData.venue}
-                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                className="bg-white/10 text-white placeholder-white/50 border-white/20"
-                required
-              />
-              <Input 
-                placeholder="Organiser" 
-                value={formData.organiser}
-                onChange={(e) => setFormData({ ...formData, organiser: e.target.value })}
-                className="bg-white/10 text-white placeholder-white/50 border-white/20"
-              />
-              <Input 
-                placeholder="Category" 
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="bg-white/10 text-white placeholder-white/50 border-white/20"
-              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Input 
+                  placeholder="Venue *" 
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20"
+                  required
+                />
+                <Input 
+                  placeholder="Organiser" 
+                  value={formData.organiser}
+                  onChange={(e) => setFormData({ ...formData, organiser: e.target.value })}
+                  className="bg-white/10 text-white placeholder-white/50 border-white/20"
+                />
+              </div>
+
               <Input 
                 placeholder="Description" 
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="bg-white/10 text-white placeholder-white/50 border-white/20"
               />
+              
               <Input 
                 placeholder="Requirements (comma-separated)" 
                 value={formData.requirements}
                 onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                 className="bg-white/10 text-white placeholder-white/50 border-white/20"
               />
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
-                <CalendarIcon className="w-4 h-4 mr-2" />
+
+              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white h-12">
+                <CalendarIcon className="w-5 h-5 mr-2" />
                 Save Event
               </Button>
             </form>
