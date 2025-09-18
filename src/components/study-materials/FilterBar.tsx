@@ -74,7 +74,7 @@ export function FilterBar({
               <SelectItem value="all">All Semesters</SelectItem>
               {semesters.map((semester) => (
                 <SelectItem key={semester} value={semester}>
-                  {semester} Semester
+                  {semester} 
                 </SelectItem>
               ))}
             </SelectContent>

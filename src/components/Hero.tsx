@@ -3,11 +3,13 @@ import { ArrowRight, Smartphone, Heart, Box, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
 import heroCampus from "@/assets/KIIT_img.webp";
+import { useAuth } from "@/hooks/useAuth";
 
 
 export const Hero = () => {
   const navigate = useNavigate();
-
+  
+  const { user } = useAuth();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
       {/* Animated background elements */}
@@ -39,20 +41,29 @@ export const Hero = () => {
                 From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
               </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button
-                size="lg"
-                className="glass-button text-white font-semibold px-8 py-4 text-lg group"
-                onClick={() => navigate('/auth')}
-                >
-                Get Started Free
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-
-
-            </div>
+              {/* CTA Buttons */}
+              {!user ? (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Button
+                    size="lg"
+                    className="glass-button text-white font-semibold px-8 py-4 text-lg group"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Get Started Free
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
                 </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Button
+                    size="lg"
+                    className="glass-button text-white font-semibold px-8 py-4 text-lg group"
+                  >
+                    Go to Services
+                  </Button>
+                </div>
+              )}
+            </div>
 
             {/* Quick Stats */}
             <div className="flex flex-wrap gap-8 justify-center lg:justify-start pt-8">
@@ -81,17 +92,6 @@ export const Hero = () => {
                 className="w-full h-auto rounded-3xl shadow-2xl"
               />
 
-              {/* Floating Mascot */}
-              {/* <div className="absolute -top-10 -right-10 lg:-right-20">
-                <div className="mascot-bounce">
-                  <img 
-                    src={kiitMascot} 
-                    alt="KIIT Buddy - Your Campus Assistant" 
-                    className="w-32 h-32 lg:w-48 lg:h-48 drop-shadow-2xl"
-                  />
-                </div>
-              </div> */}
-
               {/* Floating Elements */}
               <div className="absolute top-6 left-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-float hover:shadow-xl transition-all ">
                 <div className="text-sm font-semibold text-kiit-green flex items-center gap-2">
@@ -112,12 +112,6 @@ export const Hero = () => {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
-        </div>
-      </div> */}
     </section>
   );
 };

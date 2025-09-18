@@ -57,7 +57,7 @@ const Index = () => {
       }
 
       toast({
-        title: "Message Sent! 🎉",
+        title: "Message Sent! ",
         description: "Thank you for reaching out. We'll get back to you within 24 hours.",
       });
       
