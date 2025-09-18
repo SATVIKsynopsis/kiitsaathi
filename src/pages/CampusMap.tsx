@@ -1,20 +1,7 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Map as MapIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Map as MapIcon, Sparkles, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-// Lazy-load InteractiveMap to prevent any initialization issues
-const InteractiveMapLazy = lazy(() => import('@/components/campus-map/InteractiveMap'));
-
-// Client-only wrapper to avoid SSR/window issues
-const ClientOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) {
-    return <div className="h-[600px] w-full rounded-lg bg-white/10 animate-pulse" aria-busy="true" aria-label="Loading map" />;
-  }
-  return <>{children}</>;
-};
 
 const CampusMap: React.FC = () => {
   console.log('CampusMap: Component rendering...');
@@ -80,22 +67,15 @@ const CampusMap: React.FC = () => {
           ))}
         </div>
 
-        {/* Interactive Campus Map */}
-        <div className="mt-12">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="mb-4">
-              <h3 className="text-2xl font-bold text-white mb-2">Interactive Campus Map</h3>
-              <p className="text-white/80">
-                Explore all KIIT University campuses with our interactive map. Click on any marker to view campus details.
-              </p>
-            </div>
-            <div className="h-[600px] w-full rounded-lg overflow-hidden">
-              <ClientOnly>
-                <Suspense fallback={<div className="h-full w-full rounded-lg bg-white/10 animate-pulse" aria-busy="true" aria-label="Loading map" />}> 
-                  <InteractiveMapLazy onCampusSelect={(campusId) => console.log(`Selected campus: ${campusId}`)} />
-                </Suspense>
-              </ClientOnly>
-            </div>
+        {/* Coming Soon Notice */}
+        <div className="mt-12 text-center">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-white mb-4">Interactive Map Coming Soon!</h3>
+            <p className="text-white/80 max-w-2xl mx-auto">
+              We're working on bringing you a fully interactive map experience with real campus locations, 
+              navigation features, and detailed campus information.
+            </p>
           </div>
         </div>
       </main>
