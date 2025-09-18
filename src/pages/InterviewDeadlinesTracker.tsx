@@ -27,7 +27,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
+import { Database } from "@/lib/database-types";
 
 const localizer = momentLocalizer(moment);
 

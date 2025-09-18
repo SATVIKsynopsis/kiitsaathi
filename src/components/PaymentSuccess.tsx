@@ -45,13 +45,17 @@ export function PaymentSuccess({
       setIsRecording(true);
       try {
         await createOrder({
+          items: [],
+          total_amount: orderData.amount,
+          status: 'completed',
+          delivery_address: '',
           service_name: orderData.service_name,
-          subservice_name: orderData.subservice_name || null,
+          subservice_name: orderData.subservice_name || undefined,
           amount: orderData.amount,
-          payment_status: orderData.payment_status || 'completed',
-          transaction_id: orderData.transaction_id || null,
-          payment_method: orderData.payment_method || null,
-          booking_details: orderData.booking_details || null
+          payment_status: (orderData.payment_status as 'pending' | 'completed' | 'cancelled' | 'failed') || 'completed',
+          transaction_id: orderData.transaction_id || undefined,
+          payment_method: orderData.payment_method || undefined,
+          booking_details: orderData.booking_details || undefined
         });
         setOrderRecorded(true);
       } catch (error) {

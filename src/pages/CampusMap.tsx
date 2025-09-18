@@ -236,9 +236,12 @@ const CampusMap: React.FC = () => {
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <div className="h-[600px] w-full">
-                <InteractiveMap onCampusSelect={handleCampusSelect} />
-              </div>
+            <div className="h-[600px] w-full">
+              <InteractiveMap onCampusSelect={(campusId) => {
+                const campus = campuses.find(c => c.id === campusId);
+                if (campus) handleCampusSelect(campus);
+              }} />
+            </div>
             </div>
           </div>
         </motion.section>
