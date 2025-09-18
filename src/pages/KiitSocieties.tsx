@@ -16,12 +16,14 @@ import {
   Sparkles,
   Rocket,
   Calendar1,
-  TrophyIcon
+  TrophyIcon,
+  Route
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast'
 
 const KiitSocieties = () => {
   const navigate = useNavigate();
@@ -43,7 +45,8 @@ const KiitSocieties = () => {
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
       emoji: <PartyPopper className="w-6 h-6 text-white" />,
-      route: "/fest-announcements"
+      route: ""
+      // route: "/fest-announcements"
     },
     {
       icon: Trophy,
@@ -52,7 +55,8 @@ const KiitSocieties = () => {
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
       emoji: <TrophyIcon className="w-6 h-6 text-white" />,
-      route: "/sports-events"
+      route: ""
+      //route: /sports-events
     }
   ];
 
@@ -605,7 +609,10 @@ const KiitSocieties = () => {
     if (route) {
       navigate(route);
     } else {
-      alert("Coming Soon! This service is under development and will be available soon.");
+      // alert("Coming Soon! This service is under development and will be available soon.");
+      toast("Coming Soon! This service is under development and will be available soon.", {
+        icon: '👏',
+      });
     }
   };
 
