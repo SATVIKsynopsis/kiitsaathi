@@ -24,7 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { semesters, years } from "@/data/studyMaterials";
+import { semesters, years,semesterSubjects } from "@/data/studyMaterials";
+
 
 // Types
 interface StudyMaterialItem {
@@ -124,6 +125,10 @@ export default function StudyMaterial() {
 
     fetchMaterials();
   }, [activeSection]);
+const availableSubjects =
+  selectedSemester === "all"
+    ? semesterSubjects.flatMap(s => s.subjects) // all subjects
+    : semesterSubjects.find(s => s.semester === selectedSemester)?.subjects || [];
 
   // Filter function for study materials
   const filterMaterials = (materials: StudyMaterialItem[]) => {
@@ -337,7 +342,7 @@ export default function StudyMaterial() {
               setSelectedSemester={setSelectedSemester}
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
-              subjects={[]}
+              subjects={availableSubjects}
               semesters={semesters}
               years={years}
             />
