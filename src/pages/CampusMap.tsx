@@ -7,6 +7,7 @@ import { Campus, campuses } from '@/data/campuses';
 import { CampusSearch } from '@/components/campus-map/CampusSearch';
 import { MapCanvas } from '@/components/campus-map/MapCanvas';
 import { CampusDetail } from '@/components/campus-map/CampusDetail';
+import InteractiveMap from '@/components/campus-map/InteractiveMap';
 
 const CampusMap: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -213,6 +214,32 @@ const CampusMap: React.FC = () => {
               onCampusSelect={handleCampusSelect}
               selectedCampusId={selectedCampus?.id}
             />
+          </div>
+        </motion.section>
+
+        {/* Real Interactive Map Section */}
+        <motion.section
+          className="p-6"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
+        >
+          <div className="container mx-auto">
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-bold text-white mb-4">
+                Live KIIT University Map
+              </h3>
+              <p className="text-lg text-white/80 max-w-2xl mx-auto">
+                Explore the real-world locations of all KIIT campuses with this interactive map. 
+                Click on any campus marker to see detailed information.
+              </p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="h-[600px] w-full">
+                <InteractiveMap onCampusSelect={handleCampusSelect} />
+              </div>
+            </div>
           </div>
         </motion.section>
       </div>
