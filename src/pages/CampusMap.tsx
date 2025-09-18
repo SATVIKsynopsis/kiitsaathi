@@ -1,8 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Map as MapIcon, Sparkles, Star } from 'lucide-react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import InteractiveMap from '@/components/campus-map/InteractiveMap';
+
+// Lazy-load InteractiveMap to prevent any initialization issues
+const InteractiveMapLazy = lazy(() => import('@/components/campus-map/InteractiveMap'));
+
+// Client-only wrapper to avoid SSR/window issues
+const ClientOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) {
+    return <div className="h-[600px] w-full rounded-lg bg-white/10 animate-pulse" aria-busy="true" aria-label="Loading map" />;
+  }
+  return <>{children}</>;
+};
 
 const CampusMap: React.FC = () => {
   console.log('CampusMap: Component rendering...');
@@ -78,7 +90,11 @@ const CampusMap: React.FC = () => {
               </p>
             </div>
             <div className="h-[600px] w-full rounded-lg overflow-hidden">
-              <InteractiveMap onCampusSelect={(campusId) => console.log(`Selected campus: ${campusId}`)} />
+              <ClientOnly>
+                <Suspense fallback={<div className="h-full w-full rounded-lg bg-white/10 animate-pulse" aria-busy="true" aria-label="Loading map" />}> 
+                  <InteractiveMapLazy onCampusSelect={(campusId) => console.log(`Selected campus: ${campusId}`)} />
+                </Suspense>
+              </ClientOnly>
             </div>
           </div>
         </div>

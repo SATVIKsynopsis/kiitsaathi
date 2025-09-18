@@ -170,6 +170,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onCampusSelect }) => {
           center={kiitCenter}
           zoom={16}
           scrollWheelZoom={true}
+          style={{ height: '100%', width: '100%', minHeight: '500px' }}
           className="z-0"
           ref={setMap}
         >
