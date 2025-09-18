@@ -3,13 +3,16 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default markers in Leaflet with Vite
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+// Fix for default markers in Leaflet with Vite (guarded)
+try {
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  });
+} catch (e) {
+  // ignore if Leaflet not initialized yet
+}
 
 // Real KIIT University campus coordinates in Bhubaneswar, Odisha, India
 const kiitCampusLocations = [
@@ -69,9 +72,57 @@ interface InteractiveMapProps {
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ onCampusSelect }) => {
   const [map, setMap] = useState<L.Map | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [locations, setLocations] = useState(kiitCampusLocations);
 
   // Center of KIIT University
   const kiitCenter: [number, number] = [20.3554, 85.8172];
+
+  // Client-only flag and fetch real campuses from OSM Overpass
+  useEffect(() => {
+    setIsClient(true);
+
+    const fetchCampuses = async () => {
+      try {
+        const bbox = '20.34,85.80,20.37,85.83';
+        const query = `[out:json][timeout:25];(node["name"~"KIIT|Kalinga Institute|Campus"](${bbox});way["name"~"KIIT|Kalinga Institute|Campus"](${bbox});relation["name"~"KIIT|Kalinga Institute|Campus"](${bbox}););out center;`;
+        const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data?.elements) return;
+        const next = data.elements
+          .map((el: any, idx: number) => {
+            const coords = el.type === 'node' ? { lat: el.lat, lng: el.lon } : el.center ? { lat: el.center.lat, lng: el.center.lon } : null;
+            const name: string = el.tags?.name || '';
+            if (!coords || !name) return null;
+            const match = name.match(/Campus\s*(\d{1,2})/i);
+            const campusNumber = match ? parseInt(match[1], 10) : undefined;
+            return {
+              id: campusNumber ?? idx + 1,
+              name,
+              lat: coords.lat,
+              lng: coords.lng,
+              description: el.tags?.amenity || 'KIIT Campus',
+              campusNumber,
+            };
+          })
+          .filter(Boolean)
+          .sort((a: any, b: any) => {
+            if (a.campusNumber && b.campusNumber) return a.campusNumber - b.campusNumber;
+            if (a.campusNumber) return -1;
+            if (b.campusNumber) return 1;
+            return 0;
+          });
+        if (next.length) {
+          setLocations(next as any);
+        }
+      } catch (e) {
+        console.warn('Overpass fetch failed, using fallback locations', e);
+      }
+    };
+
+    fetchCampuses();
+  }, []);
 
   useEffect(() => {
     // Add custom styles for the map
@@ -114,47 +165,49 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onCampusSelect }) => {
 
   return (
     <div className="w-full h-full min-h-[500px] relative">
-      <MapContainer
-        center={kiitCenter}
-        zoom={16}
-        scrollWheelZoom={true}
-        className="z-0"
-        ref={setMap}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        {kiitCampusLocations.map((campus) => (
-          <Marker
-            key={campus.id}
-            position={[campus.lat, campus.lng]}
-            icon={createCustomIcon(campus.id)}
-            eventHandlers={{
-              click: () => {
-                if (onCampusSelect) {
-                  onCampusSelect(campus.id);
-                }
-              },
-            }}
-          >
-            <Popup className="campus-popup">
-              <div className="text-center">
-                <h3 className="font-bold text-sm text-gray-800 mb-1">
-                  {campus.name}
-                </h3>
-                <p className="text-xs text-gray-600 mb-2">
-                  {campus.description}
-                </p>
-                <div className="text-xs text-blue-600 font-medium">
-                  Click marker to explore campus details
+      {isClient ? (
+        <MapContainer
+          center={kiitCenter}
+          zoom={16}
+          scrollWheelZoom={true}
+          style={{ height: '100%', width: '100%', minHeight: '500px' }}
+          className="z-0"
+          ref={setMap}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {locations.map((campus: any) => (
+            <Marker
+              key={`${campus.id}-${campus.lat}-${campus.lng}`}
+              position={[campus.lat, campus.lng]}
+              icon={createCustomIcon(campus.campusNumber ?? campus.id)}
+              eventHandlers={{
+                click: () => {
+                  if (onCampusSelect) onCampusSelect(campus.id);
+                },
+              }}
+            >
+              <Popup className="campus-popup">
+                <div className="text-center">
+                  <h3 className="font-bold text-sm text-gray-800 mb-1">
+                    {campus.name}
+                  </h3>
+                  <p className="text-xs text-gray-600 mb-2">
+                    {campus.description}
+                  </p>
+                  <div className="text-xs text-blue-600 font-medium">
+                    Tap marker to explore campus details
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      ) : (
+        <div className="h-[500px] w-full rounded-lg bg-white/10 animate-pulse" aria-busy="true" aria-label="Loading map" />
+      )}
       
       {/* Map Legend */}
       <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-white/20">
@@ -164,7 +217,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onCampusSelect }) => {
           Campus Locations
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          {kiitCampusLocations.length} Campuses
+          {locations.length} Campuses
         </div>
       </div>
     </div>
