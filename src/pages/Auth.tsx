@@ -41,8 +41,16 @@ export default function Auth() {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
+          // Validate KIIT email domain for Google OAuth and other providers
+          if (session.user?.email && !session.user.email.endsWith('@kiit.ac.in')) {
+            // Sign out the user immediately
+            await supabase.auth.signOut();
+            setError('Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.');
+            toast.error('🚫 Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.');
+            return;
+          }
           toast.success('Successfully signed in!');
           navigate('/');
         } else if (event === 'PASSWORD_RECOVERY') {
@@ -71,10 +79,27 @@ export default function Auth() {
     }
   };
 
+  // Validate KIIT email domain
+  const validateKiitEmail = (email: string) => {
+    if (!email.endsWith('@kiit.ac.in')) {
+      return 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.';
+    }
+    return null;
+  };
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate KIIT email domain
+    const emailError = validateKiitEmail(email);
+    if (emailError) {
+      setError(emailError);
+      setLoading(false);
+      toast.error(emailError);
+      return;
+    }
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -114,6 +139,15 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate KIIT email domain
+    const emailError = validateKiitEmail(email);
+    if (emailError) {
+      setError(emailError);
+      setLoading(false);
+      toast.error(emailError);
+      return;
+    }
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
