@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ScrollToTop from "./components/ScrollToTop";
 import RouteLogger from "./components/RouteLogger";
+import { Toaster as HotToaster } from 'react-hot-toast';
+
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -36,58 +38,59 @@ import FoodOrderCustomer from "./pages/FoodOrderCustomer";
 import FoodOrderHelper from "./pages/FoodOrderHelper";
 import CampusMap from "./pages/CampusMap";
 import SGPACalculator from "./pages/SGPACalculator";
+import { useEffect } from "react";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          {/* Route change logging */}
-          <RouteLogger />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/carton-transfer" element={<CartonTransfer />} />
-            <Route path="/senior-connect" element={<SeniorConnect />} />
-            <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
-            <Route path="/lost-and-found" element={<LostAndFound />} />
-            <Route path="/split-saathi" element={<SplitSaathi />} />
-            <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
-            <Route path="/study-material" element={<StudyMaterial />} />
-            <Route path="/book-buyback" element={<BookBuyback />} />
-            <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
-            <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
-            <Route path="/celebrations" element={<Celebrations />} />
-            <Route path="/printout-on-demand" element={<PrintoutOnDemand />} />
-            <Route path="/meetups" element={<Meetups />} />
-            <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
-            <Route path="/kiit-societies" element={<KiitSocieties />} />
-            <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
-            <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
-            <Route path="/fest-announcements" element={<FestAnnouncements />} />
-            <Route path="/sports-events-hub" element={<SportsEventsHub />} />
-            <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
-            <Route path="/food-order-helper" element={<FoodOrderHelper />} />
-            <Route path="/order-history" element={<OrderHistory />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/chatbot" element={<ChatBotPage />} />
-            <Route path="/campus-map" element={<CampusMap />} />
-            <Route path="/sgpa-calculator" element={<SGPACalculator />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
-
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <HotToaster position="top-center" />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <RouteLogger />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/carton-transfer" element={<CartonTransfer />} />
+              <Route path="/senior-connect" element={<SeniorConnect />} />
+              <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
+              <Route path="/lost-and-found" element={<LostAndFound />} />
+              <Route path="/split-saathi" element={<SplitSaathi />} />
+              <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
+              <Route path="/study-material" element={<StudyMaterial />} />
+              <Route path="/book-buyback" element={<BookBuyback />} />
+              <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
+              <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
+              <Route path="/celebrations" element={<Celebrations />} />
+              <Route path="/printout-on-demand" element={<PrintoutOnDemand />} />
+              <Route path="/meetups" element={<Meetups />} />
+              <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
+              <Route path="/kiit-societies" element={<KiitSocieties />} />
+              <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
+              <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
+              <Route path="/fest-announcements" element={<FestAnnouncements />} />
+              <Route path="/sports-events-hub" element={<SportsEventsHub />} />
+              <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
+              <Route path="/food-order-helper" element={<FoodOrderHelper />} />
+              <Route path="/order-history" element={<OrderHistory />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/chatbot" element={<ChatBotPage />} />
+              <Route path="/campus-map" element={<CampusMap />} />
+              <Route path="/sgpa-calculator" element={<SGPACalculator />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
