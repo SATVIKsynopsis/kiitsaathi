@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
@@ -19,6 +19,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
@@ -64,8 +65,17 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Google Login (Supabase handles redirect)
+  // Google Login with pre-validation (note: we can't validate the Google email before OAuth)
   const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    setEmailError('');
+    
+    // Show info toast about KIIT email requirement
+    toast.info('Please sign in with your KIIT College email (@kiit.ac.in)', {
+      duration: 4000,
+    });
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -74,30 +84,51 @@ export default function Auth() {
     });
 
     if (error) {
-      toast.error('Google login failed');
+      setLoading(false);
+      const errorMsg = 'Google login failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       console.error('Google login error:', error);
     }
+    
+    // Note: Loading state will be cleared by auth state change or component unmount
   };
 
-  // Validate KIIT email domain
-  const validateKiitEmail = (email: string) => {
+  // Validate KIIT email domain with friendly messages
+  const validateKiitEmail = (email: string, showFriendly: boolean = false) => {
+    if (!email.trim()) return null;
+    
     if (!email.endsWith('@kiit.ac.in')) {
-      return 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.';
+      return showFriendly 
+        ? '🚫 Access Denied! Please use your official KIIT ID (example: 24155598@kiit.ac.in).'
+        : 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.';
     }
     return null;
+  };
+
+  // Handle email input change with real-time validation
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setError(''); // Clear general errors
+    
+    // Real-time validation
+    const emailValidationError = validateKiitEmail(value, true);
+    setEmailError(emailValidationError || '');
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setEmailError('');
 
     // Validate KIIT email domain
-    const emailError = validateKiitEmail(email);
-    if (emailError) {
-      setError(emailError);
+    const emailValidationError = validateKiitEmail(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      setError(emailValidationError);
       setLoading(false);
-      toast.error(emailError);
+      toast.error(emailValidationError);
       return;
     }
 
@@ -139,13 +170,15 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setEmailError('');
 
     // Validate KIIT email domain
-    const emailError = validateKiitEmail(email);
-    if (emailError) {
-      setError(emailError);
+    const emailValidationError = validateKiitEmail(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      setError(emailValidationError);
       setLoading(false);
-      toast.error(emailError);
+      toast.error(emailValidationError);
       return;
     }
 
@@ -243,10 +276,17 @@ export default function Auth() {
                         type="email"
                         placeholder="your-email@kiit.ac.in"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => handleEmailChange(e.target.value)}
                         required
                         disabled={loading}
+                        className={emailError ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
+                      {emailError && (
+                        <div className="flex items-center gap-2 text-sm text-destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>{emailError}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -267,7 +307,7 @@ export default function Auth() {
                     <Button 
                       type="submit" 
                       className="w-full bg-kiit-green hover:bg-kiit-green-dark"
-                      disabled={loading}
+                      disabled={loading || !!emailError}
                     >
                       {loading ? (
                         <>
@@ -317,10 +357,17 @@ export default function Auth() {
                         type="email"
                         placeholder="your-email@kiit.ac.in"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => handleEmailChange(e.target.value)}
                         required
                         disabled={loading}
+                        className={emailError ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
+                      {emailError && (
+                        <div className="flex items-center gap-2 text-sm text-destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>{emailError}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -342,7 +389,7 @@ export default function Auth() {
                     <Button 
                       type="submit" 
                       className="w-full bg-campus-blue hover:bg-campus-blue/80"
-                      disabled={loading}
+                      disabled={loading || !!emailError}
                     >
                       {loading ? (
                         <>
