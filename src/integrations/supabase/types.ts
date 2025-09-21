@@ -2127,6 +2127,10 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      log_auth_attempt: {
+        Args: { attempt_type: string; email_address: string }
+        Returns: undefined
+      }
       log_failed_query: {
         Args: { error_details: string; query_type: string }
         Returns: undefined
