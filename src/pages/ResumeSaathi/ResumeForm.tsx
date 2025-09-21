@@ -13,58 +13,95 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Minus, User, FileText, GraduationCap, Briefcase, Code, Award, Globe } from "lucide-react";
 import { ResumeData } from "./ResumeSaathi";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const resumeSchema = z.object({
-  personalInfo: z.object({
-    fullName: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email"),
-    phone: z.string().min(10, "Please enter a valid phone number"),
-    city: z.string().min(2, "City is required"),
-    linkedin: z.string().optional(),
-    portfolio: z.string().optional(),
-  }),
-  summary: z.string().min(50, "Professional summary should be at least 50 characters"),
-  education: z.array(z.object({
-    degree: z.string().min(2, "Degree is required"),
-    institution: z.string().min(2, "Institution is required"),
-    startDate: z.string().min(4, "Start date is required"),
-    endDate: z.string().min(4, "End date is required"),
-    cgpa: z.string().optional(),
-  })).min(1, "At least one education entry is required"),
-  experience: z.array(z.object({
-    title: z.string().min(2, "Job title is required"),
-    company: z.string().min(2, "Company name is required"),
-    startDate: z.string().min(4, "Start date is required"),
-    endDate: z.string().min(4, "End date is required"),
-    bullets: z.array(z.string().min(10, "Each bullet should be at least 10 characters")).min(1, "At least one responsibility is required"),
-  })),
-  projects: z.array(z.object({
-    name: z.string().min(2, "Project name is required"),
-    description: z.string().min(20, "Project description should be at least 20 characters"),
-    technologies: z.array(z.string()).min(1, "At least one technology is required"),
-    link: z.string().optional(),
-  })),
-  skills: z.object({
-    technical: z.array(z.string()).min(3, "At least 3 technical skills are required"),
-    soft: z.array(z.string()).min(2, "At least 2 soft skills are required"),
-  }),
-  certifications: z.array(z.string()),
-  awards: z.array(z.string()),
-  languages: z.array(z.string()),
-  interests: z.array(z.string()),
-});
+const resumeSchema = z
+  .object({
+    personalInfo: z.object({
+      fullName: z.string().min(2, "Name must be at least 2 characters"),
+      email: z.string().email("Please enter a valid email"),
+      phone: z.string().min(10, "Please enter a valid phone number"),
+      city: z.string().min(2, "City is required"),
+      linkedin: z.string().optional(),
+      portfolio: z.string().optional(),
+    }),
+    summary: z.string().optional().default(""),
+    education: z
+      .array(
+        z.object({
+          degree: z.string().min(2, "Degree is required"),
+          institution: z.string().min(2, "Institution is required"),
+          startDate: z.string().min(4, "Start date is required"),
+          endDate: z.string().min(4, "End date is required"),
+          cgpa: z.string().optional(),
+        })
+      )
+      .min(1, "At least one education entry is required"),
+    experience: z
+      .array(
+        z.object({
+          title: z.string().optional().default(""),
+          company: z.string().optional().default(""),
+          startDate: z.string().optional().default(""),
+          endDate: z.string().optional().default(""),
+          bullets: z.array(z.string()).optional().default([]),
+        })
+      )
+      .optional()
+      .default([]),
+    projects: z
+      .array(
+        z.object({
+          name: z.string().optional().default(""),
+          description: z.string().optional().default(""),
+          technologies: z.array(z.string()).optional().default([]),
+          link: z.string().optional(),
+        })
+      )
+      .optional()
+      .default([]),
+    skills: z
+      .object({
+        technical: z.array(z.string()).optional().default([]),
+        soft: z.array(z.string()).optional().default([]),
+      })
+      .optional()
+      .default({ technical: [], soft: [] }),
+    certifications: z.array(z.string()).optional().default([]),
+    awards: z.array(z.string()).optional().default([]),
+    languages: z.array(z.string()).optional().default([]),
+    interests: z.array(z.string()).optional().default([]),
+  })
+  .refine(
+    (data) => {
+      const hasExperience = (data.experience || []).some(
+        (exp) => (exp.title?.trim() || "") && (exp.company?.trim() || "")
+      );
+      const hasProject = (data.projects || []).some(
+        (p) => (p.name?.trim() || "") && (p.description?.trim() || "")
+      );
+      return hasExperience || hasProject;
+    },
+    {
+      message:
+        "Add at least one Experience (with title and company) or one Project (with name and description).",
+      path: ["experience"],
+    }
+  );
 
 interface ResumeFormProps {
   onSubmit: (data: ResumeData, template: string) => void;
   initialData?: ResumeData | null;
   editingId?: string | null;
+  externalError?: string | null;
 }
 
-export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps) => {
+export const ResumeForm = ({ onSubmit, initialData, editingId, externalError }: ResumeFormProps) => {
   const [currentTab, setCurrentTab] = useState("personal");
   const [selectedTemplate, setSelectedTemplate] = useState("classic");
   const [newSkill, setNewSkill] = useState("");
   const [skillType, setSkillType] = useState<"technical" | "soft">("technical");
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const form = useForm<ResumeData>({
     resolver: zodResolver(resumeSchema),
@@ -144,38 +181,33 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
   const handleSubmit = (data: ResumeData) => {
     console.log("Form submitted with data:", data);
     console.log("Selected template:", selectedTemplate);
-    
-    // Validate required data
-    if (!data.personalInfo.fullName || !data.personalInfo.email || !data.personalInfo.phone) {
-      toast.error("Please fill in all required personal information fields.");
+
+    // Minimal required fields validation
+    if (!data.personalInfo.fullName || !data.personalInfo.email || !data.personalInfo.phone || !data.personalInfo.city) {
+      setLocalError("Please fill Full Name, Email, Phone, and City.");
+      toast.error("Missing required personal details.");
       setCurrentTab("personal");
       return;
     }
-    
-    if (!data.summary || data.summary.length < 50) {
-      toast.error("Professional summary must be at least 50 characters long.");
-      setCurrentTab("summary");
-      return;
-    }
-    
+
     if (!data.education || data.education.length === 0) {
-      toast.error("Please add at least one education entry.");
+      setLocalError("Add at least one Education entry.");
+      toast.error("Education is required.");
       setCurrentTab("education");
       return;
     }
-    
-    if (!data.skills.technical || data.skills.technical.length < 3) {
-      toast.error("Please add at least 3 technical skills.");
-      setCurrentTab("skills");
+
+    const hasExperience = (data.experience || []).some(exp => (exp.title?.trim() && exp.company?.trim()));
+    const hasProject = (data.projects || []).some(p => (p.name?.trim() && p.description?.trim()));
+
+    if (!hasExperience && !hasProject) {
+      setLocalError("Add at least one Experience (with Title & Company) or one Project (with Name & Description).");
+      toast.error("Add Experience or Project to continue.");
+      setCurrentTab("experience");
       return;
     }
-    
-    if (!data.skills.soft || data.skills.soft.length < 2) {
-      toast.error("Please add at least 2 soft skills.");
-      setCurrentTab("skills");
-      return;
-    }
-    
+
+    setLocalError(null);
     onSubmit(data, selectedTemplate);
   };
 
@@ -199,9 +231,19 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
       </CardHeader>
       <CardContent>
         <Form {...form}>
+          {(externalError || localError) && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{externalError || localError}</AlertDescription>
+              <div className="mt-2">
+                <Button type="submit" variant="outline" size="sm">Retry</Button>
+              </div>
+            </Alert>
+          )}
           <form onSubmit={form.handleSubmit(handleSubmit, (errors) => {
             console.log("Form validation errors:", errors);
-            toast.error("Please check the highlighted fields and try again.");
+            const firstErrorKey = Object.keys(errors)[0];
+            setLocalError("Please fix the highlighted fields to continue.");
+            toast.error("Some required fields are missing.");
           })} className="space-y-6">
             <Tabs value={currentTab} onValueChange={setCurrentTab}>
               <TabsList className="grid w-full grid-cols-7">

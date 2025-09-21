@@ -60,7 +60,7 @@ export interface ResumeData {
 type ViewMode = 'form' | 'loading' | 'preview' | 'history';
 
 const ResumeSaathi = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast: useToastHook } = useToast();
   const [viewMode, setViewMode] = useState<ViewMode>('form');
@@ -69,6 +69,7 @@ const ResumeSaathi = () => {
   const [atsScore, setAtsScore] = useState<number>(0);
   const [dailyDownloads, setDailyDownloads] = useState(0);
   const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -105,23 +106,38 @@ const ResumeSaathi = () => {
     }
   };
 
-  const handleFormSubmit = (data: ResumeData, template: string) => {
+  const handleFormSubmit = async (data: ResumeData, template: string) => {
     console.log("handleFormSubmit called with:", { data, template });
+    setFormError(null);
     try {
       setResumeData(data);
       setSelectedTemplate(template);
       setViewMode('loading');
-      
-      // Show loader for minimum 4 seconds
-      setTimeout(() => {
-        const score = calculateAtsScore(data);
-        console.log("ATS Score calculated:", score);
-        setAtsScore(score);
-        setViewMode('preview');
-      }, 4000);
-    } catch (error) {
+
+      const minDelay = new Promise((resolve) => setTimeout(resolve, 3500));
+
+      const { data: result, error } = await supabase.functions.invoke('generate-resume', {
+        body: { resumeData: data, template },
+        headers: { Authorization: `Bearer ${session?.access_token}` }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const backendScore = typeof result?.atsScore === 'number' ? result.atsScore : calculateAtsScore(data);
+
+      await minDelay; // ensure loader shows for smooth UX
+
+      setAtsScore(backendScore);
+      setViewMode('preview');
+      toast.success('Resume generated successfully!');
+    } catch (error: any) {
       console.error("Error in handleFormSubmit:", error);
-      toast.error("Error generating resume. Please check your form data and try again.");
+      setViewMode('form');
+      const message = error?.message || 'Error generating resume. Please try again.';
+      setFormError(message);
+      toast.error(message);
     }
   };
 
@@ -284,6 +300,7 @@ const ResumeSaathi = () => {
             onSubmit={handleFormSubmit}
             initialData={resumeData}
             editingId={editingResumeId}
+            externalError={formError}
           />
         )}
 
