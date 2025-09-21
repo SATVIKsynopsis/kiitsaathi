@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_action_logs: {
+        Row: {
+          action: string
+          command: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          command?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          command?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       assignment_files: {
         Row: {
           assignment_id: string
@@ -1835,6 +1862,30 @@ export type Database = {
           id?: number
           semester_number?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      service_visibility: {
+        Row: {
+          created_at: string
+          replaced_text: string | null
+          service_id: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          replaced_text?: string | null
+          service_id: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          replaced_text?: string | null
+          service_id?: string
+          updated_at?: string
+          visible?: boolean
         }
         Relationships: []
       }
