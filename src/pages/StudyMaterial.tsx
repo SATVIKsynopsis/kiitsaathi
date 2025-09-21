@@ -206,6 +206,7 @@ const availableSubjects =
     if (material && material.downloadUrl) {
       // Method 1: Open in new tab with PDF viewer
       window.open(material.downloadUrl, '_blank', 'noopener,noreferrer');
+      
     }
 
   } catch (error) {
