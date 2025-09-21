@@ -164,116 +164,6 @@ const availableSubjects =
     }
   };
 
-  // Handle file upload
-  const handleFileUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      toast.error("Please login to upload files");
-      return;
-    }
-
-    if (!uploadForm.file || !uploadForm.title || !uploadForm.subject || !uploadForm.semester || !uploadForm.branch) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-
-    // Validate file type based on active section
-    const allowedTypes = activeSection === "ppts" 
-      ? ['.pptx', '.pdf'] 
-      : ['.pdf'];
-    
-    const fileExtension = uploadForm.file.name.toLowerCase().substring(uploadForm.file.name.lastIndexOf('.'));
-    
-    if (!allowedTypes.includes(fileExtension)) {
-      if (activeSection === "ppts") {
-        toast.error("Only .pptx and .pdf files are allowed in PPTs section.");
-      } else {
-        toast.error("Only .pdf files are allowed.");
-      }
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      // Upload file to storage
-      const fileName = `${Date.now()}_${uploadForm.file.name}`;
-      const bucketName = activeSection === "ppts" ? "ppts" : "study-materials";
-      
-      // Set correct content type for PPTX files
-      const contentType = fileExtension === '.pptx' 
-        ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        : 'application/pdf';
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(fileName, uploadForm.file, {
-          contentType,
-          upsert: true
-        });
-
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        toast.error("Failed to upload file");
-        return;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(fileName);
-
-      // Save to database
-      const dbData = {
-        title: uploadForm.title,
-        subject: uploadForm.subject,
-        semester: uploadForm.semester,
-        branch: uploadForm.branch,
-        year: uploadForm.year || new Date().getFullYear().toString(),
-        uploaded_by: user.email || "Anonymous",
-        user_id: user.id,
-        views: 0
-      };
-
-      if (activeSection === "ppts") {
-        await supabase.from("ppts").insert({
-          ...dbData,
-          ppt_url: publicUrl
-        });
-      } else if (activeSection === "notes") {
-        await supabase.from("notes").insert({
-          ...dbData,
-          pdf_url: publicUrl
-        });
-      } else if (activeSection === "pyqs") {
-        await supabase.from("pyqs").insert({
-          ...dbData,
-          pdf_url: publicUrl
-        });
-      }
-
-      toast.success("File uploaded successfully!");
-      setAddResourceDialogOpen(false);
-      setUploadForm({
-        title: "",
-        subject: "",
-        semester: "",
-        branch: "",
-        year: "",
-        file: null
-      });
-      
-      // Refresh materials
-      window.location.reload();
-      
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload file");
-    } finally {
-      setUploading(false);
-    }
-  };
 
   if (!user && !loading) {
     return (
@@ -285,6 +175,44 @@ const availableSubjects =
       </div>
     );
   }
+
+  const handleView = async (id: number) => {
+  try {
+    // Update view count first
+    const table = activeSection === "notes" 
+      ? "notes" 
+      : activeSection === "pyqs" 
+      ? "pyqs" 
+      : "ppts";
+
+    const { error } = await supabase
+      .from(table)
+      .update({ views: materials.find(m => m.id === id)?.views! + 1 })
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    // Update local state
+    setMaterials(materials.map(material => 
+      material.id === id 
+        ? { ...material, views: material.views + 1 }
+        : material
+    ));
+
+    // Find material and open PDF
+    const material = materials.find(m => m.id === id);
+    if (material && material.downloadUrl) {
+      // Method 1: Open in new tab with PDF viewer
+      window.open(material.downloadUrl, '_blank', 'noopener,noreferrer');
+    }
+
+  } catch (error) {
+    console.error("Error updating view count:", error);
+    toast.error("Failed to update view count");
+  }
+};;
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,12 +231,7 @@ const availableSubjects =
             >
               <MessageSquare className="w-4 h-4" /> Request Resource
             </button>
-            <button 
-              onClick={() => setAddResourceDialogOpen(true)} 
-              className="bg-kiit-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-kiit-primary/90 transition-colors shadow-md hover:shadow-lg"
-            >
-              <Plus className="w-4 h-4" /> Add Resource
-            </button>
+            
           </div>
         </div>
 
@@ -355,7 +278,7 @@ const availableSubjects =
             ) : (
               <DataTable
                 materials={filterMaterials(materials)}
-                onViewPDF={(id) => console.log("View PDF", id)}
+                onViewPDF={handleView}
                 loading={loading}
                 materialType={activeSection as "notes" | "pyqs" | "ppts"}
                 onDownload={handleDownload}
@@ -382,100 +305,6 @@ const availableSubjects =
           </div>
         )}
       </div>
-
-      {/* Upload Dialog */}
-      <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Upload {activeSection === "ppts" ? "PPT" : activeSection === "notes" ? "Notes" : "PYQ"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleFileUpload} className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={uploadForm.title}
-                onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter title"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="subject">Subject *</Label>
-              <Input
-                id="subject"
-                value={uploadForm.subject}
-                onChange={(e) => setUploadForm(prev => ({ ...prev, subject: e.target.value }))}
-                placeholder="Enter subject"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="semester">Semester *</Label>
-              <Select value={uploadForm.semester} onValueChange={(value) => setUploadForm(prev => ({ ...prev, semester: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select semester" />
-                </SelectTrigger>
-                <SelectContent>
-                  {semesters.map(sem => (
-                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="branch">Branch *</Label>
-              <Input
-                id="branch"
-                value={uploadForm.branch}
-                onChange={(e) => setUploadForm(prev => ({ ...prev, branch: e.target.value }))}
-                placeholder="Enter branch (e.g., CSE, ECE)"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="year">Year</Label>
-              <Select value={uploadForm.year} onValueChange={(value) => setUploadForm(prev => ({ ...prev, year: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map(year => (
-                    <SelectItem key={year} value={year}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="file">
-                File * {activeSection === "ppts" ? "(.pptx, .pdf)" : "(.pdf)"}
-              </Label>
-              <Input
-                id="file"
-                type="file"
-                accept={activeSection === "ppts" ? ".pptx,.pdf" : ".pdf"}
-                onChange={(e) => setUploadForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
-                required
-              />
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setAddResourceDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={uploading}>
-                {uploading ? <Loader className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-                {uploading ? "Uploading..." : "Upload"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Request Dialog */}
       <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>

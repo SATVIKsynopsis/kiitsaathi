@@ -28,8 +28,7 @@ interface DataTableProps {
 
 export const DataTable: React.FC<DataTableProps> = ({ 
   materials, 
-  onViewPDF, 
-  loading = false,
+  onViewPDF,
   materialType = "notes",
   onDownload
 }) => {
@@ -106,7 +105,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               <TableRow key={material.id} className="hover:bg-muted/50">
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    {getFileIcon()}
+                   
                     <span className="truncate max-w-xs">{material.title}</span>
                   </div>
                 </TableCell>
