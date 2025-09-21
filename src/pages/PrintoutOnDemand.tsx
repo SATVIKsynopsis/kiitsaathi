@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,14 +15,13 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { HelperDashboard } from '@/components/HelperDashboard';
 import { PrintJobCard } from '@/components/PrintJobCard';
-import { usePrintJobManager } from '@/hooks/usePrintJobManager';
 import { useAuth } from '@/hooks/useAuth';
 import { GuestBrowsingBanner } from '@/components/GuestBrowsingBanner';
 
 const PrintoutOnDemand = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { createPrintJob, fetchJobs, isLoading } = usePrintJobManager();
+  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('student');
   
   // Student form state
@@ -43,20 +42,11 @@ const PrintoutOnDemand = () => {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [myJobs, setMyJobs] = useState<any[]>([]);
 
-  // Load user's jobs
+  // Load user's jobs - disabled since we're using external payment
   const loadMyJobs = async () => {
-    if (user) {
-      const jobs = await fetchJobs({ helper_id: user.id });
-      const userJobs = jobs.filter(job => job.user_id === user.id);
-      setMyJobs(userJobs);
-    }
+    // No longer fetching jobs since we redirect to external payment
+    setMyJobs([]);
   };
-
-  useEffect(() => {
-    if (user && activeTab === 'orders') {
-      loadMyJobs();
-    }
-  }, [user, activeTab]);
 
   const calculateCosts = () => {
     if (!pageCount || !formData.copies) return { printing: 0, service: 0, helper: 0, delivery: 0, total: 0 };
@@ -122,35 +112,14 @@ const PrintoutOnDemand = () => {
       return;
     }
 
-    const costs = calculateCosts();
+    // Redirect to payment link instead of processing the order
+    window.open('https://razorpay.me/@kiitsaathi', '_blank');
     
-    const jobData = {
-      file_name: selectedFile.name,
-      file_url: '', // Will be set by upload
-      file_size: selectedFile.size,
-      page_count: pageCount,
-      copies: formData.copies,
-      print_type: formData.printType,
-      paper_size: formData.paperSize,
-      binding_option: formData.bindingOption,
-      delivery_location: formData.deliveryLocation,
-      delivery_time: formData.deliveryTime,
-      delivery_type: formData.deliveryType,
-      delivery_fee: costs.delivery,
-      additional_notes: formData.additionalNotes,
-      student_name: formData.studentName,
-      student_contact: formData.studentContact,
-      total_cost: costs.total,
-      printing_cost: costs.printing,
-      service_fee: costs.service,
-      helper_fee: costs.helper,
-      privacy_acknowledged: true
-    };
-
-    const success = await createPrintJob(jobData, selectedFile);
+    // Show success message
+    toast.success('Redirecting to payment page...');
     
-    if (success) {
-      // Reset form
+    // Optionally reset form after payment redirect
+    setTimeout(() => {
       setFormData({
         studentName: '',
         studentContact: '',
@@ -166,11 +135,7 @@ const PrintoutOnDemand = () => {
       setSelectedFile(null);
       setPageCount(0);
       setPrivacyAccepted(false);
-      
-      // Switch to orders tab to see the job
-      setActiveTab('orders');
-      loadMyJobs();
-    }
+    }, 1000);
   };
 
   const costs = calculateCosts();
@@ -398,7 +363,7 @@ const PrintoutOnDemand = () => {
                             rows={3}
                           />
                         </div>
-
+                        
                          <Button 
                            type="submit" 
                            className="w-full py-6 text-lg"
@@ -500,49 +465,24 @@ const PrintoutOnDemand = () => {
 
             {/* My Orders Tab */}
             <TabsContent value="orders" className="space-y-6">
-              {!user ? (
-                <Card className="glassmorphism">
-                  <CardContent className="p-8 text-center">
-                    <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Sign In Required</h3>
-                    <p className="text-muted-foreground mb-4">Please sign in to view your print orders</p>
-                    <Button onClick={() => window.location.href = '/auth'}>
-                      Sign In
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="glassmorphism">
-                  <CardHeader>
-                    <CardTitle className="text-campus-blue flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      My Print Orders
-                    </CardTitle>
-                    <CardDescription>
-                      Track your print job orders and their status
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {myJobs.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Printer className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>No orders yet</p>
-                        <p className="text-sm">Submit your first print job to see it here!</p>
-                      </div>
-                    ) : (
-                      <div className="grid gap-4">
-                        {myJobs.map((job) => (
-                          <PrintJobCard
-                            key={job.id}
-                            job={job}
-                            userType="customer"
-                          />
-                        ))}
-                      </div>
-                    )}
-                   </CardContent>
-                </Card>
-              )}
+              <Card className="glassmorphism">
+                <CardHeader>
+                  <CardTitle className="text-campus-blue flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    My Print Orders
+                  </CardTitle>
+                  <CardDescription>
+                    Track your print job orders and their status
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Printer className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-semibold mb-2">Orders are processed after payment</p>
+                    <p className="text-sm">After making payment through the link, your orders will be processed and you'll be contacted directly.</p>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Helper Tab */}

@@ -37,7 +37,6 @@ import { DatabaseErrorFallback } from "@/components/DatabaseErrorFallback";
 import { supabase } from "@/integrations/supabase/client";
 import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
 import { useAuth } from "@/hooks/useAuth";
-import PaymentComponent from "../components/PaymentComponent";
 
 interface LostFoundItem {
   id: string;
@@ -158,10 +157,45 @@ export default function LostAndFound() {
     setFilteredItems(filtered);
   }, [items, searchTerm, selectedCategory, selectedType, activeTab]);
 
+  // Check payment status for all items when user logs in or items change
+  useEffect(() => {
+    const checkPaidItems = async () => {
+      // Clear previous payment data when user changes
+      setPaidItems({});
+      
+      if (user?.id && items.length > 0) {
+        console.log(`Checking payment status for ${items.length} items for user ${user.id}`);
+        const paidItemsCheck: {[id: string]: boolean} = {};
+        
+        // Check each item's payment status
+        for (const item of items) {
+          try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${item.id}&item_title=${encodeURIComponent(item.title)}`);
+            const result = await res.json();
+            console.log(`Payment check for item ${item.id}: ${result.paid}`);
+            if (result.paid) {
+              paidItemsCheck[item.id] = true;
+            }
+          } catch (err) {
+            console.error(`Error checking payment for item ${item.id}:`, err);
+          }
+        }
+        
+        console.log('Final paidItemsCheck:', paidItemsCheck);
+        setPaidItems(paidItemsCheck);
+      } else if (!user?.id) {
+        // If no user is logged in, clear all payment data
+        console.log('No user logged in, clearing payment data');
+        setPaidItems({});
+      }
+    };
+
+    checkPaidItems();
+  }, [user?.id, items]);
+
   // Handle image selection
-    const [showPayment, setShowPayment] = useState<{item: LostFoundItem | null, open: boolean}>({item: null, open: false});
-    const [paidItemId, setPaidItemId] = useState<string | null>(null);
-    const [paidItems, setPaidItems] = useState<{[id: string]: boolean}>({});
+  const [showPayment, setShowPayment] = useState<{item: LostFoundItem | null, open: boolean}>({item: null, open: false});
+  const [paidItems, setPaidItems] = useState<{[id: string]: boolean}>({});
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -288,10 +322,9 @@ export default function LostAndFound() {
     // Check backend if already paid
     if (user?.id) {
       try {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${item.id}&item_title=${encodeURIComponent(item.title)}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${item.id}&item_title=${encodeURIComponent(item.title)}`);
         const result = await res.json();
         if (result.paid) {
-          setPaidItemId(item.id);
           setPaidItems(prev => ({...prev, [item.id]: true}));
           toast({ title: "Contact Details Sent!", description: "Contact details have been sent to your registered email address." });
           return;
@@ -303,15 +336,14 @@ export default function LostAndFound() {
 
   const handlePaymentSuccess = async () => {
     if (showPayment.item && user?.id) {
-      // After payment, mark as paid in frontend and check backend for confirmation
+      // After payment, check backend for confirmation
       try {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${showPayment.item.id}&item_title=${encodeURIComponent(showPayment.item.title)}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/has-paid-contact?user_id=${user.id}&item_id=${showPayment.item.id}&item_title=${encodeURIComponent(showPayment.item.title)}`);
         const result = await res.json();
         if (result.paid) {
-          setPaidItemId(showPayment.item.id);
           setPaidItems(prev => ({...prev, [showPayment.item.id]: true}));
           setShowPayment({item: null, open: false});
-          toast({ title: "Contact Information Unlocked!", description: "You can now view the contact details." });
+          toast({ title: "Contact Details Sent!", description: "Contact details have been sent to your registered email address." });
         } else {
           toast({ title: "Payment not verified", description: "Please contact support if you have paid." });
         }
@@ -577,7 +609,7 @@ export default function LostAndFound() {
                           </div>
                         </div>
                         
-                        {paidItemId === item.id || paidItems[item.id] ? (
+                        {user?.id && paidItems[item.id] === true ? (
                           <div className="mt-2 p-2 border rounded bg-muted">
                             <div className="font-semibold">Contact Details:</div>
                             <div>Name: {item.contact_name}</div>
@@ -609,14 +641,12 @@ export default function LostAndFound() {
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Unlock Contact Details</h3>
             <p className="mb-4">Pay ₹50 to view contact details for <span className="font-semibold">{showPayment.item.title}</span>.</p>
-            <PaymentComponent
-              amount={50}
-              user_id={user?.id || ""}
-              service_name="LostAndFound"
-              subservice_name={showPayment.item.title}
-              payment_method="card"
-              autoOpen={true}
-            />
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+              onClick={() => window.open('https://razorpay.me/@kiitsaathi', '_blank')}
+            >
+              Pay Now - ₹50
+            </Button>
             <Button className="mt-4 w-full" variant="outline" onClick={() => setShowPayment({item: null, open: false})}>Cancel</Button>
             <Button className="mt-2 w-full bg-green-600 text-white" onClick={handlePaymentSuccess}>Simulate Payment Success</Button>
             {/* Replace above with real payment success callback in production */}
