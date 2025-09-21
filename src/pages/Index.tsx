@@ -6,6 +6,7 @@ import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { NotificationBell } from "@/components/NotificationBell";
+import { AdminCommandExecutor } from "@/components/AdminCommandExecutor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,8 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { hideServicesDirectly } from "@/utils/adminCommands";
 
 const contactFormSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -290,6 +292,7 @@ const Index = () => {
       <Footer />
       <ChatBot />
       <NotificationBell />
+      <AdminCommandExecutor />
     </div>
   );
 };
