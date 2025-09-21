@@ -38,6 +38,7 @@ import FoodOrderCustomer from "./pages/FoodOrderCustomer";
 import FoodOrderHelper from "./pages/FoodOrderHelper";
 import CampusMap from "./pages/CampusMap";
 import SGPACalculator from "./pages/SGPACalculator";
+import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
 import { useEffect } from "react";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
@@ -84,6 +85,7 @@ const App = () => {
               <Route path="/chatbot" element={<ChatBotPage />} />
               <Route path="/campus-map" element={<CampusMap />} />
               <Route path="/sgpa-calculator" element={<SGPACalculator />} />
+              <Route path="/resume-saathi" element={<ResumeSaathi />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

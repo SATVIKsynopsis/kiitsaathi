@@ -18,7 +18,8 @@ import {
   Lightbulb,
   Star,
   ArrowRight,
-  Calculator
+  Calculator,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +59,13 @@ const services = [
     description: "One calendar. All societies. Never miss an interview again.",
     price: "Free",
     gradient: "from-kiit-green to-campus-blue",
+  },
+  {
+    icon: FileText,
+    title: "Resume Saathi",
+    description: "AI-powered ATS-optimized resume builder with multiple templates and instant PDF download.",
+    price: "Free",
+    gradient: "from-purple-500 to-blue-600",
   },
   {
     icon: Calculator,
@@ -158,6 +166,7 @@ export const ServicesGrid = () => {
       "KIIT Societies, Fests and Sports": "/kiit-societies",
       "Lost & Found Portal": "/lost-and-found",
       "Campus Tour Booking": "/campus-tour-booking",
+      "Resume Saathi": "/resume-saathi",
       "SplitSaathi – Group Expense Manager": "/split-saathi",
       "Book Buyback & Resale": "/book-buyback-sell",
       "KIIT Saathi Celebrations": "/celebrations",
