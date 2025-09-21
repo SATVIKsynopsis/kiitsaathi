@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { FileText, Download, History, Plus, Star, Zap } from "lucide-react";
 
 export interface ResumeData {
@@ -61,7 +62,7 @@ type ViewMode = 'form' | 'loading' | 'preview' | 'history';
 const ResumeSaathi = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: useToastHook } = useToast();
   const [viewMode, setViewMode] = useState<ViewMode>('form');
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('classic');
@@ -105,16 +106,23 @@ const ResumeSaathi = () => {
   };
 
   const handleFormSubmit = (data: ResumeData, template: string) => {
-    setResumeData(data);
-    setSelectedTemplate(template);
-    setViewMode('loading');
-    
-    // Show loader for minimum 4 seconds
-    setTimeout(() => {
-      const score = calculateAtsScore(data);
-      setAtsScore(score);
-      setViewMode('preview');
-    }, 4000);
+    console.log("handleFormSubmit called with:", { data, template });
+    try {
+      setResumeData(data);
+      setSelectedTemplate(template);
+      setViewMode('loading');
+      
+      // Show loader for minimum 4 seconds
+      setTimeout(() => {
+        const score = calculateAtsScore(data);
+        console.log("ATS Score calculated:", score);
+        setAtsScore(score);
+        setViewMode('preview');
+      }, 4000);
+    } catch (error) {
+      console.error("Error in handleFormSubmit:", error);
+      toast.error("Error generating resume. Please check your form data and try again.");
+    }
   };
 
   const calculateAtsScore = (data: ResumeData): number => {
@@ -169,18 +177,18 @@ const ResumeSaathi = () => {
           .eq('id', editingResumeId);
         
         if (error) throw error;
-        toast({ title: "Resume updated successfully!" });
+        useToastHook({ title: "Resume updated successfully!" });
       } else {
         const { error } = await supabase
           .from('resumes')
           .insert(resumeRecord);
         
         if (error) throw error;
-        toast({ title: "Resume saved successfully!" });
+        useToastHook({ title: "Resume saved successfully!" });
       }
     } catch (error) {
       console.error('Error saving resume:', error);
-      toast({
+      useToastHook({
         title: "Error saving resume",
         description: "Please try again later.",
         variant: "destructive"
@@ -190,7 +198,7 @@ const ResumeSaathi = () => {
 
   const handleDownload = async () => {
     if (dailyDownloads >= 5) {
-      toast({
+      useToastHook({
         title: "Daily limit reached",
         description: "You can download up to 5 resumes per day. Try again tomorrow.",
         variant: "destructive"
@@ -212,7 +220,7 @@ const ResumeSaathi = () => {
       if (error) throw error;
       
       setDailyDownloads(prev => prev + 1);
-      toast({ title: "Resume downloaded successfully!" });
+      useToastHook({ title: "Resume downloaded successfully!" });
     } catch (error) {
       console.error('Error updating download count:', error);
     }

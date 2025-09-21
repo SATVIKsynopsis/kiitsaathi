@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Minus, User, FileText, GraduationCap, Briefcase, Code, Award, Globe } from "lucide-react";
 import { ResumeData } from "./ResumeSaathi";
+import { toast } from "sonner";
 
 const resumeSchema = z.object({
   personalInfo: z.object({
@@ -116,7 +117,65 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
     form.setValue(`skills.${skillType}`, currentSkills.filter((_, i) => i !== index));
   };
 
+  const addExperienceBullet = (expIndex: number) => {
+    const currentBullets = form.getValues(`experience.${expIndex}.bullets`);
+    form.setValue(`experience.${expIndex}.bullets`, [...currentBullets, ""]);
+  };
+
+  const removeExperienceBullet = (expIndex: number, bulletIndex: number) => {
+    const currentBullets = form.getValues(`experience.${expIndex}.bullets`);
+    form.setValue(`experience.${expIndex}.bullets`, currentBullets.filter((_, i) => i !== bulletIndex));
+  };
+
+  const handleNext = () => {
+    const currentIndex = tabs.findIndex(tab => tab.id === currentTab);
+    if (currentIndex < tabs.length - 1) {
+      setCurrentTab(tabs[currentIndex + 1].id);
+    }
+  };
+
+  const handlePrevious = () => {
+    const currentIndex = tabs.findIndex(tab => tab.id === currentTab);
+    if (currentIndex > 0) {
+      setCurrentTab(tabs[currentIndex - 1].id);
+    }
+  };
+
   const handleSubmit = (data: ResumeData) => {
+    console.log("Form submitted with data:", data);
+    console.log("Selected template:", selectedTemplate);
+    
+    // Validate required data
+    if (!data.personalInfo.fullName || !data.personalInfo.email || !data.personalInfo.phone) {
+      toast.error("Please fill in all required personal information fields.");
+      setCurrentTab("personal");
+      return;
+    }
+    
+    if (!data.summary || data.summary.length < 50) {
+      toast.error("Professional summary must be at least 50 characters long.");
+      setCurrentTab("summary");
+      return;
+    }
+    
+    if (!data.education || data.education.length === 0) {
+      toast.error("Please add at least one education entry.");
+      setCurrentTab("education");
+      return;
+    }
+    
+    if (!data.skills.technical || data.skills.technical.length < 3) {
+      toast.error("Please add at least 3 technical skills.");
+      setCurrentTab("skills");
+      return;
+    }
+    
+    if (!data.skills.soft || data.skills.soft.length < 2) {
+      toast.error("Please add at least 2 soft skills.");
+      setCurrentTab("skills");
+      return;
+    }
+    
     onSubmit(data, selectedTemplate);
   };
 
@@ -140,7 +199,10 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+            console.log("Form validation errors:", errors);
+            toast.error("Please check the highlighted fields and try again.");
+          })} className="space-y-6">
             <Tabs value={currentTab} onValueChange={setCurrentTab}>
               <TabsList className="grid w-full grid-cols-7">
                 {tabs.map((tab) => {
@@ -420,88 +482,63 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
                         )}
                       />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name={`experience.${index}.bullets`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Key Responsibilities *</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="• Developed web applications using React and Node.js
-• Collaborated with cross-functional teams to deliver features
-• Improved application performance by 30%"
-                              className="min-h-[100px]"
-                              value={field.value?.join('\n') || ''}
-                              onChange={(e) => field.onChange(e.target.value.split('\n').filter(bullet => bullet.trim()))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    
+                    <div>
+                      <FormLabel>Key Responsibilities *</FormLabel>
+                      {form.watch(`experience.${index}.bullets`).map((bullet, bulletIndex) => (
+                        <div key={bulletIndex} className="flex gap-2 mb-2">
+                          <FormField
+                            control={form.control}
+                            name={`experience.${index}.bullets.${bulletIndex}`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input 
+                                    placeholder="• Developed and maintained web applications..."
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeExperienceBullet(index, bulletIndex)}
+                            disabled={form.watch(`experience.${index}.bullets`).length === 1}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addExperienceBullet(index)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Responsibility
+                      </Button>
+                    </div>
                   </Card>
                 ))}
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => appendExperience({ title: "", company: "", startDate: "", endDate: "", bullets: [] })}
+                  onClick={() => appendExperience({ 
+                    title: "", 
+                    company: "", 
+                    startDate: "", 
+                    endDate: "", 
+                    bullets: [""] 
+                  })}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Experience
                 </Button>
-              </TabsContent>
-
-              <TabsContent value="skills" className="space-y-4">
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-semibold mb-4">Technical Skills</h4>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {form.watch("skills.technical").map((skill, index) => (
-                        <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => removeSkill("technical", index)}>
-                          {skill} ×
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Add technical skill (e.g., React, Python, AWS)"
-                        value={skillType === "technical" ? newSkill : ""}
-                        onChange={(e) => {
-                          setSkillType("technical");
-                          setNewSkill(e.target.value);
-                        }}
-                      />
-                      <Button type="button" onClick={addSkill}>
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold mb-4">Soft Skills</h4>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {form.watch("skills.soft").map((skill, index) => (
-                        <Badge key={index} variant="outline" className="cursor-pointer" onClick={() => removeSkill("soft", index)}>
-                          {skill} ×
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Add soft skill (e.g., Leadership, Communication)"
-                        value={skillType === "soft" ? newSkill : ""}
-                        onChange={(e) => {
-                          setSkillType("soft");
-                          setNewSkill(e.target.value);
-                        }}
-                      />
-                      <Button type="button" onClick={addSkill}>
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
               </TabsContent>
 
               <TabsContent value="projects" className="space-y-4">
@@ -526,7 +563,7 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
                           <FormItem>
                             <FormLabel>Project Name *</FormLabel>
                             <FormControl>
-                              <Input placeholder="E-commerce Website" {...field} />
+                              <Input placeholder="E-commerce Platform" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -537,10 +574,10 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
                         name={`projects.${index}.description`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Description *</FormLabel>
+                            <FormLabel>Project Description *</FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Describe your project, what you built, and the impact it had..."
+                                placeholder="Describe the project, its purpose, and your role..."
                                 {...field}
                               />
                             </FormControl>
@@ -548,29 +585,51 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name={`projects.${index}.technologies`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Technologies Used *</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="React, Node.js, MongoDB (comma-separated)"
-                                value={field.value?.join(', ') || ''}
-                                onChange={(e) => field.onChange(e.target.value.split(',').map(tech => tech.trim()).filter(Boolean))}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div>
+                        <FormLabel>Technologies Used *</FormLabel>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {form.watch(`projects.${index}.technologies`).map((tech, techIndex) => (
+                            <Badge key={techIndex} variant="secondary" className="flex items-center gap-1">
+                              {tech}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentTechs = form.getValues(`projects.${index}.technologies`);
+                                  form.setValue(
+                                    `projects.${index}.technologies`,
+                                    currentTechs.filter((_, i) => i !== techIndex)
+                                  );
+                                }}
+                                className="ml-1 hover:text-red-500"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Add technology (e.g., React, Node.js)"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const value = e.currentTarget.value.trim();
+                                if (value) {
+                                  const currentTechs = form.getValues(`projects.${index}.technologies`);
+                                  form.setValue(`projects.${index}.technologies`, [...currentTechs, value]);
+                                  e.currentTarget.value = '';
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
                       <FormField
                         control={form.control}
                         name={`projects.${index}.link`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Project Link</FormLabel>
+                            <FormLabel>Project Link (Optional)</FormLabel>
                             <FormControl>
                               <Input placeholder="https://github.com/username/project" {...field} />
                             </FormControl>
@@ -591,8 +650,100 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
                 </Button>
               </TabsContent>
 
-              <TabsContent value="additional" className="space-y-4">
+              <TabsContent value="skills" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-3">Technical Skills *</h4>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {form.watch("skills.technical").map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => removeSkill("technical", index)}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add technical skill"
+                        value={skillType === "technical" ? newSkill : ""}
+                        onChange={(e) => {
+                          setSkillType("technical");
+                          setNewSkill(e.target.value);
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addSkill();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setSkillType("technical");
+                          addSkill();
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3">Soft Skills *</h4>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {form.watch("skills.soft").map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => removeSkill("soft", index)}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add soft skill"
+                        value={skillType === "soft" ? newSkill : ""}
+                        onChange={(e) => {
+                          setSkillType("soft");
+                          setNewSkill(e.target.value);
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addSkill();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setSkillType("soft");
+                          addSkill();
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="additional" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <FormLabel>Certifications</FormLabel>
                     <Textarea
@@ -656,30 +807,28 @@ export const ResumeForm = ({ onSubmit, initialData, editingId }: ResumeFormProps
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    const currentIndex = tabs.findIndex(tab => tab.id === currentTab);
-                    if (currentIndex > 0) {
-                      setCurrentTab(tabs[currentIndex - 1].id);
-                    }
-                  }}
+                  onClick={handlePrevious}
                   disabled={currentTab === tabs[0].id}
                 >
                   Previous
                 </Button>
                 
                 {currentTab === tabs[tabs.length - 1].id ? (
-                  <Button type="submit" className="bg-gradient-to-r from-purple-500 to-blue-600">
+                  <Button 
+                    type="submit" 
+                    className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700"
+                    onClick={() => {
+                      console.log("Generate button clicked");
+                      console.log("Form state:", form.formState);
+                      console.log("Form errors:", form.formState.errors);
+                    }}
+                  >
                     Generate Resume
                   </Button>
                 ) : (
                   <Button
                     type="button"
-                    onClick={() => {
-                      const currentIndex = tabs.findIndex(tab => tab.id === currentTab);
-                      if (currentIndex < tabs.length - 1) {
-                        setCurrentTab(tabs[currentIndex + 1].id);
-                      }
-                    }}
+                    onClick={handleNext}
                   >
                     Next
                   </Button>

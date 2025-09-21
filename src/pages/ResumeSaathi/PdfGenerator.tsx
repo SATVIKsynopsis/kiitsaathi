@@ -4,6 +4,7 @@ import { useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { ResumeData } from "./ResumeSaathi";
+import { toast } from "sonner";
 
 interface PdfGeneratorProps {
   data: ResumeData;
@@ -16,15 +17,20 @@ export const PdfGenerator = ({ data, template, onDownload, disabled }: PdfGenera
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generatePDF = async () => {
-    if (disabled) return;
+    if (disabled) {
+      toast.error("Daily download limit reached. Try again tomorrow.");
+      return;
+    }
     
     setIsGenerating(true);
     
     try {
       const resumeElement = document.getElementById('resume-content');
       if (!resumeElement) {
-        throw new Error('Resume content not found');
+        throw new Error('Resume content not found. Please ensure the preview is visible.');
       }
+
+      console.log("Starting PDF generation for:", data.personalInfo.fullName);
 
       // Configure html2canvas for better quality
       const canvas = await html2canvas(resumeElement, {
@@ -35,6 +41,8 @@ export const PdfGenerator = ({ data, template, onDownload, disabled }: PdfGenera
         width: 794, // A4 width in pixels at 96 DPI
         height: 1123, // A4 height in pixels at 96 DPI
       });
+
+      console.log("Canvas generated, creating PDF...");
 
       // Create PDF with A4 dimensions
       const pdf = new jsPDF({
@@ -57,7 +65,7 @@ export const PdfGenerator = ({ data, template, onDownload, disabled }: PdfGenera
       
       pdf.addImage(imgData, 'PNG', 0, 0, finalWidth, finalHeight);
 
-      // Add metadata
+      // Add watermark and metadata
       pdf.setProperties({
         title: `${data.personalInfo.fullName} Resume`,
         subject: 'Professional Resume',
@@ -68,15 +76,19 @@ export const PdfGenerator = ({ data, template, onDownload, disabled }: PdfGenera
       // Generate filename
       const fileName = `${data.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
       
+      console.log("Downloading PDF:", fileName);
+      
       // Download the PDF
       pdf.save(fileName);
       
       // Call the onDownload callback to update counters
       await onDownload();
       
+      console.log("PDF generation completed successfully");
+      
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      toast.error(`Failed to generate PDF: ${error.message || 'Unknown error'}. Please try again.`);
     } finally {
       setIsGenerating(false);
     }
