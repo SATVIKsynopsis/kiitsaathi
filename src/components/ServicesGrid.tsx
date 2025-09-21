@@ -23,9 +23,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useServiceVisibility } from "@/hooks/useServiceVisibility";
+import { Loader2 } from "lucide-react";
 
 const services = [
   {
+    id: "kiit-saathi-ai-assistant",
     icon: Bot,
     title: "KIIT Saathi (AI Assistant)",
     description: "Lost? Hungry? Confused? Ask our chatbot — 24x7 KIIT help.",
@@ -33,6 +36,7 @@ const services = [
     gradient: "from-campus-orange to-kiit-green",
   },
   {
+    id: "study-material",
     icon: BookOpen,
     title: "Study Material (PYQs, Notes, YouTube Videos)",
     description: "Seniors' notes, solved papers, lab manuals, and curated YouTube playlists — all in one place.",
@@ -40,6 +44,7 @@ const services = [
     gradient: "from-kiit-green to-campus-blue",
   },
   {
+    id: "lost-and-found-portal",
     icon: Search,
     title: "Lost & Found Portal",
     description: "Lost your ID card? Found someone's AirPods? Report it here.",
@@ -47,6 +52,7 @@ const services = [
     gradient: "from-campus-orange to-kiit-green",
   },
   {
+    id: "campus-map",
     icon: Shield,
     title: "Campus Map",
     description: "Explore the vibrant campus of KIIT and everything it has to offer.",
@@ -54,6 +60,7 @@ const services = [
     gradient: "from-campus-purple to-campus-orange",
   },
   {
+    id: "kiit-societies-fests-sports",
     icon: Calendar,
     title: "KIIT Societies, Fests and Sports",
     description: "One calendar. All societies. Never miss an interview again.",
@@ -61,6 +68,7 @@ const services = [
     gradient: "from-kiit-green to-campus-blue",
   },
   {
+    id: "resume-saathi",
     icon: FileText,
     title: "Resume Saathi",
     description: "AI-powered ATS-optimized resume builder with multiple templates and instant PDF download.",
@@ -68,6 +76,7 @@ const services = [
     gradient: "from-purple-500 to-blue-600",
   },
   {
+    id: "split-saathi",
     icon: Calculator,
     title: "SplitSaathi – Group Expense Manager",
     description: "Simplify how you and your friends split bills during trips, café visits, or fests.",
@@ -75,6 +84,7 @@ const services = [
     gradient: "from-green-500 to-emerald-600",
   },
   {
+    id: "sgpa-cgpa-calculator",
     icon: Calculator,
     title: "SGPA & CGPA Calculator",
     description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
@@ -83,6 +93,7 @@ const services = [
     action: () => window.location.href = "/sgpa-calculator",
   },
   {
+    id: "printout-on-demand",
     icon: Printer,
     title: "Printouts on Demand",
     description: "Too lazy to go out? Just send a PDF and get it printed and delivered.",
@@ -90,6 +101,7 @@ const services = [
     gradient: "from-campus-blue to-campus-purple",
   },
   {
+    id: "senior-connect",
     icon: Users,
     title: "Senior Connect",
     description: "Connect with experienced Seniors with genuine insights & book mentorship sessions with ease.",
@@ -97,6 +109,7 @@ const services = [
     gradient: "from-campus-purple to-campus-orange",
   },
   {
+    id: "handwritten-assignments",
     icon: PenTool,
     title: "Handwritten Assignments",
     description: "Don't have time to write? We've got real students who'll do it for you - neat, accurate, and on time.",
@@ -104,6 +117,7 @@ const services = [
     gradient: "from-campus-orange to-kiit-green",
   },
   {
+    id: "tutoring-counselling",
     icon: MessageCircle,
     title: "Tutoring & Counselling",
     description: "Struggling in class or life? Book a session with a real senior mentor.",
@@ -111,6 +125,7 @@ const services = [
     gradient: "from-campus-blue to-campus-purple",
   },
   {
+    id: "campus-tour-booking",
     icon: Car,
     title: "Campus Tour Booking",
     description: "Auto tours for parents across KIIT, KIMS, and KISS campuses.",
@@ -118,6 +133,7 @@ const services = [
     gradient: "from-kiit-green to-campus-blue",
   },
   {
+    id: "carton-packing-hostel-transfers",
     icon: Package,
     title: "Carton Packing & Hostel Transfers",
     description: "Making moving day hassle free with cartons, packing and hostel to hostel delivery – All in one tap.",
@@ -125,6 +141,7 @@ const services = [
     gradient: "from-kiit-green to-campus-blue",
   },
   {
+    id: "book-buyback-resale",
     icon: BookOpen,
     title: "Book Buyback & Resale",
     description: "Sell your old semester books for a better price and help juniors save money — by students, for students.",
@@ -132,6 +149,7 @@ const services = [
     gradient: "from-campus-orange to-kiit-green",
   },
   {
+    id: "kiit-saathi-celebrations",
     icon: PartyPopper,
     title: "KIIT Saathi Celebrations",
     description: "From surprise birthday parties to last-minute cake deliveries, decorations, and fun party combos — all planned & delivered for you.",
@@ -139,6 +157,7 @@ const services = [
     gradient: "from-pink-500 to-purple-600",
   },
   {
+    id: "kiit-saathi-meetups",
     icon: Users,
     title: "KIIT Saathi Meetups",
     description: "Find your people, create your moments - campus meetups made easy",
@@ -146,6 +165,7 @@ const services = [
     gradient: "from-pink-500 to-purple-600",
   },
   {
+    id: "food-micro-essentials-delivery",
     icon: ShoppingBag,
     title: "Food and micro-essentials delivery",
     description: "From wholesome mini meals to everyday essentials - delivered from trusted campus and nearby stores.",
@@ -156,6 +176,7 @@ const services = [
 
 export const ServicesGrid = () => {
   const navigate = useNavigate();
+  const { visibilityMap, loading } = useServiceVisibility();
 
   const handleServiceClick = (service: typeof services[0]) => {
     const routeMap: Record<string, string> = {
@@ -210,51 +231,99 @@ export const ServicesGrid = () => {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {services.map((service, index) => {
-            const IconComponent = service.icon;
-            return (
-              <div 
-                key={index}
-                className="service-card group"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* Service Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-2xl bg-gradient-to-r ${service.gradient}`}>
-                    <IconComponent className="w-6 h-6 text-white" />
-                  </div>
-                  
-                </div>
+          {loading ? (
+            <div className="col-span-full flex justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            services.map((service, index) => {
+              const visibility = visibilityMap[service.id];
+              const IconComponent = service.icon;
 
-                {/* Service Content */}
-                <div className="space-y-2">
-                  <h3 className="text-xl font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
-                    {service.title}
-                  </h3>
-                  
-                  <p className="text-muted-foreground leading-relaxed text-sm">
-                    {service.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between pt-2">
-                    <span className={`font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r ${service.gradient} text-white`}>
-                      {service.price}
-                    </span>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="opacity-0 group-hover:opacity-100 transition-all duration-300"
-                      onClick={() => handleServiceClick(service)}
+              // Check if service should be hidden
+              if (visibility && !visibility.visible) {
+                // If there's replacement text, show placeholder
+                if (visibility.replaced_text) {
+                  return (
+                    <div 
+                      key={index}
+                      className="service-card group opacity-75"
+                      style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      Try Now
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
+                      {/* Service Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`p-3 rounded-2xl bg-gradient-to-r ${service.gradient} opacity-50`}>
+                          <IconComponent className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+
+                      {/* Placeholder Content */}
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-poppins font-semibold text-muted-foreground">
+                          {visibility.replaced_text}
+                        </h3>
+                        
+                        <p className="text-muted-foreground leading-relaxed text-sm opacity-75">
+                          Exciting new services are being developed and will be available soon.
+                        </p>
+                        
+                        <div className="flex items-center justify-between pt-2">
+                          <span className="font-semibold px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground">
+                            Coming Soon
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                // If no replacement text, skip rendering entirely
+                return null;
+              }
+
+              // Render normal service card
+              return (
+                <div 
+                  key={index}
+                  className="service-card group"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Service Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-3 rounded-2xl bg-gradient-to-r ${service.gradient}`}>
+                      <IconComponent className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+
+                  {/* Service Content */}
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
+                      {service.title}
+                    </h3>
+                    
+                    <p className="text-muted-foreground leading-relaxed text-sm">
+                      {service.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between pt-2">
+                      <span className={`font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r ${service.gradient} text-white`}>
+                        {service.price}
+                      </span>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        onClick={() => handleServiceClick(service)}
+                      >
+                        Try Now
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         {/* Call to Action */}
