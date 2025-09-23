@@ -78,7 +78,7 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       <Navbar />
-      <div className="fixed top-10 right-10 z-[10000] text-red-600  rounded-full">
+      <div className="fixed top-14 right-10 z-[10000] ">
         <NotificationBell />
       </div>
       <Hero />
