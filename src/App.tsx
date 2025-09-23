@@ -8,8 +8,6 @@ import { PolicyWrapper } from "@/components/PolicyWrapper";
 import ScrollToTop from "./components/ScrollToTop";
 import RouteLogger from "./components/RouteLogger";
 import { Toaster as HotToaster } from 'react-hot-toast';
-
-
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CartonTransfer from "./pages/CartonTransfer";

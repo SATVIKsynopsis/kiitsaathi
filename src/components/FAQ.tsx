@@ -107,9 +107,6 @@ export const FAQ = () => {
               Our AI assistant is available 24/7, or you can reach out to our student support team on WhatsApp!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 bg-gradient-to-r from-kiit-green to-campus-blue text-white rounded-lg font-semibold hover:shadow-lg transition-all">
-                WhatsApp Support
-              </button>
               <button className="px-6 py-3 bg-gradient-to-r from-campus-purple to-campus-orange text-white rounded-lg font-semibold hover:shadow-lg transition-all">
                 <Bot height={20} width={20} /> Ask AI Assistant
               </button>
