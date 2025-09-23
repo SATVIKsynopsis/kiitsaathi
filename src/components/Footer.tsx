@@ -39,8 +39,8 @@ export const Footer = () => {
               <li><a href="#how-it-works" className="text-white/80 hover:text-white transition-colors">How It Works</a></li>
               <li><a href="#testimonials" className="text-white/80 hover:text-white transition-colors">Testimonials</a></li>
               <li><a href="#faq" className="text-white/80 hover:text-white transition-colors">FAQ</a></li>
-              <li><a href="#" className="text-white/80 hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-white/80 hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="/privacy-policy" className="text-white/80 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="/terms-and-conditions" className="text-white/80 hover:text-white transition-colors">Terms & Conditions</a></li>
             </ul>
           </div>
 
@@ -50,16 +50,16 @@ export const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-campus-orange" />
-                <span className="text-white/80">+91 99999 88888</span>
+                <span className="text-white/80">+91 9717008778</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-campus-orange" />
-                <span className="text-white/80">help@kiitbuddy.com</span>
+                <span className="text-white/80">official@kiitsaathi.in</span>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-campus-orange mt-1" />
                 <span className="text-white/80">
-                  Campus 1, KIIT University<br />
+                  KIIT University<br />
                   Bhubaneswar, Odisha
                 </span>
               </div>
@@ -80,7 +80,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/20 pt-8 flex flex-col sm:flex-row items-center justify-between">
           <div className="text-white/80 text-sm">
-            © {currentYear} KIIT Buddy. All rights reserved.
+            © {currentYear} KIIT Saathi. All rights reserved.
           </div>
           
           <div className="flex items-center gap-2 text-white/80 text-sm mt-4 sm:mt-0">
