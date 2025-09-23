@@ -5,6 +5,7 @@ import kiitMascot from "@/assets/kiit-mascot.png";
 import heroCampus from "@/assets/KIIT_img.webp";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
+import { useRef, useEffect, useState } from "react";
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -33,6 +34,35 @@ export const Hero = () => {
       }
     }
   };
+
+    const sliderRef = useRef<HTMLDivElement>(null);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const dots = document.querySelectorAll('#dot-indicators span');
+    const totalSlides = dots.length;
+
+    const goToSlide = (index: number) => {
+  if (!sliderRef.current) return;
+  const slideWidth = sliderRef.current.clientWidth;
+  sliderRef.current.style.transform = `translateX(-${index * slideWidth}px)`;
+
+  const dots = document.querySelectorAll('#dot-indicators span');
+  dots.forEach(dot => dot.classList.remove('bg-black'));
+  if (dots[index]) dots[index].classList.add('bg-black');
+};
+
+    useEffect(() => {
+  goToSlide(currentSlide); // show initial slide
+  const interval = setInterval(() => {
+    setCurrentSlide(prev => {
+      const next = (prev + 1) % 5; // number of slides
+      goToSlide(next);
+      return next;
+    });
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, []);
+
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
@@ -111,11 +141,26 @@ export const Hero = () => {
           <div className="relative mt-8">
             {/* Campus Background */}
             <div className="relative">
-              <img
-                src={heroCampus}
-                alt="KIIT Campus Life"
-                className="w-full h-auto rounded-3xl shadow-2xl"
-              />
+              <div className="flex flex-col items-center">
+    <div className="w-[690px] h-[390px] overflow-hidden relative rounded-3xl">
+        <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
+            <img src="src\assets\KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1"/>
+            <img src="src\assets\KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2"/>
+            <img src="src\assets\About-kiit.jpg" className="w-full flex-shrink-0" alt="Slide 3"/>
+            <img src="src\assets\KIIT-School-of-Architecture-Planning-.jpg" className="w-full flex-shrink-0" alt="Slide 4"/>
+            <img src="src\assets\cam17.jpg" className="w-full flex-shrink-0" alt="Slide 5"/>
+        </div>
+        <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
+        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+    </div>
+    </div>
+    
+</div>
+
 
               {/* Floating Elements */}
               <div className="absolute top-6 left-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-float hover:shadow-xl transition-all ">
