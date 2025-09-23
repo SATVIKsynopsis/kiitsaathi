@@ -209,13 +209,13 @@ export const ServicesGrid = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-kiit-green-soft to-white/10">
+    <section className="py-4 bg-gradient-to-br from-campus-blue/10 to-kiit-green/10">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
             <Star className="w-4 h-4" />
-            18+ Campus Services
+            7+ Campus Services
           </div>
           
           <h2 className="text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
