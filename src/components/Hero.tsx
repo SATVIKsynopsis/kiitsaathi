@@ -136,27 +136,18 @@ export const Hero = () => {
           {gridCells.map((cell) => (
             <div
               key={cell.id}
-              className="absolute border border-transparent hover:border-white/30 hover:bg-white/5 hover:shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-all duration-500 ease-out group cursor-pointer"
+              className="absolute transition-all duration-200 ease-out hover:bg-white/20 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] group cursor-pointer border border-transparent hover:border-white/40"
               style={{
                 left: cell.col * 50,
                 top: cell.row * 50,
                 width: 50,
                 height: 50,
-                animationDelay: `${(cell.col + cell.row) * 0.1}s`
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(34, 197, 94, 0.1)';
-                e.currentTarget.style.boxShadow = '0 0 30px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {/* Inner glow effect */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute inset-1 border border-white/20 rounded-sm"></div>
-                <div className="absolute inset-2 border border-kiit-green/40 rounded-sm animate-pulse"></div>
+              {/* White highlight box that appears on hover */}
+              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/25 transition-all duration-300 ease-out">
+                <div className="absolute inset-1 border border-transparent group-hover:border-white/30 transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
             </div>
           ))}
