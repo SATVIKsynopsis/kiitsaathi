@@ -33,7 +33,7 @@ const services = [
     title: "KIIT Saathi (AI Assistant)",
     description: "Lost? Hungry? Confused? Ask our chatbot — 24x7 KIIT help.",
     price: "Free",
-    gradient: "from-campus-orange to-kiit-green",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "study-material",
@@ -49,7 +49,7 @@ const services = [
     title: "Lost & Found Portal",
     description: "Lost your ID card? Found someone's AirPods? Report it here.",
     price: "Free",
-    gradient: "from-campus-orange to-kiit-green",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "campus-map",
@@ -57,7 +57,7 @@ const services = [
     title: "Campus Map",
     description: "Explore the vibrant campus of KIIT and everything it has to offer.",
     price: "Free",
-    gradient: "from-campus-purple to-campus-orange",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "kiit-societies-fests-sports",
@@ -73,7 +73,7 @@ const services = [
     title: "Resume Saathi",
     description: "AI-powered ATS-optimized resume builder with multiple templates and instant PDF download.",
     price: "Free",
-    gradient: "from-purple-500 to-blue-600",
+    gradient: "from-kiit-green to-campus-blue"
   },
   {
     id: "split-saathi",
@@ -81,7 +81,7 @@ const services = [
     title: "SplitSaathi – Group Expense Manager",
     description: "Simplify how you and your friends split bills during trips, café visits, or fests.",
     price: "Free",
-    gradient: "from-green-500 to-emerald-600",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "sgpa-cgpa-calculator",
@@ -89,7 +89,7 @@ const services = [
     title: "SGPA & CGPA Calculator",
     description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
     price: "Free",
-    gradient: "from-blue-500 to-purple-600",
+    gradient: "from-kiit-green to-campus-blue",
     action: () => window.location.href = "/sgpa-calculator",
   },
   {
@@ -98,7 +98,7 @@ const services = [
     title: "Printouts on Demand",
     description: "Too lazy to go out? Just send a PDF and get it printed and delivered.",
     price: "₹2/page",
-    gradient: "from-campus-blue to-campus-purple",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "senior-connect",
@@ -106,7 +106,7 @@ const services = [
     title: "Senior Connect",
     description: "Connect with experienced Seniors with genuine insights & book mentorship sessions with ease.",
     price: "₹99/session",
-    gradient: "from-campus-purple to-campus-orange",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "handwritten-assignments",
@@ -114,7 +114,7 @@ const services = [
     title: "Handwritten Assignments",
     description: "Don't have time to write? We've got real students who'll do it for you - neat, accurate, and on time.",
     price: "₹5/page",
-    gradient: "from-campus-orange to-kiit-green",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "tutoring-counselling",
@@ -122,7 +122,7 @@ const services = [
     title: "Tutoring & Counselling",
     description: "Struggling in class or life? Book a session with a real senior mentor.",
     price: "₹199/hour",
-    gradient: "from-campus-blue to-campus-purple",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "campus-tour-booking",
@@ -146,7 +146,7 @@ const services = [
     title: "Book Buyback & Resale",
     description: "Sell your old semester books for a better price and help juniors save money — by students, for students.",
     price: "Fair Price",
-    gradient: "from-campus-orange to-kiit-green",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "kiit-saathi-celebrations",
@@ -154,7 +154,7 @@ const services = [
     title: "KIIT Saathi Celebrations",
     description: "From surprise birthday parties to last-minute cake deliveries, decorations, and fun party combos — all planned & delivered for you.",
     price: "₹299+",
-    gradient: "from-pink-500 to-purple-600",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "kiit-saathi-meetups",
@@ -162,7 +162,7 @@ const services = [
     title: "KIIT Saathi Meetups",
     description: "Find your people, create your moments - campus meetups made easy",
     price: "Free",
-    gradient: "from-pink-500 to-purple-600",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "food-micro-essentials-delivery",
@@ -170,7 +170,7 @@ const services = [
     title: "Food and micro-essentials delivery",
     description: "From wholesome mini meals to everyday essentials - delivered from trusted campus and nearby stores.",
     price: "₹20 delivery",
-    gradient: "from-campus-blue to-campus-purple",
+    gradient: "from-kiit-green to-campus-blue",
   }
 ];
 
