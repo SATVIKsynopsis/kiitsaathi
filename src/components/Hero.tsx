@@ -123,7 +123,7 @@ export const Hero = () => {
             {/* Quick Stats */}
             <div className="flex flex-wrap gap-8 justify-center lg:justify-start pt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">More then 7</div>
+                <div className="text-3xl font-bold text-white">More than 7</div>
                 <div className="text-white/70 font-medium">Campus Services</div>
               </div>
               <div className="text-center">

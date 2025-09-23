@@ -4,42 +4,42 @@ const testimonials = [
   {
     name: "Aditya Sharma",
     year: "B.Tech CSE, 2nd Year",
-    content: "Finally! No more running around campus for printouts. The delivery is super quick and the quality is exactly what I need. Saved me so much time during exams! ",
+    content: "The KIIT Saathi AI Assistant is incredible! Available 24/7 to answer any question about campus life, academics, or procedures. It's like having a personal guide!",
     rating: 5,
     avatar: "👩‍💻"
   },
   {
     name: "Krishna Mohanty",
     year: "B.Tech, 3rd Year",
-    content: "The senior connect feature is a game-changer! Got amazing advice about placements and even found a study buddy. The mentorship sessions are totally worth it! ",
+    content: "Found all my study materials in one place! PYQs, notes, and curated YouTube playlists - everything I need for exam prep.",
     rating: 5,
     avatar: "👨‍🎓"
   },
   {
     name: "Anushka Gupta",
     year: "B.Tech ETC, 3rd Year",
-    content: "Moving hostels was such a pain until I found this app. They packed everything professionally and delivered safely. The carton service is brilliant! ",
+    content: "Lost my Key during fest week and found it through the Lost & Found Portal within hours! So relieved I didn't have to go through the hassle of getting a duplicate.",
     rating: 5,
     avatar: "👩‍🔬"
   },
   {
     name: "Prajjwal Patel",
     year: "B.Tech CSE, 2nd Year",
-    content: "The handwritten assignment service literally saved my semester! Perfect handwriting, delivered on time, and at such reasonable rates. Highly recommend! ",
+    content: "The Campus Map feature helped me navigate KIIT so easily as a fresher! No more getting lost between buildings or missing classes due to wrong directions.",
     rating: 5,
     avatar: "👨‍🔧"
   },
   {
     name: "Diya Dasgupta",
-    year: "BBA, 2nd Year",
-    content: "Love the safety map feature! As a girl, feeling secure while walking around campus at night is so important. The SOS feature gives me confidence. ",
+    year: "BDS, 2nd Year",
+    content: "Never miss any society events or sports competitions now! The KIIT Societies calendar keeps me updated on everything happening on campus. One place for all events!",
     rating: 5,
     avatar: "👩‍💼"
   },
   {
     name: "Satvik",
     year: "B.Tech CSE, 2nd Year",
-    content: "The AI assistant knows everything about KIIT! From mess timings to society deadlines, it's like having a super senior in your pocket 24/7! ",
+    content: "The Resume Saathi is a lifesaver for placements! AI-powered optimization with multiple templates and instant PDF download.",
     rating: 5,
     avatar: "👨‍💻"
   }
