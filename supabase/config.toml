@@ -73,3 +73,6 @@ verify_jwt = false
 
 [functions.submit-book-selection]
 verify_jwt = true
+
+[functions.validate-kiit-email]
+verify_jwt = true
