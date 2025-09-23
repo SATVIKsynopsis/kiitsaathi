@@ -193,6 +193,12 @@ const GroupDashboard = () => {
     }
 
     try {
+      console.log("Raw amount from form:", expenseForm.amount);
+      console.log("Type of raw amount:", typeof expenseForm.amount);
+      console.log("Raw amount length:", expenseForm.amount.length);
+      console.log("Raw amount characters:", expenseForm.amount.split(''));
+      console.log("Parsed amount:", parseFloat(expenseForm.amount));
+      console.log("Number constructor:", Number(expenseForm.amount));
       console.log("Creating expense with data:", {
         group_id: groupId,
         title: expenseForm.title,
@@ -422,10 +428,17 @@ const GroupDashboard = () => {
                       <Label htmlFor="amount">Amount *</Label>
                       <Input
                         id="amount"
-                        type="number"
+                        type="text"
                         placeholder="0.00"
                         value={expenseForm.amount}
-                        onChange={(e) => setExpenseForm(prev => ({ ...prev, amount: e.target.value }))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          console.log("Amount input change:", value);
+                          // Only allow numbers and one decimal point
+                          if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                            setExpenseForm(prev => ({ ...prev, amount: value }));
+                          }
+                        }}
                       />
                     </div>
                     
@@ -476,7 +489,10 @@ const GroupDashboard = () => {
             
             <Button 
               variant={activeView === 'balances' ? 'default' : 'outline'}
-              onClick={() => setActiveView('balances')}
+              onClick={() => {
+                console.log('Clicked View Balances button');
+                setActiveView('balances');
+              }}
             >
               <BarChart3 className="w-4 h-4 mr-2" />
               View Balances
@@ -519,7 +535,10 @@ const GroupDashboard = () => {
             </Button>
             <Button 
               variant={activeView === 'balances' ? 'default' : 'outline'}
-              onClick={() => setActiveView('balances')}
+              onClick={() => {
+                console.log('Clicked Balances button (mobile)');
+                setActiveView('balances');
+              }}
               size="sm"
             >
               <BarChart3 className="w-4 h-4 mr-2" />
@@ -611,7 +630,10 @@ const GroupDashboard = () => {
           )}
 
           {activeView === 'balances' && (
-            <ViewBalances groupId={groupId!} currency={group.currency} />
+            <>
+              {console.log('Rendering ViewBalances component for group:', groupId)}
+              <ViewBalances groupId={groupId!} currency={group.currency} />
+            </>
           )}
 
           {activeView === 'debts' && (
