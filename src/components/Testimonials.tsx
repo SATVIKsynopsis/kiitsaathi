@@ -2,43 +2,43 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Priya Sharma",
-    year: "B.Tech CSE, 3rd Year",
+    name: "Aditya Sharma",
+    year: "B.Tech CSE, 2nd Year",
     content: "Finally! No more running around campus for printouts. The delivery is super quick and the quality is exactly what I need. Saved me so much time during exams! 🙌",
     rating: 5,
     avatar: "👩‍💻"
   },
   {
-    name: "Rahul Das",
-    year: "MBA, 1st Year",
+    name: "Krishna Mohanty",
+    year: "B.Tech, 3rd Year",
     content: "The senior connect feature is a game-changer! Got amazing advice about placements and even found a study buddy. The mentorship sessions are totally worth it! 🎯",
     rating: 5,
     avatar: "👨‍🎓"
   },
   {
-    name: "Sneha Patel",
-    year: "B.Tech ETC, 2nd Year",
+    name: "Anushka Gupta",
+    year: "B.Tech ETC, 3rd Year",
     content: "Moving hostels was such a pain until I found this app. They packed everything professionally and delivered safely. The carton service is brilliant! 📦",
     rating: 5,
     avatar: "👩‍🔬"
   },
   {
-    name: "Arjun Kumar",
-    year: "B.Tech Mech, 4th Year",
+    name: "Prajjwal Patel",
+    year: "B.Tech CSE, 2nd Year",
     content: "The handwritten assignment service literally saved my semester! Perfect handwriting, delivered on time, and at such reasonable rates. Highly recommend! ✍️",
     rating: 5,
     avatar: "👨‍🔧"
   },
   {
-    name: "Ananya Roy",
+    name: "Diya Dasgupta",
     year: "BBA, 2nd Year",
     content: "Love the safety map feature! As a girl, feeling secure while walking around campus at night is so important. The SOS feature gives me confidence. 🌟",
     rating: 5,
     avatar: "👩‍💼"
   },
   {
-    name: "Vikash Singh",
-    year: "B.Tech IT, 3rd Year",
+    name: "Satvik",
+    year: "B.Tech CSE, 2nd Year",
     content: "The AI assistant knows everything about KIIT! From mess timings to society deadlines, it's like having a super senior in your pocket 24/7! 🤖",
     rating: 5,
     avatar: "👨‍💻"

@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+
+*::-webkit-scrollbar {
+  display: none;
+}
+/* ...existing code... */
+
+/* Hide scrollbar for Chrome, Edge, Safari */
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+body, html {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE, Edge */
+body, html {
+  -ms-overflow-style: none;
+}
+
 /* KIIT University Superapp Design System
 Beautiful, vibrant colors inspired by campus life and modern design
 */
@@ -71,7 +93,7 @@ Beautiful, vibrant colors inspired by campus life and modern design
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--kiit-green)) 0%, hsl(var(--campus-blue)) 100%);
     --gradient-soft: linear-gradient(135deg, hsl(var(--kiit-green-soft)) 0%, hsl(0 0% 100%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(var(--kiit-green)) 0%, hsl(var(--campus-purple)) 50%, hsl(var(--campus-orange)) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--kiit-green)) 0%, white 100%);
     
     /* Glassmorphism */
     --glass-bg: hsl(var(--glass-white) / 0.1);
@@ -343,5 +365,7 @@ Beautiful, vibrant colors inspired by campus life and modern design
 .custom-calendar .rbc-toolbar {
   display: none !important;
 }
+
+
 
 

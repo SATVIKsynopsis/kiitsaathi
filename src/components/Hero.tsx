@@ -11,7 +11,7 @@ export const Hero = () => {
   
   const { user } = useAuth();
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-20 h-20 bg-white rounded-full animate-float"></div>
