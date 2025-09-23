@@ -13,27 +13,83 @@ export const Hero = () => {
   const { user } = useAuth();
   const [ripples, setRipples] = useState<Array<{id: number, x: number, y: number}>>([]);
   const heroRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-  // Fix for static grid generation
+  // Grid layout config
+  const [cellSize, setCellSize] = useState(40); // 40 desktop, 30 mobile
+  const [cols, setCols] = useState(0);
+  const [rows, setRows] = useState(0);
+
   const gridCells = useMemo(() => {
-    if (typeof window === 'undefined') return [];
-    const cols = Math.ceil(window.innerWidth / 50);
-    const rows = Math.ceil(window.innerHeight / 50);
-    return Array.from({ length: cols * rows }, (_, i) => ({ 
-      id: i, 
-      col: i % cols, 
-      row: Math.floor(i / cols) 
-    }));
+    return Array.from({ length: cols * rows }, (_, i) => i);
+  }, [cols, rows]);
+
+  // Compute grid layout based on hero size
+  useEffect(() => {
+    const computeLayout = () => {
+      if (!heroRef.current) return;
+      const rect = heroRef.current.getBoundingClientRect();
+      const size = window.innerWidth < 768 ? 30 : 40;
+      setCellSize(size);
+      setCols(Math.ceil(rect.width / size));
+      setRows(Math.ceil(rect.height / size));
+    };
+
+    computeLayout();
+    let t: number | undefined;
+    const onResize = () => {
+      if (t) window.clearTimeout(t);
+      t = window.setTimeout(computeLayout, 150);
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      if (t) window.clearTimeout(t);
+      window.removeEventListener('resize', onResize);
+    };
   }, []);
 
-  // Interactive grid effects
+  // Ripple effect and hover highlight
   useEffect(() => {
     const heroElement = heroRef.current;
-    if (!heroElement) return;
+    const gridElement = gridRef.current;
+    if (!heroElement || !gridElement) return;
 
     let rippleId = 0;
+    let rafPending = false;
+    let lastX = 0;
+    let lastY = 0;
 
-    // Ripple effect on click
+    const highlightCell = () => {
+      rafPending = false;
+      const rect = heroElement.getBoundingClientRect();
+      const x = lastX - rect.left;
+      const y = lastY - rect.top;
+      const col = Math.floor(x / cellSize);
+      const row = Math.floor(y / cellSize);
+      if (col < 0 || row < 0 || col >= cols || row >= rows) return;
+      const index = row * cols + col;
+      const el = gridElement.children[index] as HTMLElement | undefined;
+      if (!el) return;
+      el.style.background = 'rgba(255,255,255,0.12)';
+      el.style.boxShadow = '0 0 18px rgba(255,255,255,0.25)';
+      el.style.borderColor = 'rgba(255,255,255,0.25)';
+      el.style.transition = 'background 200ms ease, box-shadow 200ms ease, border-color 200ms ease';
+      window.setTimeout(() => {
+        el.style.background = 'transparent';
+        el.style.boxShadow = 'none';
+        el.style.borderColor = 'transparent';
+      }, 220);
+    };
+
+    const handleMove = (e: MouseEvent) => {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (!rafPending) {
+        rafPending = true;
+        requestAnimationFrame(highlightCell);
+      }
+    };
+
     const handleClick = (e: MouseEvent) => {
       const rect = heroElement.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -48,12 +104,14 @@ export const Hero = () => {
       }, 1200);
     };
 
+    heroElement.addEventListener('mousemove', handleMove);
     heroElement.addEventListener('click', handleClick);
 
     return () => {
+      heroElement.removeEventListener('mousemove', handleMove);
       heroElement.removeEventListener('click', handleClick);
     };
-  }, []);
+  }, [cellSize, cols, rows]);
 
    const scrollToSection = (href: string) => {
     if (location.pathname !== "/") {
@@ -120,36 +178,36 @@ export const Hero = () => {
       <div className="absolute inset-0">
         {/* Static grid lines */}
         <div 
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-100"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px)
+              linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
             `,
-            backgroundSize: '50px 50px',
+            backgroundSize: `${cellSize}px ${cellSize}px`,
             backgroundPosition: '0 0, 0 0'
           }}
         />
         
         {/* Interactive grid cells */}
-        <div className="absolute inset-0">
-          {gridCells.map((cell) => (
+        <div 
+          ref={gridRef}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+            gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
+          }}
+        >
+          {gridCells.map((i) => (
             <div
-              key={cell.id}
-              className="absolute transition-all duration-200 ease-out hover:bg-white/20 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] group cursor-pointer border border-transparent hover:border-white/40"
+              key={i}
+              className="transition-all duration-200 ease-out border border-transparent"
               style={{
-                left: cell.col * 50,
-                top: cell.row * 50,
-                width: 50,
-                height: 50,
+                width: `${cellSize}px`,
+                height: `${cellSize}px`,
               }}
-            >
-              {/* White highlight box that appears on hover */}
-              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/25 transition-all duration-300 ease-out">
-                <div className="absolute inset-1 border border-transparent group-hover:border-white/30 transition-all duration-300"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-            </div>
+            />
           ))}
         </div>
       </div>
