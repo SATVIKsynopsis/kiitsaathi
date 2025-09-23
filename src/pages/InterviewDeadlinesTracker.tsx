@@ -28,6 +28,8 @@ import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/lib/database-types";
+import { useEvents } from '@/hooks/useEvents'; 
+import { toast } from "sonner";
 
 const localizer = momentLocalizer(moment);
 
@@ -38,8 +40,8 @@ const categories = ["All", "Technical", "Cultural", "Sports", "Literary", "Socia
 const InterviewDeadlinesTracker = () => {
   const navigate = useNavigate();
   const { width, height } = useWindowSize();
-
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+const { events, upcomingEvents, loading, error } = useEvents(); // USE THE HOOK
+  // const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -48,8 +50,6 @@ const InterviewDeadlinesTracker = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     society_name: "",
     event_name: "",
@@ -71,51 +71,10 @@ const InterviewDeadlinesTracker = () => {
       if (session?.user) {
         setUser(session.user);
       } else {
-        setError("Please login to add events to calendar");
+        toast("Please login to add events to calendar");
       }
     };
     getUser();
-  }, []);
-
-  // Fetch events from Supabase
-  const fetchEvents = async () => {
-    try {
-      setLoading(true);
-      
-      // Debug: Check authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session:", session);
-      
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .select("*")
-        .eq("validation", true) // Only fetch validated events
-        .order("event_date", { ascending: true });
-      
-      console.log("Query response:", { data, error });
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        setError(`Database error: ${error.message}`);
-      } else if (!data || data.length === 0) {
-        console.log("No events found in database");
-        setEvents([]);
-        setError(null);
-      } else {
-        console.log("Successfully fetched events:", data);
-        setEvents(data);
-        setError(null);
-      }
-    } catch (err) {
-      console.error("Network/fetch error:", err);
-      setError("Network error - check your connection");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEvents();
   }, []);
 
   // Filter + search
@@ -129,15 +88,6 @@ const InterviewDeadlinesTracker = () => {
     });
   }, [events, searchQuery, selectedCategory]);
 
-  // Sort events by date (upcoming first)
-  const upcomingEvents = useMemo(() => {
-    return filteredEvents
-      .filter(event => {
-        const eventDate = moment(event.event_date);
-        return eventDate.isSameOrAfter(moment(), 'day'); 
-      })
-      .sort((a, b) => moment(a.event_date).diff(moment(b.event_date)));
-  }, [filteredEvents]);
 
   // Transform events for calendar
   const calendarEvents = useMemo(() => {
@@ -221,8 +171,7 @@ const InterviewDeadlinesTracker = () => {
           requirements: "",
           validation: false,
         });
-        // Refresh events
-        await fetchEvents();
+
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 3000);
       }

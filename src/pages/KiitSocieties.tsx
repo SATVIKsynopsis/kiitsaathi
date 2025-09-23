@@ -17,7 +17,8 @@ import {
   Rocket,
   Calendar1,
   TrophyIcon,
-  Route
+  Route,
+  PartyPopperIcon as Social
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -662,7 +663,7 @@ const KiitSocieties = () => {
 
             <div className="relative mb-12">
               <div className="w-64 h-64 mx-auto bg-gradient-to-br from-kiit-green-light to-purple-200 rounded-full flex items-center justify-center mb-8">
-                <div className="text-6xl"></div>
+                <div className="text-6xl"><Social className='w-16 h-16'/></div>
               </div>
             </div>
           </div>

@@ -2,44 +2,44 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Priya Sharma",
-    year: "B.Tech CSE, 3rd Year",
-    content: "Finally! No more running around campus for printouts. The delivery is super quick and the quality is exactly what I need. Saved me so much time during exams! 🙌",
+    name: "Aditya Sharma",
+    year: "B.Tech CSE, 2nd Year",
+    content: "Finally! No more running around campus for printouts. The delivery is super quick and the quality is exactly what I need. Saved me so much time during exams! ",
     rating: 5,
     avatar: "👩‍💻"
   },
   {
-    name: "Rahul Das",
-    year: "MBA, 1st Year",
-    content: "The senior connect feature is a game-changer! Got amazing advice about placements and even found a study buddy. The mentorship sessions are totally worth it! 🎯",
+    name: "Krishna Mohanty",
+    year: "B.Tech, 3rd Year",
+    content: "The senior connect feature is a game-changer! Got amazing advice about placements and even found a study buddy. The mentorship sessions are totally worth it! ",
     rating: 5,
     avatar: "👨‍🎓"
   },
   {
-    name: "Sneha Patel",
-    year: "B.Tech ETC, 2nd Year",
-    content: "Moving hostels was such a pain until I found this app. They packed everything professionally and delivered safely. The carton service is brilliant! 📦",
+    name: "Anushka Gupta",
+    year: "B.Tech ETC, 3rd Year",
+    content: "Moving hostels was such a pain until I found this app. They packed everything professionally and delivered safely. The carton service is brilliant! ",
     rating: 5,
     avatar: "👩‍🔬"
   },
   {
-    name: "Arjun Kumar",
-    year: "B.Tech Mech, 4th Year",
-    content: "The handwritten assignment service literally saved my semester! Perfect handwriting, delivered on time, and at such reasonable rates. Highly recommend! ✍️",
+    name: "Prajjwal Patel",
+    year: "B.Tech CSE, 2nd Year",
+    content: "The handwritten assignment service literally saved my semester! Perfect handwriting, delivered on time, and at such reasonable rates. Highly recommend! ",
     rating: 5,
     avatar: "👨‍🔧"
   },
   {
-    name: "Ananya Roy",
+    name: "Diya Dasgupta",
     year: "BBA, 2nd Year",
-    content: "Love the safety map feature! As a girl, feeling secure while walking around campus at night is so important. The SOS feature gives me confidence. 🌟",
+    content: "Love the safety map feature! As a girl, feeling secure while walking around campus at night is so important. The SOS feature gives me confidence. ",
     rating: 5,
     avatar: "👩‍💼"
   },
   {
-    name: "Vikash Singh",
-    year: "B.Tech IT, 3rd Year",
-    content: "The AI assistant knows everything about KIIT! From mess timings to society deadlines, it's like having a super senior in your pocket 24/7! 🤖",
+    name: "Satvik",
+    year: "B.Tech CSE, 2nd Year",
+    content: "The AI assistant knows everything about KIIT! From mess timings to society deadlines, it's like having a super senior in your pocket 24/7! ",
     rating: 5,
     avatar: "👨‍💻"
   }
@@ -47,7 +47,7 @@ const testimonials = [
 
 export const Testimonials = () => {
   return (
-    <section id="testimonials" className="py-20 bg-gradient-to-br from-white to-kiit-green-soft">
+    <section id="testimonials" className="py-10 bg-gradient-to-br from-white to-kiit-green-soft">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -106,19 +106,19 @@ export const Testimonials = () => {
         </div>
 
         {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="text-center">
+        <div className="mt-16 flex justify-around ">
+          {/* <div className="text-center">
             <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">2000+</div>
             <div className="text-muted-foreground font-medium">Happy Students</div>
-          </div>
+          </div> */}
           <div className="text-center">
             <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">4.9⭐</div>
             <div className="text-muted-foreground font-medium">Average Rating</div>
           </div>
-          <div className="text-center">
+          {/* <div className="text-center">
             <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">50K+</div>
             <div className="text-muted-foreground font-medium">Services Delivered</div>
-          </div>
+          </div> */}
           <div className="text-center">
             <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">24/7</div>
             <div className="text-muted-foreground font-medium">Support Available</div>

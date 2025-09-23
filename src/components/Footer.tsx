@@ -50,11 +50,11 @@ export const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-campus-orange" />
-                <span className="text-white/80">+91 99999 88888</span>
+                <span className="text-white/80">+91 987654210</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-campus-orange" />
-                <span className="text-white/80">help@kiitbuddy.com</span>
+                <span className="text-white/80">support@kiitsaathi.com</span>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-campus-orange mt-1" />
@@ -80,7 +80,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/20 pt-8 flex flex-col sm:flex-row items-center justify-between">
           <div className="text-white/80 text-sm">
-            © {currentYear} KIIT Buddy. All rights reserved.
+            © {currentYear} KIIT aathi. All rights reserved.
           </div>
           
           <div className="flex items-center gap-2 text-white/80 text-sm mt-4 sm:mt-0">
