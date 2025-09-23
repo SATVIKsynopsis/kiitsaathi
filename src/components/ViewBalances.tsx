@@ -34,7 +34,10 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  console.log('ViewBalances component mounted for group:', groupId);
+
   useEffect(() => {
+    console.log('ViewBalances useEffect triggered, loading balances...');
     loadBalances();
     
     // Set up realtime subscription for expense changes
@@ -131,6 +134,8 @@ export const ViewBalances = ({ groupId, currency }: ViewBalancesProps) => {
       setSettlements(settlements);
       
       console.log('Balance data loaded:', balanceData);
+      console.log('Creditors (owe money):', balanceData.filter(b => b.net_balance > 0.01));
+      console.log('Debtors (should receive money):', balanceData.filter(b => b.net_balance < -0.01));
       console.log('Settlements calculated:', settlements);
     } catch (error: any) {
       console.error('Error loading balances:', error);

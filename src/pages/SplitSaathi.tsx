@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,8 @@ const SplitSaathi = () => {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  
+  const groupFormRef = useRef<HTMLDivElement>(null);
   
   const [groupForm, setGroupForm] = useState({
     name: "",
@@ -155,6 +157,14 @@ const SplitSaathi = () => {
       return;
     }
     setIsCreatingGroup(true);
+    
+    // Scroll to group form section after a brief delay to allow the form to render
+    setTimeout(() => {
+      groupFormRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 100);
   };
 
   const handleViewGroups = () => {
@@ -184,7 +194,7 @@ const SplitSaathi = () => {
           <div className="inline-flex items-center gap-2 mb-4">
             <Receipt className="w-8 h-8 text-primary" />
             <Badge variant="secondary" className="text-lg px-4 py-2">
-              SplitSaathi
+              ₹ SplitSaathi
             </Badge>
           </div>
           
@@ -280,7 +290,7 @@ const SplitSaathi = () => {
 
       {/* Create Group Form */}
       {isCreatingGroup && (
-        <section className="py-16 px-4 bg-muted/30">
+        <section ref={groupFormRef} className="py-16 px-4 bg-muted/30">
           <div className="max-w-2xl mx-auto">
             <Card className="border-2">
               <CardHeader>

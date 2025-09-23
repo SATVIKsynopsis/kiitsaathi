@@ -10,7 +10,8 @@ import {
   Clock,
   Users,
   Upload,
-  File
+  File,
+  BookOpen
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "../components/Footer";
@@ -215,38 +216,62 @@ const availableSubjects =
 };;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <Navbar />
       <div className="container mx-auto px-4 py-8 pt-24">
-        {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Study Materials</h1>
-            <p className="text-muted-foreground">Access notes, previous year questions, presentations, and study resources</p>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setRequestDialogOpen(true)} 
-              className="bg-kiit-secondary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-kiit-secondary/90 transition-colors shadow-md hover:shadow-lg"
-            >
-              <MessageSquare className="w-4 h-4" /> Request Resource
-            </button>
-            
+        {/* Enhanced Hero Header */}
+        <div className="mb-12 text-center">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-kiit-primary/10 via-kiit-secondary/10 to-kiit-primary/10 rounded-3xl blur-3xl -z-10"></div>
+            <div className="glass-card p-8 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-kiit-primary to-kiit-secondary rounded-2xl mb-6 shadow-lg">
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-kiit-primary via-kiit-secondary to-kiit-primary bg-clip-text text-transparent mb-4">
+                Study Materials
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Access comprehensive notes, previous year questions, presentations, and curated study resources 
+                to excel in your academic journey
+              </p>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <button 
+                  onClick={() => setRequestDialogOpen(true)} 
+                  className="group bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-kiit-secondary/90 hover:to-kiit-secondary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                  Request Resource
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <TabNavigation 
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-        />
+        {/* Enhanced Tab Navigation */}
+        <div className="mb-8">
+          <TabNavigation 
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+          />
+        </div>
 
-        {/* Error Display */}
+        {/* Enhanced Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-destructive">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-            <span>{error}</span>
-            <button onClick={() => setError("")} className="ml-auto hover:opacity-70">
+          <div className="mb-8 p-6 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive shadow-lg">
+            <div className="flex-shrink-0 w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium">Something went wrong</p>
+              <p className="text-sm opacity-80">{error}</p>
+            </div>
+            <button 
+              onClick={() => setError("")} 
+              className="flex-shrink-0 w-8 h-8 rounded-full hover:bg-destructive/20 flex items-center justify-center transition-colors"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -270,58 +295,90 @@ const availableSubjects =
               years={years}
             />
 
-            {/* Loading */}
+            {/* Enhanced Loading */}
             {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader className="w-8 h-8 animate-spin text-kiit-primary" />
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-kiit-primary/20 rounded-full"></div>
+                  <div className="w-16 h-16 border-4 border-kiit-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+                </div>
+                <p className="mt-4 text-muted-foreground animate-pulse">Loading study materials...</p>
               </div>
             ) : (
-              <DataTable
-                materials={filterMaterials(materials)}
-                onViewPDF={handleView}
-                loading={loading}
-                materialType={activeSection as "notes" | "pyqs" | "ppts"}
-                onDownload={handleDownload}
-              />
+              <div className="glass-card rounded-2xl overflow-hidden border border-border/50 shadow-xl">
+                <DataTable
+                  materials={filterMaterials(materials)}
+                  onViewPDF={handleView}
+                  loading={loading}
+                  materialType={activeSection as "notes" | "pyqs" | "ppts"}
+                  onDownload={handleDownload}
+                />
+              </div>
             )}
           </>
         )}
 
-        {/* Playlists Section */}
+        {/* Enhanced Playlists Section */}
         {activeSection === "playlists" && (
-          <div className="text-center py-12">
-            <Youtube className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">YouTube Playlists</h3>
-            <p className="text-muted-foreground">Coming soon - curated study playlists</p>
+          <div className="glass-card p-12 rounded-2xl text-center border border-border/50 bg-gradient-to-br from-card/50 to-muted/20">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-6 shadow-lg">
+              <Youtube className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+              YouTube Playlists
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-md mx-auto leading-relaxed">
+              Curated educational playlists and video lectures are coming soon to enhance your learning experience
+            </p>
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>Coming Soon</span>
+            </div>
           </div>
         )}
 
-        {/* Groups Section */}
+        {/* Enhanced Groups Section */}
         {activeSection === "groups" && (
-          <div className="text-center py-12">
-            <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">Study Groups</h3>
-            <p className="text-muted-foreground">Coming soon - collaborative study groups</p>
+          <div className="glass-card p-12 rounded-2xl text-center border border-border/50 bg-gradient-to-br from-card/50 to-muted/20">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-kiit-primary to-kiit-secondary rounded-2xl mb-6 shadow-lg">
+              <Users className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-kiit-primary to-kiit-secondary bg-clip-text text-transparent">
+              Study Groups
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-md mx-auto leading-relaxed">
+              Join collaborative study groups, share knowledge, and learn together with your peers
+            </p>
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>Coming Soon</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Request Dialog */}
+      {/* Enhanced Request Dialog */}
       <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Request Resource</DialogTitle>
+          <DialogHeader className="text-center pb-2">
+            <DialogTitle className="text-xl font-bold">Request Study Material</DialogTitle>
           </DialogHeader>
           <div className="text-center py-6">
-            <File className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Request Study Material</h3>
-            <p className="text-muted-foreground mb-4">
-              Need specific study materials? Contact us and we'll try to add them.
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-kiit-primary to-kiit-secondary rounded-2xl mb-6 shadow-lg">
+              <File className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold mb-3 text-foreground">Missing Something?</h3>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Can't find the study material you need? Let us know and we'll do our best to add it to our collection.
             </p>
-            <Button onClick={() => {
-              window.open('mailto:contact@kiitsaathi.com?subject=Study Material Request', '_blank');
-              setRequestDialogOpen(false);
-            }}>
+            <Button 
+              onClick={() => {
+                window.open('mailto:contact@kiitsaathi.com?subject=Study Material Request', '_blank');
+                setRequestDialogOpen(false);
+              }}
+              className="bg-gradient-to-r from-kiit-primary to-kiit-secondary hover:from-kiit-primary/90 hover:to-kiit-secondary/90 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
               Send Request
             </Button>
           </div>
