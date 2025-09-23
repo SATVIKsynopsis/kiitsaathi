@@ -630,8 +630,8 @@ const KiitSocieties = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-kiit-green-soft to-white">
       {/* Back to Home Button */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-4 py-4">
+      {/* <div className="z-40 bg-white/80 backdrop-blur-sm border-b border-white/20">
+        <div className="container mx-auto px-4 py-2">
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
@@ -641,7 +641,7 @@ const KiitSocieties = () => {
             Back to Home
           </Button>
         </div>
-      </div>
+      </div> */}
 
       <Navbar />
 
