@@ -5,12 +5,83 @@ import kiitMascot from "@/assets/kiit-mascot.png";
 import heroCampus from "@/assets/KIIT_img.webp";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 
 export const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const [ripples, setRipples] = useState<Array<{id: number, x: number, y: number}>>([]);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [trails, setTrails] = useState<Array<{id: number, x: number, y: number}>>([]);
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Fix for static grid generation
+  const gridCells = useMemo(() => {
+    if (typeof window === 'undefined') return [];
+    const cols = Math.ceil(window.innerWidth / 40);
+    const rows = Math.ceil(window.innerHeight / 40);
+    return Array.from({ length: cols * rows }, (_, i) => i);
+  }, []);
+
+  // Interactive grid and cursor trail effects
+  useEffect(() => {
+    const heroElement = heroRef.current;
+    if (!heroElement) return;
+
+    let trailId = 0;
+    let rippleId = 0;
+    let lastCursorUpdate = 0;
+
+    // Cursor tracking and trail creation
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = heroElement.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      setCursorPos({ x, y });
+
+      // Throttle trail creation for performance
+      const now = Date.now();
+      if (now - lastCursorUpdate > 16) { // ~60fps
+        setTrails(prev => {
+          const newTrail = { id: trailId++, x, y };
+          const newTrails = [...prev, newTrail].slice(-20); // Limit to 20 trails
+          
+          // Auto-remove trail after animation
+          setTimeout(() => {
+            setTrails(current => current.filter(t => t.id !== newTrail.id));
+          }, 800);
+          
+          return newTrails;
+        });
+        lastCursorUpdate = now;
+      }
+    };
+
+    // Ripple effect on click
+    const handleClick = (e: MouseEvent) => {
+      const rect = heroElement.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const newRipple = { id: rippleId++, x, y };
+      setRipples(prev => [...prev, newRipple]);
+
+      // Remove ripple after animation
+      setTimeout(() => {
+        setRipples(current => current.filter(r => r.id !== newRipple.id));
+      }, 1200);
+    };
+
+    heroElement.addEventListener('mousemove', handleMouseMove);
+    heroElement.addEventListener('click', handleClick);
+
+    return () => {
+      heroElement.removeEventListener('mousemove', handleMouseMove);
+      heroElement.removeEventListener('click', handleClick);
+    };
+  }, []);
 
    const scrollToSection = (href: string) => {
     if (location.pathname !== "/") {
@@ -65,12 +136,83 @@ export const Hero = () => {
 
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
+    <section 
+      ref={heroRef}
+      id="home" 
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 70%, #15803d 100%)',
+        cursor: 'none'
+      }}
+    >
+      {/* Interactive Grid Background */}
+      <div 
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+          backgroundPosition: '0 0, 0 0'
+        }}
+      >
+        {/* Grid cells for hover effects */}
+        <div className="absolute inset-0 grid grid-cols-[repeat(auto-fit,40px)] grid-rows-[repeat(auto-fit,40px)]">
+          {gridCells.map((_, i) => (
+            <div
+              key={i}
+              className="hover:bg-white/5 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all duration-300 ease-in-out will-change-transform"
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Ripple Effects */}
+      {ripples.map(ripple => (
+        <div
+          key={ripple.id}
+          className="absolute pointer-events-none rounded-full border-2 border-white/20 animate-ping"
+          style={{
+            left: ripple.x - 100,
+            top: ripple.y - 100,
+            width: 200,
+            height: 200,
+            animation: 'ripple 1.2s ease-out forwards'
+          }}
+        />
+      ))}
+
+      {/* Cursor Trail */}
+      {trails.map((trail, index) => (
+        <div
+          key={trail.id}
+          className="absolute pointer-events-none w-1 h-5 bg-white/80 rounded-full"
+          style={{
+            left: trail.x,
+            top: trail.y,
+            transform: 'rotate(45deg)',
+            animation: `fadeTrail 0.8s ease-out forwards`,
+            animationDelay: `${index * 0.05}s`
+          }}
+        />
+      ))}
+
+      {/* Custom Cursor */}
+      <div
+        className="fixed pointer-events-none w-2 h-2 bg-white/60 rounded-full z-50 transition-transform duration-75 ease-out"
+        style={{
+          left: cursorPos.x,
+          top: cursorPos.y,
+          transform: 'translate(-50%, -50%)'
+        }}
+      />
+
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-20 h-20 bg-white rounded-full animate-float"></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-campus-orange rounded-full animate-bounce-slow"></div>
-        <div className="absolute bottom-32 left-20 w-12 h-12 bg-campus-purple rounded-full animate-float"></div>
+        <div className="absolute top-40 right-20 w-16 h-16 bg-white/60 rounded-full animate-bounce-slow"></div>
+        <div className="absolute bottom-32 left-20 w-12 h-12 bg-white/40 rounded-full animate-float"></div>
       </div>
 
       <div className="container mx-auto px-4 z-10">
