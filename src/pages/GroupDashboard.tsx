@@ -26,6 +26,10 @@ import {
   Settings
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { ViewBalances } from "@/components/ViewBalances";
+import { SimplifyDebts } from "@/components/SimplifyDebts";
+import { ExportSummary } from "@/components/ExportSummary";
+import { GroupSettings } from "@/components/GroupSettings";
 
 interface Group {
   id: string;
@@ -60,6 +64,7 @@ const GroupDashboard = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [activeView, setActiveView] = useState<'expenses' | 'balances' | 'debts' | 'export' | 'settings'>('expenses');
   
   const [expenseForm, setExpenseForm] = useState({
     title: "",
@@ -76,13 +81,63 @@ const GroupDashboard = () => {
       return;
     }
     if (groupId) {
+      // Ensure user has a profile first
+      ensureUserProfile();
       loadGroupData();
     }
   }, [groupId, user]);
 
+  const ensureUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      // Check if profile exists, if not create it
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profile && !profileError) {
+        // Create profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.email // fallback to email if no name
+          });
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+        }
+      }
+    } catch (error) {
+      console.error("Error ensuring profile:", error);
+    }
+  };
+
   const loadGroupData = async () => {
     try {
       setLoading(true);
+      
+      // Ensure user has a profile entry (needed for RLS policies)
+      if (user?.id) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email || '',
+            full_name: user.user_metadata?.full_name || user.email || ''
+          }, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+          });
+        
+        if (profileError) {
+          console.warn("Profile upsert warning:", profileError);
+        }
+      }
       
       // Load group details
       const { data: groupData, error: groupError } = await supabase
@@ -138,6 +193,15 @@ const GroupDashboard = () => {
     }
 
     try {
+      console.log("Creating expense with data:", {
+        group_id: groupId,
+        title: expenseForm.title,
+        amount: parseFloat(expenseForm.amount),
+        paid_by_member_id: expenseForm.paid_by_member_id,
+        date: expenseForm.date,
+        notes: expenseForm.notes
+      });
+
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
@@ -154,7 +218,12 @@ const GroupDashboard = () => {
         `)
         .single();
 
-      if (expenseError) throw expenseError;
+      if (expenseError) {
+        console.error("Expense creation error:", expenseError);
+        throw expenseError;
+      }
+
+      console.log("Expense created successfully:", expense);
 
       // Add expense splits (equal split for now)
       const splitAmount = parseFloat(expenseForm.amount) / members.length;
@@ -164,11 +233,18 @@ const GroupDashboard = () => {
         amount: splitAmount
       }));
 
+      console.log("Creating expense splits:", splits);
+      console.log("Current user ID:", user?.id);
+      console.log("Group members:", members);
+
       const { error: splitsError } = await supabase
         .from('expense_splits')
         .insert(splits);
 
-      if (splitsError) throw splitsError;
+      if (splitsError) {
+        console.error("Splits creation error:", splitsError);
+        throw splitsError;
+      }
 
       toast({
         title: "Expense Added! 💰",
@@ -188,9 +264,16 @@ const GroupDashboard = () => {
       loadGroupData();
 
     } catch (error: any) {
+      console.error('Error adding expense:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.log('Current user ID:', user?.id);
+      console.log('Group ID:', groupId);
+      console.log('Members:', members);
+      console.log('Expense form:', expenseForm);
+      
       toast({
         title: "Error",
-        description: error.message,
+        description: `Failed to add expense: ${error.message}`,
         variant: "destructive"
       });
     }
@@ -391,83 +474,165 @@ const GroupDashboard = () => {
               </DialogContent>
             </Dialog>
             
-            <Button variant="outline">
+            <Button 
+              variant={activeView === 'balances' ? 'default' : 'outline'}
+              onClick={() => setActiveView('balances')}
+            >
               <BarChart3 className="w-4 h-4 mr-2" />
               View Balances
             </Button>
             
-            <Button variant="outline">
+            <Button 
+              variant={activeView === 'debts' ? 'default' : 'outline'}
+              onClick={() => setActiveView('debts')}
+            >
               <Calculator className="w-4 h-4 mr-2" />
               Simplify Debts
             </Button>
             
-            <Button variant="outline">
+            <Button 
+              variant={activeView === 'export' ? 'default' : 'outline'}
+              onClick={() => setActiveView('export')}
+            >
               <FileText className="w-4 h-4 mr-2" />
               Export Summary
             </Button>
             
-            <Button variant="outline">
+            <Button 
+              variant={activeView === 'settings' ? 'default' : 'outline'}
+              onClick={() => setActiveView('settings')}
+            >
               <Settings className="w-4 h-4 mr-2" />
               Group Settings
             </Button>
           </div>
 
-          {/* Expenses List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Receipt className="w-5 h-5" />
-                Recent Expenses
-              </CardTitle>
-              <CardDescription>
-                All group expenses in chronological order
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {expenses.length === 0 ? (
-                <div className="text-center py-8">
-                  <Receipt className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-semibold text-lg mb-2">No expenses yet</h3>
-                  <p className="text-muted-foreground mb-4">Start by adding your first group expense</p>
-                  <Button onClick={() => setIsAddingExpense(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add First Expense
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {expenses.map((expense) => (
-                    <div key={expense.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{expense.title}</h4>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {new Date(expense.date).toLocaleDateString()}
-                            </span>
-                            <span>Paid by {expense.paid_by_member.name}</span>
-                            {expense.notes && (
+          {/* Navigation Tabs */}
+          <div className="flex gap-2 mb-6 overflow-x-auto">
+            <Button 
+              variant={activeView === 'expenses' ? 'default' : 'outline'}
+              onClick={() => setActiveView('expenses')}
+              size="sm"
+            >
+              <Receipt className="w-4 h-4 mr-2" />
+              Expenses
+            </Button>
+            <Button 
+              variant={activeView === 'balances' ? 'default' : 'outline'}
+              onClick={() => setActiveView('balances')}
+              size="sm"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Balances
+            </Button>
+            <Button 
+              variant={activeView === 'debts' ? 'default' : 'outline'}
+              onClick={() => setActiveView('debts')}
+              size="sm"
+            >
+              <Calculator className="w-4 h-4 mr-2" />
+              Debts
+            </Button>
+            <Button 
+              variant={activeView === 'export' ? 'default' : 'outline'}
+              onClick={() => setActiveView('export')}
+              size="sm"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button 
+              variant={activeView === 'settings' ? 'default' : 'outline'}
+              onClick={() => setActiveView('settings')}
+              size="sm"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+
+          {/* Content based on active view */}
+          {activeView === 'expenses' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5" />
+                  Recent Expenses
+                </CardTitle>
+                <CardDescription>
+                  All group expenses in chronological order
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {expenses.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Receipt className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">No expenses yet</h3>
+                    <p className="text-muted-foreground mb-4">Start by adding your first group expense</p>
+                    <Button onClick={() => setIsAddingExpense(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add First Expense
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {expenses.map((expense) => (
+                      <div key={expense.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{expense.title}</h4>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                               <span className="flex items-center gap-1">
-                                <FileText className="w-3 h-3" />
-                                Notes
+                                <Calendar className="w-3 h-3" />
+                                {new Date(expense.date).toLocaleDateString()}
                               </span>
-                            )}
+                              <span>Paid by {expense.paid_by_member.name}</span>
+                              {expense.notes && (
+                                <span className="flex items-center gap-1">
+                                  <FileText className="w-3 h-3" />
+                                  Notes
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-lg">{group.currency}{expense.amount.toFixed(2)}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {group.currency}{(expense.amount / members.length).toFixed(2)} per person
+                          <div className="text-right">
+                            <div className="font-bold text-lg">{group.currency}{expense.amount.toFixed(2)}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {group.currency}{(expense.amount / members.length).toFixed(2)} per person
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {activeView === 'balances' && (
+            <ViewBalances groupId={groupId!} currency={group.currency} />
+          )}
+
+          {activeView === 'debts' && (
+            <SimplifyDebts groupId={groupId!} currency={group.currency} />
+          )}
+
+          {activeView === 'export' && (
+            <ExportSummary 
+              groupId={groupId!} 
+              groupName={group.name} 
+              currency={group.currency} 
+            />
+          )}
+
+          {activeView === 'settings' && (
+            <GroupSettings 
+              groupId={groupId!} 
+              currentUser={user}
+              onGroupUpdated={loadGroupData}
+            />
+          )}
         </div>
       </div>
     </div>

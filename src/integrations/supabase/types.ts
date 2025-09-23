@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_action_logs: {
+        Row: {
+          action: string
+          command: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          command?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          command?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       assignment_files: {
         Row: {
           assignment_id: string
@@ -654,6 +681,54 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          end_time: string | null
+          event_date: string
+          event_name: string
+          id: number
+          organiser: string
+          requirements: string[] | null
+          society_name: string
+          start_time: string | null
+          validation: boolean
+          venue: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          end_time?: string | null
+          event_date: string
+          event_name: string
+          id?: number
+          organiser: string
+          requirements?: string[] | null
+          society_name: string
+          start_time?: string | null
+          validation?: boolean
+          venue: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          end_time?: string | null
+          event_date?: string
+          event_name?: string
+          id?: number
+          organiser?: string
+          requirements?: string[] | null
+          society_name?: string
+          start_time?: string | null
+          validation?: boolean
+          venue?: string
+        }
+        Relationships: []
+      }
       campus_tour_bookings: {
         Row: {
           admin_notes: string | null
@@ -807,6 +882,45 @@ export type Database = {
         }
         Relationships: []
       }
+      contacts: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          message: string
+          phone: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          message: string
+          phone?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string
+          phone?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       expense_splits: {
         Row: {
           amount: number
@@ -900,6 +1014,57 @@ export type Database = {
           },
         ]
       }
+      food_orders: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          customer_name: string
+          delivery_charge_percent: number
+          delivery_location: string
+          helper_id: string | null
+          id: number
+          items: Json
+          phone_number: string
+          special_notes: string | null
+          status: string
+          total_mrp: number
+          total_payable: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          customer_name: string
+          delivery_charge_percent?: number
+          delivery_location: string
+          helper_id?: string | null
+          id?: number
+          items: Json
+          phone_number: string
+          special_notes?: string | null
+          status?: string
+          total_mrp: number
+          total_payable: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string
+          delivery_charge_percent?: number
+          delivery_location?: string
+          helper_id?: string | null
+          id?: number
+          items?: Json
+          phone_number?: string
+          special_notes?: string | null
+          status?: string
+          total_mrp?: number
+          total_payable?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           created_at: string
@@ -959,6 +1124,39 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      helper_preferences: {
+        Row: {
+          created_at: string
+          email_notifications: boolean | null
+          id: string
+          shopkeeper_email: string | null
+          shopkeeper_whatsapp: string | null
+          updated_at: string
+          user_id: string
+          whatsapp_notifications: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          shopkeeper_email?: string | null
+          shopkeeper_whatsapp?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp_notifications?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          shopkeeper_email?: string | null
+          shopkeeper_whatsapp?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp_notifications?: boolean | null
         }
         Relationships: []
       }
@@ -1106,6 +1304,125 @@ export type Database = {
         }
         Relationships: []
       }
+      pdf_access_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_access_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          pdf_id: number | null
+          session_token: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          pdf_id?: number | null
+          session_token: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          pdf_id?: number | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ppts: {
+        Row: {
+          branch: string
+          created_at: string | null
+          id: number
+          ppt_url: string
+          rating: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at: string | null
+          upload_date: string | null
+          uploaded_by: string
+          user_id: string | null
+          views: number | null
+        }
+        Insert: {
+          branch: string
+          created_at?: string | null
+          id?: number
+          ppt_url: string
+          rating?: number | null
+          semester: string
+          subject: string
+          title: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by: string
+          user_id?: string | null
+          views?: number | null
+        }
+        Update: {
+          branch?: string
+          created_at?: string | null
+          id?: number
+          ppt_url?: string
+          rating?: number | null
+          semester?: string
+          subject?: string
+          title?: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by?: string
+          user_id?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       print_helpers: {
         Row: {
           contact: string
@@ -1180,6 +1497,44 @@ export type Database = {
           },
         ]
       }
+      print_job_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          job_id: string
+          message: string
+          notification_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          job_id: string
+          message: string
+          notification_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          job_id?: string
+          message?: string
+          notification_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_job_notifications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "print_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       print_jobs: {
         Row: {
           accepted_at: string | null
@@ -1213,7 +1568,7 @@ export type Database = {
           token_expires_at: string | null
           total_cost: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           accepted_at?: string | null
@@ -1247,7 +1602,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Update: {
           accepted_at?: string | null
@@ -1281,7 +1636,7 @@ export type Database = {
           token_expires_at?: string | null
           total_cost?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1354,6 +1709,57 @@ export type Database = {
           user_id?: string | null
           views?: number
           year?: string
+        }
+        Relationships: []
+      }
+      resume_downloads_daily: {
+        Row: {
+          day: string
+          downloads: number | null
+          user_id: string
+        }
+        Insert: {
+          day: string
+          downloads?: number | null
+          user_id: string
+        }
+        Update: {
+          day?: string
+          downloads?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resumes: {
+        Row: {
+          ats_score: number | null
+          created_at: string | null
+          data: Json
+          id: string
+          template: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ats_score?: number | null
+          created_at?: string | null
+          data: Json
+          id?: string
+          template: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ats_score?: number | null
+          created_at?: string | null
+          data?: Json
+          id?: string
+          template?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1459,6 +1865,30 @@ export type Database = {
         }
         Relationships: []
       }
+      service_visibility: {
+        Row: {
+          created_at: string
+          replaced_text: string | null
+          service_id: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          replaced_text?: string | null
+          service_id: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          replaced_text?: string | null
+          service_id?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       settlements: {
         Row: {
           amount: number
@@ -1516,6 +1946,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shopkeeper_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1611,6 +2071,30 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_group_balances: {
+        Args: { _group_id: string }
+        Returns: {
+          member_email: string
+          member_id: string
+          member_name: string
+          net_balance: number
+          total_paid: number
+          total_share: number
+        }[]
+      }
+      create_print_job_notification: {
+        Args: {
+          p_job_id: string
+          p_message: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      export_group_summary: {
+        Args: { _group_id: string }
+        Returns: Json
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1643,6 +2127,10 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      log_auth_attempt: {
+        Args: { attempt_type: string; email_address: string }
+        Returns: undefined
+      }
       log_failed_query: {
         Args: { error_details: string; query_type: string }
         Returns: undefined
@@ -1650,6 +2138,16 @@ export type Database = {
       safe_table_query: {
         Args: { query_filters?: Json; table_name: string }
         Returns: Json
+      }
+      simplify_group_debts: {
+        Args: { _group_id: string }
+        Returns: {
+          amount: number
+          from_member_id: string
+          from_member_name: string
+          to_member_id: string
+          to_member_name: string
+        }[]
       }
     }
     Enums: {

@@ -27,9 +27,6 @@ interface BookOrderRequest {
   deliveryAddress: string;
   contactNumber: string;
   paymentMethod: string;
-  razorpay_payment_id?: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -58,9 +55,6 @@ const handler = async (req: Request): Promise<Response> => {
       total + (book.selling_price * book.quantity), 0
     );
 
-    // Razorpay payment verification (for online payments)
-  // Payment verification and order creation are now handled by the Node.js backend. Remove old Razorpay logic.
-
     // Insert order into database
     const { data: order, error: insertError } = await supabase
       .from("book_orders")
@@ -72,7 +66,6 @@ const handler = async (req: Request): Promise<Response> => {
         contact_number: orderData.contactNumber,
         payment_method: orderData.paymentMethod,
         order_status: "placed"
-        // payment_status and payment_details are now handled by the Node.js backend
       })
       .select()
       .single();

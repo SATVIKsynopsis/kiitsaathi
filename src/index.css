@@ -24,6 +24,10 @@ Beautiful, vibrant colors inspired by campus life and modern design
     --campus-blue: 210 80% 55%;
     --campus-orange: 25 90% 60%;
     --campus-purple: 270 70% 60%;
+    
+    /* KIIT Primary/Secondary for compatibility */
+    --kiit-primary: var(--kiit-green);
+    --kiit-secondary: var(--campus-blue);
     --glass-white: 0 0% 100%;
     --glass-overlay: 0 0% 100% / 0.1;
 
@@ -280,3 +284,64 @@ Beautiful, vibrant colors inspired by campus life and modern design
   25% { transform: rotate(-5deg); }
   75% { transform: rotate(5deg); }
 }
+
+/* Custom calendar styles for Interview Deadlines Tracker */
+.custom-calendar {
+  background: transparent !important;
+  color: white !important;
+}
+
+.custom-calendar .rbc-header {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 12px 8px !important;
+  font-weight: 600 !important;
+}
+
+.custom-calendar .rbc-month-view {
+  background: transparent !important;
+}
+
+.custom-calendar .rbc-date-cell {
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 8px !important;
+}
+
+.custom-calendar .rbc-date-cell.rbc-off-range {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.custom-calendar .rbc-today {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.custom-calendar .rbc-event {
+  border-radius: 8px !important;
+  border: none !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(10px) !important;
+  transition: all 0.2s ease !important;
+}
+
+.custom-calendar .rbc-event:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.custom-calendar .rbc-day-bg {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.custom-calendar .rbc-day-bg:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.custom-calendar .rbc-toolbar {
+  display: none !important;
+}
+
+

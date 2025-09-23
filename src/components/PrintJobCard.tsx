@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, MapPin, Clock, FileText, User, Phone } from 'lucide-react';
+import { Download, MapPin, Clock, FileText, User, Phone, Mail, MessageCircle } from 'lucide-react';
 
 interface PrintJobCardProps {
   job: any;
@@ -10,6 +10,7 @@ interface PrintJobCardProps {
   onAccept?: (jobId: string) => void;
   onUpdateStatus?: (jobId: string, status: string) => void;
   onDownload?: (filePath: string, fileName: string) => void;
+  onSendToShopkeeper?: (jobId: string, method: 'email' | 'whatsapp') => void;
   isLoading?: boolean;
 }
 
@@ -19,6 +20,7 @@ export function PrintJobCard({
   onAccept, 
   onUpdateStatus, 
   onDownload,
+  onSendToShopkeeper,
   isLoading = false 
 }: PrintJobCardProps) {
   const getStatusColor = (status: string) => {
@@ -144,7 +146,7 @@ export function PrintJobCard({
               )}
               
               {job.status === 'accepted' && (
-                <div className="flex gap-2 w-full">
+                <div className="flex gap-2 w-full flex-wrap">
                   {onDownload && job.file_storage_path && (
                     <Button
                       variant="outline"
@@ -155,11 +157,38 @@ export function PrintJobCard({
                       Download
                     </Button>
                   )}
+                  
+                  {/* Shopkeeper Integration Options */}
+                  {onSendToShopkeeper && (
+                    <>
+                      <Button
+                        variant="secondary"
+                        onClick={() => onSendToShopkeeper(job.id, 'email')}
+                        disabled={isLoading}
+                        className="flex items-center gap-2"
+                        title="Send file to shopkeeper via email"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Email Shop
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => onSendToShopkeeper(job.id, 'whatsapp')}
+                        disabled={isLoading}
+                        className="flex items-center gap-2"
+                        title="Send file to shopkeeper via WhatsApp"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        WhatsApp Shop
+                      </Button>
+                    </>
+                  )}
+                  
                   {onUpdateStatus && (
                     <Button
                       onClick={() => onUpdateStatus(job.id, 'printing')}
                       disabled={isLoading}
-                      className="flex-1"
+                      className="flex-1 min-w-fit"
                     >
                       Start Printing
                     </Button>

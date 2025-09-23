@@ -1,210 +1,204 @@
-import { useState, useEffect, useRef } from "react";
-import { Bell } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-const upcomingEvents = [
-  {
-    id: 1,
-    title: "Automatrix2.0 Agentic AI Workshop",
-    date: "This Saturday, 16 Aug",
-    time: "10:00 AM",
-  },
-  {
-    id: 2,
-    title: "Fed Hackathon",
-    date: "Saturday",
-    time: "10:00 AM",
-  },
-  {
-    id: 3,
-    title: "Cultural Night - Music & Dance",
-    date: "Sunday, 17 Aug",
-    time: "6:00 PM",
-  },
-  {
-    id: 4,
-    title: "Career Fair 2024",
-    date: "Monday, 18 Aug",
-    time: "9:00 AM",
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Bell, X } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
-export function useUnlockAudio(audioRef: React.RefObject<HTMLAudioElement>) {
-  useEffect(() => {
-    const unlock = () => {
-      if (audioRef.current) {
-        audioRef.current.play().then(() => {
-          audioRef.current?.pause();
-          audioRef.current.currentTime = 0; // reset
-          console.log(" Audio unlocked!");
-          document.removeEventListener("click", unlock);
-        }).catch(() => {
-          // Ignore if blocked
-        });
-      }
-    };
-
-    document.addEventListener("click", unlock, { once: true });
-    return () => document.removeEventListener("click", unlock);
-  }, [audioRef]);
+interface Notification {
+  id: string;
+  notification_type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  job_id: string;
 }
 
-export const NotificationBell = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasLanded, setHasLanded] = useState(false);
-  const [currentEventIndex, setCurrentEventIndex] = useState(0);
-  const [eventTextVisible, setEventTextVisible] = useState(false);
-  const [shouldShow, setShouldShow] = useState(true);
-  const [showEvents, setshowEvents] = useState(true);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const {user} = useAuth();
-  useUnlockAudio(audioRef);
+export function NotificationBell() {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
+      setupRealtimeSubscription();
+    }
+  }, [user]);
 
+  const loadNotifications = async () => {
+    if (!user) return;
 
-  // Create soft ding sound using Web Audio API
-  const playDingSound = async () => {
     try {
-      if (audioRef.current) {
-        // Ensure playback is allowed
-        await audioRef.current.play();
-      }
+      const { data, error } = await supabase
+        .from('print_job_notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      setNotifications(data || []);
+      setUnreadCount((data || []).filter(n => !n.is_read).length);
     } catch (error) {
-      console.log("Unable to play sound:", error);
+      console.error('Error loading notifications:', error);
     }
   };
 
-  // Handle scroll to hide when past Services section
-  useEffect(() => {
-    const handleScroll = () => {
-      const servicesSection = document.getElementById('services');
-      if (servicesSection) {
-        const rect = servicesSection.getBoundingClientRect();
-        const isPastServices = rect.bottom < window.innerHeight / 2;
-        setShouldShow(!isPastServices);
-      }
+  const setupRealtimeSubscription = () => {
+    if (!user) return;
+
+    const subscription = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'print_job_notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const newNotification = payload.new as Notification;
+          setNotifications(prev => [newNotification, ...prev.slice(0, 19)]);
+          setUnreadCount(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
     };
+  };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('print_job_notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
 
-  // Show bell after page loads
-  useEffect(() => {
-    
-    setIsVisible(true);
-    playDingSound();
-  }, []);
+      if (error) throw error;
 
-  // Handle landing animation 
-  useEffect(() => {
-    if (isVisible && !hasLanded) {
-      const landTimer = setTimeout(() => {
-        setHasLanded(true);
-        // Start showing events after landing
-        setTimeout(() => {
-          setEventTextVisible(true);
-        }, 100);
-      }, 800); // Match animation duration
-
-      return () => clearTimeout(landTimer);
+      setNotifications(prev => 
+        prev.map(n => 
+          n.id === notificationId ? { ...n, is_read: true } : n
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
-  }, [isVisible, hasLanded]);
+  };
 
-  // Cycle through events with exact timing
-  useEffect(() => {
-    if (!showEvents || !hasLanded || !shouldShow) return;
+  const markAllAsRead = async () => {
+    if (!user) return;
 
-    const cycleEvents = () => {
-      // Fade out current event (0.5s)
-      setEventTextVisible(false);
+    try {
+      const { error } = await supabase
+        .from('print_job_notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, is_read: true }))
+      );
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
       
-      setTimeout(() => {
-        // Move to next event after fade out completes
-        setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
-        // Fade in new event (0.5s)
-        setEventTextVisible(true);
-      }, 500); // Wait for fade out to complete
-    };
-
-    // Initial event shows for 4s, then cycles every 5s (4s visible + 0.5s fade out + 0.5s fade in)
-    const timer = setTimeout(() => {
-      const interval = setInterval(cycleEvents, 2000);
-      return () => clearInterval(interval);
-    }, 2000); // First event shows for 4 seconds
-
-    return () => clearTimeout(timer);
-  }, [showEvents, hasLanded, shouldShow, currentEventIndex]);
-
-  if (!shouldShow) return null;
-
-  const currentEvent = upcomingEvents[currentEventIndex];
-
-  return (<>
-  <audio ref={audioRef} src="src\assets\Ding.mp3" preload="auto" />
-    <div onClick={()=>{setshowEvents(!showEvents); }} className=" fixed top-2 right-4 z-50 cursor-pointer">
-      {/* Bell Icon */}
-      <div className="relative flex items-start justify-end">
-        <div
-          className={`
-            relative bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 
-            text-white p-3 rounded-full shadow-lg
-            transition-all duration-300 hover:scale-110
-            ${isVisible ? 'animate-[dropDown_0.8s_ease-out]' : 'opacity-0 -translate-y-20'}
-            ${hasLanded ? 'animate-[bellWiggle_0.5s_ease-in-out_0.8s]' : ''}
-          `}
-        >
-          <Bell className="w-6 h-6" />
-          
-          {/* Golden glow effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-300/30 to-amber-500/30 animate-pulse"></div>
-          
-          {/* Notification dot */}
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white">
-            <div className="w-full h-full bg-red-500 rounded-full animate-ping"></div>
-          </div>
-        </div>
-
-        {/* Event Text - Mobile responsive positioning */}
-        {hasLanded && showEvents &&  (
-          <div 
-            className={`
-              absolute sm:top-0 sm:right-20 top-16 right-0 
-              max-w-xs sm:max-w-sm md:max-w-md
-              transition-all duration-500 pointer-events-auto
-              ${eventTextVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}
-            `}
-          >
-            <div className="bg-gradient-to-br from-pink-100/90 via-purple-50/90 to-blue-100/90 
-                          dark:from-pink-900/40 dark:via-purple-900/40 dark:to-blue-900/40 
-                          rounded-2xl p-3 sm:p-4 shadow-2xl border border-pink-200/60 dark:border-purple-500/30
-                          backdrop-blur-md relative overflow-hidden">
-              
-              {/* Soft glow background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-300/20 via-purple-300/20 to-blue-300/20 rounded-2xl"></div>
-              
-              <div className="relative flex items-start gap-2 sm:gap-3">
-                
-                <div className="min-w-0">
-                  <h3 className="font-bold text-sm sm:text-lg text-purple-900 dark:text-purple-100 leading-tight">
-                    {currentEvent.title}
-                  </h3>
-                  <p className="text-purple-700 dark:text-purple-200 text-xs sm:text-sm mt-1 opacity-90">
-                    {currentEvent.date} • {currentEvent.time}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Floating sparkles */}
-              <div className="absolute -top-1 -right-1 text-yellow-400 animate-pulse text-sm">
-                
-              </div>
-              <div className="absolute -bottom-1 -left-1 text-pink-400 animate-pulse text-sm" style={{ animationDelay: '0.5s' }}>
-                
-              </div>
+      <PopoverContent className="w-80 p-0" align="end">
+        <Card className="border-0 shadow-none">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Print Job Updates</CardTitle>
+              {unreadCount > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={markAllAsRead}
+                  className="text-xs"
+                >
+                  Mark all read
+                </Button>
+              )}
             </div>
-          </div>
-        )}
-      </div>
-    </div>
-  </>);
-};
+            {notifications.length > 0 && (
+              <CardDescription>
+                {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+              </CardDescription>
+            )}
+          </CardHeader>
+          
+          <CardContent className="p-0">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground">
+                <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>No notifications yet</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-80">
+                <div className="space-y-1">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors ${
+                        !notification.is_read ? 'bg-campus-blue/5 border-l-4 border-l-campus-blue' : ''
+                      }`}
+                      onClick={() => !notification.is_read && markAsRead(notification.id)}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatDistanceToNow(new Date(notification.created_at), { 
+                              addSuffix: true 
+                            })}
+                          </p>
+                        </div>
+                        {!notification.is_read && (
+                          <div className="w-2 h-2 bg-campus-blue rounded-full mt-2" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
+      </PopoverContent>
+    </Popover>
+  );
+}

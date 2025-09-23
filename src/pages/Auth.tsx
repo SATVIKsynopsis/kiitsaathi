@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
@@ -19,6 +19,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
@@ -26,7 +27,6 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        localStorage.setItem('user_id', session.user.id);
         navigate('/');
       }
     };
@@ -42,11 +42,16 @@ export default function Auth() {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session?.user?.id) {
-          localStorage.setItem('user_id', session.user.id);
-        }
+      async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
+          // Validate KIIT email domain for Google OAuth and other providers
+          if (session.user?.email && !session.user.email.endsWith('@kiit.ac.in')) {
+            // Sign out the user immediately
+            await supabase.auth.signOut();
+            setError('Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.');
+            toast.error('🚫 Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.');
+            return;
+          }
           toast.success('Successfully signed in!');
           navigate('/');
         } else if (event === 'PASSWORD_RECOVERY') {
@@ -60,8 +65,17 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Google Login (Supabase handles redirect)
+  // Google Login with pre-validation (note: we can't validate the Google email before OAuth)
   const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    setEmailError('');
+    
+    // Show info toast about KIIT email requirement
+    toast.info('Please sign in with your KIIT College email (@kiit.ac.in)', {
+      duration: 4000,
+    });
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -70,15 +84,53 @@ export default function Auth() {
     });
 
     if (error) {
-      toast.error('Google login failed');
+      setLoading(false);
+      const errorMsg = 'Google login failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       console.error('Google login error:', error);
     }
+    
+    // Note: Loading state will be cleared by auth state change or component unmount
+  };
+
+  // Validate KIIT email domain with friendly messages
+  const validateKiitEmail = (email: string, showFriendly: boolean = false) => {
+    if (!email.trim()) return null;
+    
+    if (!email.endsWith('@kiit.ac.in')) {
+      return showFriendly 
+        ? '🚫 Access Denied! Please use your official KIIT ID (example: 24155598@kiit.ac.in).'
+        : 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.';
+    }
+    return null;
+  };
+
+  // Handle email input change with real-time validation
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setError(''); // Clear general errors
+    
+    // Real-time validation
+    const emailValidationError = validateKiitEmail(value, true);
+    setEmailError(emailValidationError || '');
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setEmailError('');
+
+    // Validate KIIT email domain
+    const emailValidationError = validateKiitEmail(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      setError(emailValidationError);
+      setLoading(false);
+      toast.error(emailValidationError);
+      return;
+    }
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -118,18 +170,25 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setEmailError('');
+
+    // Validate KIIT email domain
+    const emailValidationError = validateKiitEmail(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      setError(emailValidationError);
+      setLoading(false);
+      toast.error(emailValidationError);
+      return;
+    }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-
-      if (data?.session?.user?.id) {
-        localStorage.setItem('user_id', data.session.user.id);
-      }
 
       toast.success('Successfully signed in!');
       navigate('/');
@@ -152,7 +211,7 @@ export default function Auth() {
       const { error } = await supabase.auth.resend({ type: 'signup', email });
       if (error) throw error;
       toast.success('Confirmation email resent. Please check your inbox.');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Resend confirmation error:', err);
       toast.error(err.message || 'Failed to resend confirmation email');
     } finally {
@@ -161,8 +220,9 @@ export default function Auth() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft via-background to-campus-blue/20">
       <Navbar />
+      
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
           <Button
@@ -216,10 +276,17 @@ export default function Auth() {
                         type="email"
                         placeholder="your-email@kiit.ac.in"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => handleEmailChange(e.target.value)}
                         required
                         disabled={loading}
+                        className={emailError ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
+                      {emailError && (
+                        <div className="flex items-center gap-2 text-sm text-destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>{emailError}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -237,10 +304,10 @@ export default function Auth() {
                   </CardContent>
 
                   <CardFooter>
-                    <Button
-                      type="submit"
+                    <Button 
+                      type="submit" 
                       className="w-full bg-kiit-green hover:bg-kiit-green-dark"
-                      disabled={loading}
+                      disabled={loading || !!emailError}
                     >
                       {loading ? (
                         <>
@@ -290,10 +357,17 @@ export default function Auth() {
                         type="email"
                         placeholder="your-email@kiit.ac.in"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => handleEmailChange(e.target.value)}
                         required
                         disabled={loading}
+                        className={emailError ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
+                      {emailError && (
+                        <div className="flex items-center gap-2 text-sm text-destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>{emailError}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -312,10 +386,10 @@ export default function Auth() {
                   </CardContent>
 
                   <CardFooter>
-                    <Button
-                      type="submit"
+                    <Button 
+                      type="submit" 
                       className="w-full bg-campus-blue hover:bg-campus-blue/80"
-                      disabled={loading}
+                      disabled={loading || !!emailError}
                     >
                       {loading ? (
                         <>
@@ -329,7 +403,7 @@ export default function Auth() {
                   </CardFooter>
                 </form>
                 <div className="px-6 pb-4 text-sm text-muted-foreground text-center">
-                  Didn't receive the email?
+                  Didn’t receive the email?
                   <Button variant="link" onClick={handleResendConfirmation} disabled={!email || loading}>
                     Resend confirmation email
                   </Button>
@@ -338,16 +412,25 @@ export default function Auth() {
             </Tabs>
 
             {/* Divider */}
-            <div className="my-2 border-b-2 mx-4"></div>
+            <div className="relative my-6 mx-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-muted" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
 
             {/* Google Login Button */}
             <CardFooter>
               <Button 
                 onClick={handleGoogleLogin} 
-                className="w-full bg-White hover:bg-blue-600 text-black"
+                variant="outline"
+                className="w-full bg-card border-2 border-muted hover:bg-muted/50 text-foreground font-medium transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
+                disabled={loading}
               >
                 {/* Google SVG Icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="inline-block mr-2 h-5 w-5" viewBox="0 0 48 48">
+                <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5" viewBox="0 0 48 48">
                   <g>
                     <path fill="#4285F4" d="M24 9.5c3.54 0 6.73 1.22 9.24 3.22l6.91-6.91C36.44 2.34 30.65 0 24 0 14.64 0 6.27 5.48 1.98 13.44l8.51 6.62C12.81 13.13 17.96 9.5 24 9.5z"/>
                     <path fill="#34A853" d="M46.09 24.55c0-1.64-.15-3.22-.43-4.76H24v9.03h12.41c-.54 2.91-2.18 5.38-4.65 7.04l7.19 5.59C43.73 37.97 46.09 31.81 46.09 24.55z"/>
@@ -356,7 +439,14 @@ export default function Auth() {
                     <path fill="none" d="M0 0h48v48H0z"/>
                   </g>
                 </svg>
-                Continue with Google
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  'Sign in with Google'
+                )}
               </Button>
             </CardFooter>
           </Card>

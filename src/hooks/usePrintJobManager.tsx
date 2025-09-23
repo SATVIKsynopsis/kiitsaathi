@@ -28,7 +28,7 @@ export interface PrintJob {
   status: string;
   created_at: string;
   updated_at: string;
-  user_id?: string;
+  user_id: string;
   helper_id?: string;
   privacy_acknowledged?: boolean;
   accepted_at?: string;
@@ -40,29 +40,63 @@ export function usePrintJobManager() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateFile = (file: File): boolean => {
+    console.log('Validating file:', { name: file.name, size: file.size, type: file.type });
+    
+    // Check file type
+    const allowedTypes = ['application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only PDF files are allowed');
+      return false;
+    }
+    
+    // Check file size (20MB limit)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 20MB');
+      return false;
+    }
+    
+    return true;
+  };
+
   const uploadFile = useCallback(async (file: File): Promise<string | null> => {
     if (!user) {
+      console.error('Upload failed: No user logged in');
       toast.error('You must be logged in to upload files');
       return null;
     }
 
+    if (!validateFile(file)) {
+      return null;
+    }
+
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      console.log('Starting file upload for user:', user.id);
       
-      const { error: uploadError } = await supabase.storage
+      const fileExt = file.name.split('.').pop() || 'pdf';
+      const timestamp = Date.now();
+      const fileName = `${user.id}/${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      
+      console.log('Upload path:', fileName);
+      
+      const { data, error: uploadError } = await supabase.storage
         .from('print-job-files')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Supabase upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
       
-      return fileName;
-    } catch (error) {
+      console.log('File uploaded successfully:', data.path);
+      return data.path;
+    } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload file');
+      toast.error(`Upload failed: ${error.message}`);
       return null;
     }
   }, [user]);
@@ -73,46 +107,82 @@ export function usePrintJobManager() {
       return false;
     }
 
+    console.log('Creating print job with data:', jobData);
+
     setIsLoading(true);
     try {
+      // Validate required fields
+      if (!jobData.student_name || !jobData.student_contact || !jobData.delivery_location) {
+        throw new Error('Please fill in all required fields');
+      }
+
       // Upload file first
+      console.log('Uploading file...');
       const filePath = await uploadFile(file);
       if (!filePath) {
+        console.error('File upload failed');
         return false;
       }
 
-      // Create print job record using proper typing
+      console.log('File uploaded, creating database record...');
+
+      // Get the public URL for the uploaded file
+      const { data: urlData } = supabase.storage
+        .from('print-job-files')
+        .getPublicUrl(filePath);
+
+      // Create print job record with all required fields
       const insertData = {
-        file_name: jobData.file_name,
-        file_url: jobData.file_url || '',
-        file_size: jobData.file_size,
-        page_count: jobData.page_count,
-        copies: jobData.copies,
-        print_type: jobData.print_type,
-        paper_size: jobData.paper_size,
-        binding_option: jobData.binding_option,
+        user_id: user.id, // Required and now NOT NULL
+        file_name: file.name,
+        file_url: urlData.publicUrl,
+        file_storage_path: filePath,
+        file_size: file.size,
+        page_count: jobData.page_count || 1,
+        copies: jobData.copies || 1,
+        print_type: jobData.print_type || 'black_white',
+        paper_size: jobData.paper_size || 'A4',
+        binding_option: jobData.binding_option || null,
         delivery_location: jobData.delivery_location,
-        delivery_time: jobData.delivery_time,
-        additional_notes: jobData.additional_notes,
+        delivery_time: jobData.delivery_time || null,
+        delivery_type: jobData.delivery_type || 'pickup',
+        delivery_fee: jobData.delivery_fee || 0,
+        additional_notes: jobData.additional_notes || null,
         student_name: jobData.student_name,
         student_contact: jobData.student_contact,
-        total_cost: jobData.total_cost,
-        printing_cost: jobData.printing_cost,
-        service_fee: jobData.service_fee,
-        helper_fee: jobData.helper_fee
+        total_cost: jobData.total_cost || 0,
+        printing_cost: jobData.printing_cost || 0,
+        service_fee: jobData.service_fee || 0,
+        helper_fee: jobData.helper_fee || 0,
+        privacy_acknowledged: true, // Always true since checked in UI
+        status: 'pending'
       };
 
-      const { error } = await supabase
+      console.log('Inserting job data:', insertData);
+
+      const { data: insertedData, error } = await supabase
         .from('print_jobs')
-        .insert(insertData);
+        .insert(insertData)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database insert error:', error);
+        // Try to clean up uploaded file
+        try {
+          await supabase.storage.from('print-job-files').remove([filePath]);
+        } catch (cleanupError) {
+          console.warn('Failed to cleanup uploaded file:', cleanupError);
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
 
-      toast.success('🎉 Print job submitted! You\'ll be notified when a helper accepts it.');
+      console.log('Print job created successfully:', insertedData);
+      toast.success('✅ Print job submitted successfully! You\'ll be notified when a helper accepts it.');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating print job:', error);
-      toast.error('Failed to submit print job. Please try again.');
+      toast.error(`Submission failed: ${error.message}`);
       return false;
     } finally {
       setIsLoading(false);
@@ -127,6 +197,8 @@ export function usePrintJobManager() {
 
     setIsLoading(true);
     try {
+      console.log('Accepting job:', jobId, 'for user:', user.id);
+      
       const { error } = await supabase
         .from('print_jobs')
         .update({ 
@@ -137,11 +209,14 @@ export function usePrintJobManager() {
         .eq('id', jobId)
         .eq('status', 'pending'); // Prevent race conditions
 
-      if (error) throw error;
+      if (error) {
+        console.error('Accept job error:', error);
+        throw new Error(error.message);
+      }
 
       toast.success('Job accepted! You can now download the file and start printing.');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accepting job:', error);
       toast.error('Failed to accept job. It may have been accepted by another helper.');
       return false;
@@ -158,6 +233,8 @@ export function usePrintJobManager() {
 
     setIsLoading(true);
     try {
+      console.log('Updating job status:', jobId, 'to:', status);
+      
       const updates: any = { status };
       
       if (status === 'printing') {
@@ -172,9 +249,12 @@ export function usePrintJobManager() {
         .eq('id', jobId)
         .eq('helper_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update status error:', error);
+        throw new Error(error.message);
+      }
 
-      const statusMessages = {
+      const statusMessages: Record<string, string> = {
         printing: 'Job marked as printing',
         ready_for_pickup: 'Job marked as ready for pickup',
         delivered: 'Job marked as delivered',
@@ -183,9 +263,9 @@ export function usePrintJobManager() {
 
       toast.success(statusMessages[status] || 'Job status updated');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating job status:', error);
-      toast.error('Failed to update job status');
+      toast.error(`Failed to update status: ${error.message}`);
       return false;
     } finally {
       setIsLoading(false);
@@ -199,11 +279,16 @@ export function usePrintJobManager() {
     }
 
     try {
+      console.log('Downloading file:', filePath);
+      
       const { data, error } = await supabase.storage
         .from('print-job-files')
         .createSignedUrl(filePath, 3600); // 1 hour expiry
 
-      if (error) throw error;
+      if (error) {
+        console.error('Download URL error:', error);
+        throw new Error(error.message);
+      }
 
       // Create download link
       const link = document.createElement('a');
@@ -214,14 +299,122 @@ export function usePrintJobManager() {
       document.body.removeChild(link);
 
       toast.success('File download started');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Download error:', error);
-      toast.error('Failed to download file');
+      toast.error(`Download failed: ${error.message}`);
     }
   }, [user]);
 
+  const sendToShopkeeper = useCallback(async (
+    jobId: string, 
+    method: 'email' | 'whatsapp'
+  ): Promise<boolean> => {
+    if (!user) {
+      toast.error('You must be logged in to send files');
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('Sending to shopkeeper:', jobId, 'via:', method);
+      
+      // Get job details
+      const { data: job, error: jobError } = await supabase
+        .from('print_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Job not found');
+      }
+
+      // Get shopkeeper contact info
+      const { data: shopkeeper, error: shopkeeperError } = await supabase
+        .from('shopkeeper_contacts')
+        .select('*')
+        .eq('is_active', true)
+        .limit(1)
+        .single();
+
+      if (shopkeeperError || !shopkeeper) {
+        throw new Error('No active shopkeeper found');
+      }
+
+      // Get signed URL for file
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from('print-job-files')
+        .createSignedUrl(job.file_storage_path, 86400); // 24 hour expiry
+
+      if (urlError) throw new Error(urlError.message);
+
+      const payload = {
+        jobId: job.id,
+        fileName: job.file_name,
+        fileUrl: urlData.signedUrl,
+        customerName: job.student_name,
+        customerContact: job.student_contact,
+        printDetails: {
+          copies: job.copies,
+          printType: job.print_type,
+          paperSize: job.paper_size,
+          bindingOption: job.binding_option,
+          deliveryLocation: job.delivery_location,
+          additionalNotes: job.additional_notes
+        }
+      };
+
+      if (method === 'email' && shopkeeper.email) {
+        const { error } = await supabase.functions.invoke('send-print-job-email', {
+          body: { ...payload, shopkeeperEmail: shopkeeper.email }
+        });
+        if (error) throw new Error(error.message);
+        toast.success('Email sent to shopkeeper successfully! 📧');
+      } else if (method === 'whatsapp' && shopkeeper.whatsapp) {
+        const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+          body: { ...payload, whatsappNumber: shopkeeper.whatsapp }
+        });
+        if (error) throw new Error(error.message);
+        
+        if (data.whatsappUrl) {
+          // Open WhatsApp link
+          window.open(data.whatsappUrl, '_blank');
+          toast.success('WhatsApp message prepared! Check the new tab. 📱');
+        }
+      } else {
+        throw new Error(`${method} not available for shopkeeper`);
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error(`Error sending to shopkeeper via ${method}:`, error);
+      toast.error(`Failed to send via ${method}: ${error.message}`);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  const notifyStatusUpdate = useCallback(async (
+    jobId: string,
+    status: string,
+    helperName?: string
+  ): Promise<void> => {
+    try {
+      console.log('Sending notification for job:', jobId, 'status:', status);
+      await supabase.functions.invoke('notify-print-job-update', {
+        body: { jobId, status, helperName }
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      // Don't show error to user as this is background process
+    }
+  }, []);
+
   const fetchJobs = useCallback(async (filters?: { status?: string; helper_id?: string }): Promise<any[]> => {
     try {
+      console.log('Fetching jobs with filters:', filters);
+      
       let query = supabase.from('print_jobs').select('*');
       
       if (filters?.status) {
@@ -234,10 +427,16 @@ export function usePrintJobManager() {
 
       const { data, error } = await query.order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch jobs error:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('Fetched jobs:', data?.length || 0);
       return data || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching jobs:', error);
+      toast.error(`Failed to load jobs: ${error.message}`);
       return [];
     }
   }, []);
@@ -247,6 +446,8 @@ export function usePrintJobManager() {
     acceptJob,
     updateJobStatus,
     downloadFile,
+    sendToShopkeeper,
+    notifyStatusUpdate,
     fetchJobs,
     isLoading
   };

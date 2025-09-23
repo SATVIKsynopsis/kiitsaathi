@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/lib/database-types';
 
 export type Order = Database['public']['Tables']['orders']['Row'];
 

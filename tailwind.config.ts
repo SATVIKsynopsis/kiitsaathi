@@ -37,6 +37,10 @@ export default {
 				'campus-orange': 'hsl(var(--campus-orange))',
 				'campus-purple': 'hsl(var(--campus-purple))',
 				
+				// KIIT Primary/Secondary for compatibility
+				'kiit-primary': 'hsl(var(--kiit-primary))',
+				'kiit-secondary': 'hsl(var(--kiit-secondary))',
+				
 				// Society Brand Colors
 				'fedkiit-green': 'hsl(var(--fedkiit-green))',
 				'fedkiit-black': 'hsl(var(--fedkiit-black))',

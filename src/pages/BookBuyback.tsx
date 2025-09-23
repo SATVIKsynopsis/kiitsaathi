@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from 'react-router-dom';
 import { useGuestForm } from "@/hooks/useGuestForm";
 import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
 import { 
@@ -53,6 +54,8 @@ const sellFormSchema = z.object({
   rollNumber: z.string().min(1, "Roll number is required"),
   contactNumber: z.string().min(10, "Valid contact number is required"),
   email: z.string().email("Valid email is required"),
+  branch: z.string().min(1, "Branch is required"),
+  yearOfStudy: z.string().min(1, "Year of study is required"),
   pickupLocation: z.string().min(1, "Pickup location is required"),
   upiId: z.string().min(1, "UPI ID is required for payment"),
   pickupDate: z.date().refine(date => date > new Date(), "Pickup date must be in the future"),
@@ -65,6 +68,7 @@ type SellFormData = z.infer<typeof sellFormSchema>;
 
 export default function BookBuyback() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     formData: guestFormData,
     updateFormData: updateGuestFormData,
@@ -134,7 +138,7 @@ export default function BookBuyback() {
   const handleSellSubmit = async (data: SellFormData) => {
     if (!user) {
       // Redirect to auth for final submission
-      window.location.href = '/auth?redirect=/book-buyback';
+      navigate('/auth?redirect=/book-buyback');
       return;
     }
 
@@ -492,6 +496,62 @@ export default function BookBuyback() {
                                 {sellForm.formState.errors.email && (
                                   <p className="text-sm text-destructive mt-1">
                                     {sellForm.formState.errors.email.message}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="branch" className="flex items-center gap-2">
+                                  <GraduationCap className="w-4 h-4" />
+                                  Branch *
+                                </Label>
+                                <Select onValueChange={(value) => sellForm.setValue("branch", value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select your branch" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="CSE">Computer Science & Engineering</SelectItem>
+                                    <SelectItem value="IT">Information Technology</SelectItem>
+                                    <SelectItem value="EEE">Electrical & Electronics Engineering</SelectItem>
+                                    <SelectItem value="ECE">Electronics & Communication Engineering</SelectItem>
+                                    <SelectItem value="MECH">Mechanical Engineering</SelectItem>
+                                    <SelectItem value="CIVIL">Civil Engineering</SelectItem>
+                                    <SelectItem value="CHEM">Chemical Engineering</SelectItem>
+                                    <SelectItem value="BBA">Bachelor of Business Administration</SelectItem>
+                                    <SelectItem value="MBA">Master of Business Administration</SelectItem>
+                                    <SelectItem value="OTHER">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {sellForm.formState.errors.branch && (
+                                  <p className="text-sm text-destructive mt-1">
+                                    {sellForm.formState.errors.branch.message}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div>
+                                <Label htmlFor="yearOfStudy" className="flex items-center gap-2">
+                                  <GraduationCap className="w-4 h-4" />
+                                  Year of Study *
+                                </Label>
+                                <Select onValueChange={(value) => sellForm.setValue("yearOfStudy", value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select your year" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="1st Year">1st Year</SelectItem>
+                                    <SelectItem value="2nd Year">2nd Year</SelectItem>
+                                    <SelectItem value="3rd Year">3rd Year</SelectItem>
+                                    <SelectItem value="4th Year">4th Year</SelectItem>
+                                    <SelectItem value="PG 1st Year">PG 1st Year</SelectItem>
+                                    <SelectItem value="PG 2nd Year">PG 2nd Year</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {sellForm.formState.errors.yearOfStudy && (
+                                  <p className="text-sm text-destructive mt-1">
+                                    {sellForm.formState.errors.yearOfStudy.message}
                                   </p>
                                 )}
                               </div>

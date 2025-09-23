@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -34,6 +35,40 @@ const handler = async (req: Request): Promise<Response> => {
     const { fullName, email, phone, subject, message }: ContactFormData = await req.json();
 
     console.log("Processing contact form submission:", { fullName, email, subject });
+
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
+
+    // Get current user (if authenticated)
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Save contact form submission to database
+    const { error: dbError } = await supabase
+      .from('contacts')
+      .insert({
+        user_id: user?.id,
+        full_name: fullName,
+        email: email,
+        phone: phone,
+        subject: subject,
+        message: message,
+        status: 'new'
+      });
+
+    if (dbError) {
+      console.error('Database error:', dbError);
+      // Continue with email sending even if database save fails
+    } else {
+      console.log("Contact form saved to database successfully");
+    }
 
     // Send notification email to KIIT Saathi team
     const adminEmailResponse = await resend.emails.send({

@@ -2,56 +2,42 @@ project_id = "jzkzqpeorsehwvwcyjkf"
 
 [api]
 enabled = true
-port = 54321
 schemas = ["public", "storage", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-port = 54322
+# Port configs removed; CLI now assigns automatically
 
 [studio]
 enabled = true
-port = 54323
 
 [inbucket]
 enabled = true
-port = 54324
-smtp_port = 54325
-pop3_port = 54326
 
 [storage]
 enabled = true
-port = 54327
 file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-port = 54328
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://jzkzqpeorsehwvwcyjkf.supabase.co"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
 enable_manual_linking = false
 
-[rest]
-enabled = true
-port = 54329
+# Removed [rest] → no longer supported
 
 [realtime]
 enabled = true
-port = 54330
 
 [edge_runtime]
 enabled = true
-port = 54331
 
 [analytics]
 enabled = false
-port = 54332
-vector_port = 54333
-gql_port = 54334
 
+# Functions configs (kept as-is)
 [functions.send-contact-email]
 verify_jwt = false
 
@@ -86,4 +72,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.submit-book-selection]
+verify_jwt = true
+
+[functions.validate-kiit-email]
 verify_jwt = true
