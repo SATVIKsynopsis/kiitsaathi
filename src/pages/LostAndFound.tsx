@@ -373,15 +373,14 @@ export default function LostAndFound() {
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Unlock Contact Details</h3>
             <p className="mb-4">Pay ₹50 to view contact details for <span className="font-semibold">{showPayment.item.title}</span>.</p>
-            <PaymentComponent
-              amount={50}
-              user_id={user?.id || ""}
-              service_name="LostAndFoundContact"
-              subservice_name={showPayment.item.title}
-              payment_method="card"
-              autoOpen={true}
-              onPaymentSuccess={handlePaymentSuccess} // Pass the success handler
-            />
+            <PaymentComponent
+              amount={50}
+              user_id={user?.id || ""}
+              service_name="LostAndFoundContact"
+              subservice_name={showPayment.item.title}
+              payment_method="card"
+              autoOpen={true}
+            />
             <Button className="mt-4 w-full" variant="outline" onClick={() => setShowPayment({item: null, open: false})}>Cancel</Button>
           </div>
         </div>
