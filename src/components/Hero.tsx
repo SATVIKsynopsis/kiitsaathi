@@ -4,12 +4,36 @@ import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
 import heroCampus from "@/assets/KIIT_img.webp";
 import { useAuth } from "@/hooks/useAuth";
-
+import { useLocation } from "react-router-dom";
 
 export const Hero = () => {
   const navigate = useNavigate();
-  
+  const location = useLocation();
   const { user } = useAuth();
+
+   const scrollToSection = (href: string) => {
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const element = document.querySelector(href);
+        if (element) {
+          element.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }, 100);
+    } else {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
       {/* Animated background elements */}
@@ -56,6 +80,7 @@ export const Hero = () => {
               ) : (
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Button
+                    onClick={()=>scrollToSection("#services")}
                     size="lg"
                     className="glass-button text-white font-semibold px-8 py-4 text-lg group"
                   >
