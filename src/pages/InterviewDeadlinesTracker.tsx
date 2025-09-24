@@ -183,7 +183,7 @@ const { events, upcomingEvents, loading, error } = useEvents(); // USE THE HOOK
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center">
+      <div className=" bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading events...</p>
@@ -193,12 +193,12 @@ const { events, upcomingEvents, loading, error } = useEvents(); // USE THE HOOK
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100">
-      <Navbar />
+    <div className=" bg-gradient-to-br from-blue-50 to-purple-100">
+    <Navbar />
       <div className="container mx-auto px-4 py-8 mt-10">
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Events Tracker</h1>
+            <h1 className="text-3xl mt-12 font-bold text-gray-900 mb-2">Events Tracker</h1>
             <p className="text-gray-600">Stay organized with society event schedules</p>
           </div>
           {user && (
@@ -556,6 +556,7 @@ const { events, upcomingEvents, loading, error } = useEvents(); // USE THE HOOK
       <Footer />
       {showConfetti && <Confetti width={width} height={height} />}
     </div>
+    
   );
 };
 

@@ -117,21 +117,6 @@ export const Hero = () => {
                 className="w-full h-auto rounded-3xl shadow-2xl"
               />
 
-              {/* Floating Elements */}
-              <div className="absolute top-6 left-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-float hover:shadow-xl transition-all ">
-                <div className="text-sm font-semibold text-kiit-green flex items-center gap-2">
-                  <Box width={16} height={16} />
-                  Carton Service
-                </div>
-              </div>
-
-              <div className="absolute bottom-4 right-4 backdrop-blur-sm bg-white/20 rounded-lg p-3 shadow-lg animate-bounce-slow hover:shadow-xl transition-all ">
-                <div className="text-sm font-semibold text-campus-blue flex items-center gap-2">
-                  <Bot width={16} height={16} />
-                  AI Assistant
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
