@@ -20,7 +20,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { hideServicesDirectly } from "@/utils/adminCommands";
 
 const contactFormSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -62,7 +61,7 @@ const Index = () => {
         title: "Message Sent! ",
         description: "Thank you for reaching out. We'll get back to you within 24 hours.",
       });
-      
+
       form.reset();
     } catch (error) {
       console.error('Error sending message:', error);
@@ -77,65 +76,71 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       <Navbar />
+      <div className="fixed top-20 right-14 z-[10000] ">
+        <NotificationBell />
+      </div>
       <Hero />
-      
-      {/* Services Section */}
-      <section id="services" className="py-10 my-auto">
-        <ServicesGrid />
-      </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-10  bg-gradient-to-br from-kiit-green-soft to-white/10">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
-            How KIIT Saathi Works
-          </h2>
-          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Your campus life made easier in just a few simple steps
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                1
+      <div className="bg-gradient-to-br from-kiit-green-soft to-white/10">
+
+        {/* Services Section */}
+        <section id="services" className="py-0 my-auto ">
+          <ServicesGrid />
+        </section>
+
+        {/* How It Works Section */}
+        <section id="how-it-works" className="py-4  ">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
+              How KIIT Saathi Works
+            </h2>
+            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Your campus life made easier in just a few simple steps
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  1
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
+                <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
-              <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                2
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  2
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
+                <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
-              <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                3
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  3
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
+                <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
-              <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-10">
-        <Testimonials />
-      </section>
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-4">
+          <Testimonials />
+        </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-10 bg-gradient-soft">
-        <FAQ />
-      </section>
+        {/* FAQ Section */}
+        <section id="faq" className="py-4 bg-gradient-soft">
+          <FAQ />
+        </section>
+      </div>
 
       {/* Contact Section */}
-      <section id="contact" className="py-10">
+      <section id="contact" className="py-4">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
@@ -155,7 +160,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Email Us</h3>
-                  <p className="text-muted-foreground">support@kiitsaathi.com</p>
+                  <p className="text-muted-foreground">official@kiitsaathi.in</p>
                 </div>
               </div>
 
@@ -165,7 +170,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Call Us</h3>
-                  <p className="text-muted-foreground">+91 9876543210</p>
+                  <p className="text-muted-foreground">+91 9717008778</p>
                 </div>
               </div>
 
@@ -253,7 +258,7 @@ const Index = () => {
                         <FormItem>
                           <FormLabel>Message *</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               placeholder="Tell us more about your query..."
                               className="min-h-[120px] resize-none"
                               {...field}
@@ -264,8 +269,8 @@ const Index = () => {
                       )}
                     />
 
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={isSubmitting}
                       className="w-full gradient-primary text-white font-semibold py-3 text-base"
                     >
@@ -291,7 +296,6 @@ const Index = () => {
 
       <Footer />
       <ChatBot />
-      <NotificationBell />
       <AdminCommandExecutor />
     </div>
   );
