@@ -23,21 +23,22 @@ import { useAuth } from "@/hooks/useAuth";
 import  PaymentComponent  from "@/components/PaymentComponent";
 
 interface LostFoundItem {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  date: string;
-  contact_name: string;
-  contact_email?: string;
-  contact_phone?: string;
-  category: string;
-  item_type: 'lost' | 'found';
-  image_url?: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  user_id?: string;
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  contact_name: string;
+  contact_email?: string;
+  contact_phone?: string;
+  category: string;
+  item_type: 'lost' | 'found';
+  image_url?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
+  marked_complete_at?: string;
 }
 
 interface FormData {
@@ -224,10 +225,46 @@ export default function LostAndFound() {
     }
   };
 
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
-  };
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleMarkComplete = async (itemId: string) => {
+    if (!user) {
+      toast({ title: "Authentication required", description: "Please sign in to mark items as complete.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('mark_lost_found_complete', { 
+        item_id: itemId 
+      });
+
+      if (error) throw error;
+      
+      if (data) {
+        toast({ 
+          title: "✅ Item Marked Complete!", 
+          description: "Your contact information has been anonymized and the item is now marked as resolved." 
+        });
+        refreshItems(); // Refresh the items list
+      } else {
+        toast({ 
+          title: "Unable to complete", 
+          description: "You can only mark your own items as complete.", 
+          variant: "destructive" 
+        });
+      }
+    } catch (error: any) {
+      console.error('Error marking item complete:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to mark item as complete. Please try again.", 
+        variant: "destructive" 
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30">
@@ -344,19 +381,38 @@ export default function LostAndFound() {
                           <div className="flex items-center text-sm text-muted-foreground"><Calendar className="w-4 h-4 mr-2" />{new Date(item.date).toLocaleDateString()}</div>
                           <div className="flex items-center text-sm text-muted-foreground"><Clock className="w-4 h-4 mr-2" />Posted {new Date(item.created_at).toLocaleDateString()}</div>
                         </div>
-                        {/* FIX 4: Removed redundant paidItemId check */ }
+                        {/* FIX 4: Removed redundant paidItemId check */ }
                         {paidItems[item.id] ? (
-                          <div className="mt-2 p-2 border rounded bg-muted">
-                            <div className="font-semibold">Contact Details:</div>
-                            <div>Name: {item.contact_name}</div>
-                            <div>Email: {item.contact_email}</div>
-                            <div>Phone: {item.contact_phone}</div>
-                          </div>
-                        ) : (
-                          <Button className="w-full" onClick={() => handleContactClick(item)}>
-                            <Phone className="w-4 h-4 mr-2" /> Contact {item.contact_name}
-                          </Button>
-                        )}
+                          <div className="mt-2 p-2 border rounded bg-muted">
+                            <div className="font-semibold">Contact Details:</div>
+                            <div>Name: {item.contact_name}</div>
+                            <div>Email: {item.contact_email}</div>
+                            <div>Phone: {item.contact_phone}</div>
+                          </div>
+                        ) : (
+                          <Button className="w-full" onClick={() => handleContactClick(item)}>
+                            <Phone className="w-4 h-4 mr-2" /> Contact {item.contact_name}
+                          </Button>
+                        )}
+                        
+                        {/* Mark as Complete Button - Only show for item owner */}
+                        {user?.id === item.user_id && !item.marked_complete_at && (
+                          <Button 
+                            variant="outline" 
+                            className="w-full mt-2 border-green-500 text-green-600 hover:bg-green-50"
+                            onClick={() => handleMarkComplete(item.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Mark as Complete
+                          </Button>
+                        )}
+                        
+                        {/* Completed Status */}
+                        {item.marked_complete_at && (
+                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
+                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                          </Badge>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
