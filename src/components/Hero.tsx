@@ -11,7 +11,7 @@ export const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [ripples, setRipples] = useState<Array<{id: number, x: number, y: number}>>([]);
+  const [ripples, setRipples] = useState<Array<{ id: number, x: number, y: number }>>([]);
   const heroRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -94,7 +94,7 @@ export const Hero = () => {
       const rect = heroElement.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       const newRipple = { id: rippleId++, x, y };
       setRipples(prev => [...prev, newRipple]);
 
@@ -113,7 +113,7 @@ export const Hero = () => {
     };
   }, [cellSize, cols, rows]);
 
-   const scrollToSection = (href: string) => {
+  const scrollToSection = (href: string) => {
     if (location.pathname !== "/") {
       navigate("/");
       setTimeout(() => {
@@ -136,39 +136,39 @@ export const Hero = () => {
     }
   };
 
-    const sliderRef = useRef<HTMLDivElement>(null);
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const dots = document.querySelectorAll('#dot-indicators span');
-    const totalSlides = dots.length;
-
-    const goToSlide = (index: number) => {
-  if (!sliderRef.current) return;
-  const slideWidth = sliderRef.current.clientWidth;
-  sliderRef.current.style.transform = `translateX(-${index * slideWidth}px)`;
-
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const dots = document.querySelectorAll('#dot-indicators span');
-  dots.forEach(dot => dot.classList.remove('bg-black'));
-  if (dots[index]) dots[index].classList.add('bg-black');
-};
+  const totalSlides = dots.length;
 
-    useEffect(() => {
-  goToSlide(currentSlide); // show initial slide
-  const interval = setInterval(() => {
-    setCurrentSlide(prev => {
-      const next = (prev + 1) % 5; // number of slides
-      goToSlide(next);
-      return next;
-    });
-  }, 3000);
+  const goToSlide = (index: number) => {
+    if (!sliderRef.current) return;
+    const slideWidth = sliderRef.current.clientWidth;
+    sliderRef.current.style.transform = `translateX(-${index * slideWidth}px)`;
 
-  return () => clearInterval(interval);
-}, []);
+    const dots = document.querySelectorAll('#dot-indicators span');
+    dots.forEach(dot => dot.classList.remove('bg-black'));
+    if (dots[index]) dots[index].classList.add('bg-black');
+  };
+
+  useEffect(() => {
+    goToSlide(currentSlide); // show initial slide
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => {
+        const next = (prev + 1) % 5; // number of slides
+        goToSlide(next);
+        return next;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
 
   return (
-    <section 
+    <section
       ref={heroRef}
-      id="home" 
+      id="home"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
       style={{
         background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 70%, #15803d 100%)'
@@ -177,7 +177,7 @@ export const Hero = () => {
       {/* Animated Matrix Grid Background */}
       <div className="absolute inset-0">
         {/* Static grid lines */}
-        <div 
+        <div
           className="absolute inset-0 opacity-100"
           style={{
             backgroundImage: `
@@ -188,9 +188,9 @@ export const Hero = () => {
             backgroundPosition: '0 0, 0 0'
           }}
         />
-        
+
         {/* Interactive grid cells */}
-        <div 
+        <div
           ref={gridRef}
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -224,13 +224,13 @@ export const Hero = () => {
             height: 200,
           }}
         >
-          <div 
+          <div
             className="w-full h-full rounded-full border-2 border-kiit-green/60 animate-ping"
             style={{
               animation: 'ripple 1.2s ease-out forwards'
             }}
           />
-          <div 
+          <div
             className="absolute inset-4 rounded-full border border-white/40 animate-ping"
             style={{
               animation: 'ripple 1.2s ease-out 0.2s forwards'
@@ -283,7 +283,7 @@ export const Hero = () => {
               ) : (
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Button
-                    onClick={()=>scrollToSection("#services")}
+                    onClick={() => scrollToSection("#services")}
                     size="lg"
                     className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
@@ -315,24 +315,24 @@ export const Hero = () => {
             {/* Campus Background */}
             <div className="relative">
               <div className="flex flex-col items-center">
-    <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
-        <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
-            <img src="@/src/assets/KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1"/>
-            <img src="@src/assets/KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2"/>
-            <img src="assets\About-kiit.jpg" className="w-full flex-shrink-0" alt="Slide 3"/>
-            <img src="assets\KIIT-School-of-Architecture-Planning-.jpg" className="w-full flex-shrink-0" alt="Slide 4"/>
-            <img src="assets\cam17.jpg" className="w-full flex-shrink-0" alt="Slide 5"/>
-        </div>
-        <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
-        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-        <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-    </div>
-    </div>
-    
-</div>
+                <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
+                  <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
+                    <img src="src/assets/KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1" />
+                    <img src="src/assets/KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2" />
+                    <img src={heroCampus} className="w-full flex-shrink-0" alt="Slide 3" />
+                    <img src="@/assets\KIIT-School-of-Architecture-Planning-.jpg" className="w-full flex-shrink-0" alt="Slide 4" />
+                    <img src="@/assets/cam17.jpg" className="w-full flex-shrink-0" alt="Slide 5" />
+                  </div>
+                  <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
+                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                  </div>
+                </div>
+
+              </div>
 
 
             </div>
