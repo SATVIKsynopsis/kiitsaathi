@@ -43,7 +43,7 @@ export function NotificationBell() {
       message: `${event.event_name} is coming up!`,
       event_name: event.event_name,
       event_date: event.event_date,
-      created_at: event.created_at || new Date().toISOString(),
+      created_at: new Date().toISOString(),
       is_read: readIds.includes(event.id),
     }));
   }, [upcomingEvents, user, eventsLoading, error, readIds]);
