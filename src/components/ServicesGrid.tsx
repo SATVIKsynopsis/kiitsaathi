@@ -40,7 +40,7 @@ const services = [
     icon: BookOpen,
     title: "Study Material (PYQs, Notes, YouTube Videos)",
     description: "Seniors' notes, solved papers, lab manuals, and curated YouTube playlists — all in one place.",
-    price: "₹49/subject",
+    price: "Free",
     gradient: "from-campus-orange to-campus-purple",
   },
   {
