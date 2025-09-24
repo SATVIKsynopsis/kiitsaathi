@@ -50,7 +50,58 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'KIIT Saathi Backend is running',
+    timestamp: new Date().toISOString(),
+    environment: {
+      supabase: process.env.SUPABASE_URL ? 'configured' : 'missing',
+      razorpay: process.env.RAZORPAY_KEY_ID ? 'configured' : 'missing'
+    }
+  });
+});
 
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Add a basic health check endpoint
+app.get('/', (req, res) => {
+  console.log('🏥 Health check requested');
+  res.json({ 
+    status: 'Server is running', 
+    timestamp: new Date().toISOString(),
+    env: {
+      supabase: process.env.SUPABASE_URL ? 'configured' : 'missing',
+      razorpay: process.env.RAZORPAY_KEY_ID ? 'configured' : 'missing'
+    }
+  });
+});
+
+app.get('/health', (req, res) => {
+  console.log('🏥 Health endpoint requested');
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'Server is running', 
+    timestamp: new Date().toISOString(),
+    environment: {
+      supabase: process.env.SUPABASE_URL ? 'configured' : 'missing',
+      razorpay: process.env.RAZORPAY_KEY_ID ? 'configured' : 'missing'
+    }
+  });
+});
 
 // ✅ Check if user has paid for contact unlock for a specific item
 app.get('/has-paid-contact', async (req, res) => {
@@ -130,7 +181,7 @@ app.post('/verify-payment', async (req, res) => {
       } else {
         // 2. Get contact details for the item
         const { data: itemData, error: itemError } = await supabase
-          .from('lost_found')
+          .from('lost_and_found_items')
           .select('contact_name, contact_email, contact_phone, title')
           .eq('title', subservice_name)
           .single();
@@ -221,76 +272,144 @@ app.get('/orders', async (req, res) => {
 
 // Create order for Lost & Found contact unlock
 app.post('/create-lost-found-order', async (req, res) => {
+  console.log('🚀 =================================');
+  console.log('🚀 LOST & FOUND ORDER REQUEST START');
+  console.log('� =================================');
+  console.log('⏰ Timestamp:', new Date().toISOString());
+  console.log('📨 Request Body:', JSON.stringify(req.body, null, 2));
+  console.log('🌐 Request Headers:', JSON.stringify(req.headers, null, 2));
+  
   try {
-    console.log('🔍 Lost & Found Order Request:', req.body);
     const { amount, itemId, itemTitle, itemPosterEmail, payerUserId, receipt } = req.body;
+
+    console.log('🔍 Extracted Fields:');
+    console.log('  💰 Amount:', amount);
+    console.log('  🆔 Item ID:', itemId);
+    console.log('  📝 Item Title:', itemTitle);
+    console.log('  📧 Poster Email:', itemPosterEmail);
+    console.log('  👤 Payer User ID:', payerUserId);
+    console.log('  🧾 Receipt:', receipt);
 
     // Validate required fields
     if (!amount || !itemId || !itemTitle || !payerUserId) {
-      console.log('❌ Missing required fields:', { amount, itemId, itemTitle, payerUserId });
+      console.log('❌ VALIDATION FAILED - Missing required fields');
+      console.log('  💰 Amount present:', !!amount);
+      console.log('  🆔 Item ID present:', !!itemId);
+      console.log('  📝 Item Title present:', !!itemTitle);
+      console.log('  👤 Payer User ID present:', !!payerUserId);
+      
       return res.status(400).json({ 
         error: 'Missing required fields', 
-        required: ['amount', 'itemId', 'itemTitle', 'payerUserId'] 
+        required: ['amount', 'itemId', 'itemTitle', 'payerUserId'],
+        received: { amount: !!amount, itemId: !!itemId, itemTitle: !!itemTitle, payerUserId: !!payerUserId }
       });
     }
 
-    console.log('⏳ Checking for existing payment...');
-    // For now, let's skip the unlock table check since it doesn't exist yet
-    // and check directly in the orders table
+    console.log('✅ Field validation passed');
+    console.log('⏳ Step 1: Checking for existing payment...');
+    
+    // Check for existing payment in orders table
     const { data: existingPayment, error: checkError } = await supabase
       .from('orders')
-      .select('id')
+      .select('id, created_at, payment_status')
       .eq('user_id', payerUserId)
       .eq('service_name', 'LostAndFoundContact')
       .eq('payment_status', 'completed')
       .contains('booking_details', { item_id: itemId })
       .limit(1);
 
+    console.log('🔍 Existing payment query result:');
+    console.log('  📊 Data:', JSON.stringify(existingPayment, null, 2));
+    console.log('  ❌ Error:', JSON.stringify(checkError, null, 2));
+
     if (checkError) {
-      console.error('❌ Error checking existing payment:', checkError);
-      return res.status(500).json({ error: 'Failed to validate payment status', details: checkError });
+      console.error('❌ STEP 1 FAILED - Error checking existing payment:', checkError);
+      console.error('  🔍 Error details:', JSON.stringify(checkError, null, 2));
+      return res.status(500).json({ 
+        error: 'Failed to validate payment status', 
+        details: checkError,
+        step: 'checking_existing_payment'
+      });
     }
 
     if (existingPayment && existingPayment.length > 0) {
-      console.log('❌ Payment already exists for this user/item combination');
+      console.log('❌ STEP 1 FAILED - Payment already exists');
+      console.log('  📊 Existing payment data:', JSON.stringify(existingPayment, null, 2));
       return res.status(400).json({ 
         error: 'Payment already completed', 
-        message: 'You have already unlocked contact details for this item' 
+        message: 'You have already unlocked contact details for this item',
+        existingPayment: existingPayment[0]
       });
     }
 
-    console.log('⏳ Fetching item details...');
+    console.log('✅ Step 1 completed - No existing payment found');
+    console.log('⏳ Step 2: Fetching item details...');
+    
     // Get the item details to check if user is the poster and item type
     const { data: itemData, error: itemError } = await supabase
       .from('lost_and_found_items')
-      .select('contact_email, item_type')
+      .select('contact_email, item_type, title, id')
       .eq('id', itemId)
       .single();
 
+    console.log('🔍 Item fetch query result:');
+    console.log('  📊 Data:', JSON.stringify(itemData, null, 2));
+    console.log('  ❌ Error:', JSON.stringify(itemError, null, 2));
+
     if (itemError) {
-      console.error('❌ Error fetching item details:', itemError);
-      return res.status(500).json({ error: 'Failed to validate item', details: itemError });
-    }
-
-    console.log('⏳ Fetching user details...');
-    // Get user's email to check if they're the poster
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(payerUserId);
-    
-    if (userError) {
-      console.error('❌ Error fetching user details:', userError);
-      return res.status(500).json({ error: 'Failed to validate user', details: userError });
-    }
-
-    // Prevent users from paying for their own items (both lost and found)
-    if (itemData.contact_email === userData.user.email) {
-      console.log('❌ User trying to unlock their own item');
-      return res.status(400).json({ 
-        error: 'Cannot unlock own item', 
-        message: 'You cannot pay to unlock contact details for your own posted item' 
+      console.error('❌ STEP 2 FAILED - Error fetching item details:', itemError);
+      console.error('  🔍 Error details:', JSON.stringify(itemError, null, 2));
+      return res.status(500).json({ 
+        error: 'Failed to validate item', 
+        details: itemError,
+        step: 'fetching_item_details'
       });
     }
 
-    console.log('⏳ Creating Razorpay order...');
+    console.log('✅ Step 2 completed - Item details fetched');
+    console.log('⏳ Step 3: Fetching user details...');
+    
+    // Get user's email to check if they're the poster
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(payerUserId);
+    
+    console.log('🔍 User fetch query result:');
+    console.log('  📊 User data:', userData ? { id: userData.user?.id, email: userData.user?.email } : null);
+    console.log('  ❌ Error:', JSON.stringify(userError, null, 2));
+
+    if (userError) {
+      console.error('❌ STEP 3 FAILED - Error fetching user details:', userError);
+      console.error('  🔍 Error details:', JSON.stringify(userError, null, 2));
+      return res.status(500).json({ 
+        error: 'Failed to validate user', 
+        details: userError,
+        step: 'fetching_user_details'
+      });
+    }
+
+    console.log('✅ Step 3 completed - User details fetched');
+    console.log('⏳ Step 4: Checking if user is item poster...');
+    
+    // Prevent users from paying for their own items (both lost and found)
+    const userEmail = userData.user?.email;
+    const posterEmail = itemData.contact_email;
+    
+    console.log('🔍 Email comparison:');
+    console.log('  👤 User email:', userEmail);
+    console.log('  📧 Poster email:', posterEmail);
+    console.log('  🔍 Match:', userEmail === posterEmail);
+
+    if (posterEmail === userEmail) {
+      console.log('❌ STEP 4 FAILED - User trying to unlock their own item');
+      return res.status(400).json({ 
+        error: 'Cannot unlock own item', 
+        message: 'You cannot pay to unlock contact details for your own posted item',
+        debug: { userEmail, posterEmail }
+      });
+    }
+
+    console.log('✅ Step 4 completed - User is not the poster');
+    console.log('⏳ Step 5: Creating Razorpay order...');
+    
     // Create Razorpay order
     const options = {
       amount: amount, // amount in paise (15 rupees = 1500 paise)
@@ -305,18 +424,34 @@ app.post('/create-lost-found-order', async (req, res) => {
       }
     };
 
+    console.log('🔍 Razorpay order options:', JSON.stringify(options, null, 2));
+    
     const order = await razorpay.orders.create(options);
-    console.log('✅ Lost & Found order created successfully:', order.id);
+    
+    console.log('✅ Step 5 completed - Razorpay order created successfully');
+    console.log('📦 Order details:', JSON.stringify(order, null, 2));
+    console.log('🚀 =================================');
+    console.log('🚀 LOST & FOUND ORDER REQUEST END');
+    console.log('🚀 =================================');
+    
     res.json(order);
 
   } catch (error) {
-    console.error('❌ Error creating Lost & Found order:', error);
-    console.error('❌ Error details:', {
-      message: error.message,
+    console.error('💥 =================================');
+    console.error('💥 CRITICAL ERROR IN ORDER CREATION');
+    console.error('💥 =================================');
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error cause:', error.cause);
+    console.error('❌ Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    console.error('💥 =================================');
+    
+    res.status(500).json({ 
+      error: 'Failed to create order', 
+      details: error.message,
       stack: error.stack,
-      cause: error.cause
+      timestamp: new Date().toISOString()
     });
-    res.status(500).json({ error: 'Failed to create order', details: error.message });
   }
 });
 
@@ -432,4 +567,31 @@ app.get('/has-paid-lost-found-contact', async (req, res) => {
 });
 
 /* ---------------------- SERVER ---------------------- */
-app.listen(3001, () => console.log('Server running on port 3001'));
+const PORT = process.env.PORT || 3001;
+
+console.log('🚀 =================================');
+console.log('🚀 SERVER STARTUP');
+console.log('🚀 =================================');
+console.log('⏰ Timestamp:', new Date().toISOString());
+console.log('🌐 Port:', PORT);
+console.log('🔧 Environment Variables Status:');
+console.log('  📊 NODE_ENV:', process.env.NODE_ENV || 'not set');
+console.log('  🗄️  SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing');
+console.log('  🔑 SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `✅ Set (${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 20)}...)` : '❌ Missing');
+console.log('  💳 RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? `✅ Set (${process.env.RAZORPAY_KEY_ID.substring(0, 10)}...)` : '❌ Missing');
+console.log('  🔐 RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? `✅ Set (${process.env.RAZORPAY_KEY_SECRET.substring(0, 10)}...)` : '❌ Missing');
+console.log('  📧 RESEND_API_KEY:', process.env.RESEND_API_KEY ? `✅ Set (${process.env.RESEND_API_KEY.substring(0, 10)}...)` : '❌ Missing');
+
+app.listen(PORT, () => {
+  console.log('🎉 =================================');
+  console.log('🎉 SERVER SUCCESSFULLY STARTED');
+  console.log('🎉 =================================');
+  console.log(`🌐 Server running on port ${PORT}`);
+  console.log('📡 Available endpoints:');
+  console.log('  GET  / (health check)');
+  console.log('  GET  /health');
+  console.log('  POST /create-lost-found-order');
+  console.log('  POST /verify-lost-found-payment');
+  console.log('  GET  /has-paid-lost-found-contact');
+  console.log('🎉 =================================');
+});
