@@ -209,7 +209,10 @@ export const ServicesGrid = () => {
   };
 
   return (
-    <section className="py-4 bg-gradient-to-br from-campus-blue/10 to-kiit-green/10">
+    // <section className=" min-h-screen items-center justify-center overflow-hidden"
+    //   >
+    <section className="py-4 bg-gradient-to-br from-campus-blue/10 to-kiit-green/10"
+         > 
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -284,7 +287,7 @@ export const ServicesGrid = () => {
               return (
                 <div 
                   key={index}
-                  className="service-card group text-kiit-green-dark"
+                  className="service-card  group text-kiit-green-dark"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Service Header */}
@@ -326,21 +329,6 @@ export const ServicesGrid = () => {
           )}
         </div>
 
-        {/* Call to Action */}
-        {/* <div className="text-center">
-          <div className="glass-card p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-poppins font-bold text-gradient mb-4">
-              Ready to simplify your campus life?
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Join thousands of KIIT students who've already made their lives easier.
-            </p>
-            <Button size="lg" className="bg-gradient-to-r from-campus-orange to-campus-purple text-white font-semibold px-8 py-4">
-              Download Now - It's Free!
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </div>
-        </div> */}
       </div>
     </section>
   );

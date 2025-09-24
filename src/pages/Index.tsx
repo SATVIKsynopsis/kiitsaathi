@@ -78,66 +78,69 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       <Navbar />
-      <div className="fixed top-16 right-14 z-[10000] ">
+      <div className="fixed top-20 right-14 z-[10000] ">
         <NotificationBell />
       </div>
       <Hero />
 
-      {/* Services Section */}
-      <section id="services" className="py-10 my-auto">
-        <ServicesGrid />
-      </section>
+      <div className="bg-gradient-to-br from-kiit-green-soft to-white/10">
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-10  bg-gradient-to-br from-kiit-green-soft to-white/10">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
-            How KIIT Saathi Works
-          </h2>
-          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Your campus life made easier in just a few simple steps
-          </p>
+        {/* Services Section */}
+        <section id="services" className="py-0 my-auto ">
+          <ServicesGrid />
+        </section>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                1
+        {/* How It Works Section */}
+        <section id="how-it-works" className="py-4  ">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
+              How KIIT Saathi Works
+            </h2>
+            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+              Your campus life made easier in just a few simple steps
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  1
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
+                <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
-              <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
-            </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                2
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  2
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
+                <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
-              <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
-            </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
-                3
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+                  3
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
+                <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
-              <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-10">
-        <Testimonials />
-      </section>
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-4">
+          <Testimonials />
+        </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-10 bg-gradient-soft">
-        <FAQ />
-      </section>
+        {/* FAQ Section */}
+        <section id="faq" className="py-4 bg-gradient-soft">
+          <FAQ />
+        </section>
+      </div>
 
       {/* Contact Section */}
-      <section id="contact" className="py-10">
+      <section id="contact" className="py-4">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">

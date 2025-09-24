@@ -270,10 +270,10 @@ export const Hero = () => {
 
               {/* CTA Buttons */}
               {!user ? (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <div className="flex  flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Button
                     size="lg"
-                    className="glass-button text-white font-semibold px-8 py-4 text-lg group"
+                    className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                     onClick={() => navigate('/auth')}
                   >
                     Get Started Free
@@ -285,7 +285,7 @@ export const Hero = () => {
                   <Button
                     onClick={()=>scrollToSection("#services")}
                     size="lg"
-                    className="glass-button text-white font-semibold px-8 py-4 text-lg group"
+                    className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
                     Go to Services
                   </Button>
@@ -315,7 +315,7 @@ export const Hero = () => {
             {/* Campus Background */}
             <div className="relative">
               <div className="flex flex-col items-center">
-    <div className="w-[690px] h-[390px] overflow-hidden relative rounded-3xl">
+    <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
         <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
             <img src="src\assets\KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1"/>
             <img src="src\assets\KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2"/>

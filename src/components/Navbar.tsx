@@ -104,7 +104,7 @@ export const Navbar = () => {
 
   return (
     <nav className="  rounded-full fixed  w-full m-2 p-0 z-50 backdrop-blur-md bg-kiit-green  text-white border-b border-white/20 shadow-lg">
-      <div className="container mx-auto mr-4 ">
+      <div className="container mx-auto mr-4 F">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div
