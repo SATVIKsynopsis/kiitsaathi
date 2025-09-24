@@ -381,7 +381,7 @@ export default function LostAndFound() {
                           <div className="flex items-center text-sm text-muted-foreground"><Calendar className="w-4 h-4 mr-2" />{new Date(item.date).toLocaleDateString()}</div>
                           <div className="flex items-center text-sm text-muted-foreground"><Clock className="w-4 h-4 mr-2" />Posted {new Date(item.created_at).toLocaleDateString()}</div>
                         </div>
-                        {/* FIX 4: Removed redundant paidItemId check */ }
+                        {/* FIX 4: Removed redundant paidItemId check */}
                         {paidItems[item.id] ? (
                           <div className="mt-2 p-2 border rounded bg-muted">
                             <div className="font-semibold">Contact Details:</div>
