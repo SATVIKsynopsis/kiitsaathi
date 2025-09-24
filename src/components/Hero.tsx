@@ -317,11 +317,11 @@ export const Hero = () => {
               <div className="flex flex-col items-center">
     <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
         <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
-            <img src="src\assets\KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1"/>
-            <img src="src\assets\KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2"/>
-            <img src="src\assets\About-kiit.jpg" className="w-full flex-shrink-0" alt="Slide 3"/>
-            <img src="src\assets\KIIT-School-of-Architecture-Planning-.jpg" className="w-full flex-shrink-0" alt="Slide 4"/>
-            <img src="src\assets\cam17.jpg" className="w-full flex-shrink-0" alt="Slide 5"/>
+            <img src="@/src/assets/KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1"/>
+            <img src="@src/assets/KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2"/>
+            <img src="assets\About-kiit.jpg" className="w-full flex-shrink-0" alt="Slide 3"/>
+            <img src="assets\KIIT-School-of-Architecture-Planning-.jpg" className="w-full flex-shrink-0" alt="Slide 4"/>
+            <img src="assets\cam17.jpg" className="w-full flex-shrink-0" alt="Slide 5"/>
         </div>
         <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
         <span className="w-3 h-3 bg-black/20 rounded-full"></span>
