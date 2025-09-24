@@ -33,7 +33,7 @@ const services = [
     title: "KIIT Saathi (AI Assistant)",
     description: "Lost? Hungry? Confused? Ask our chatbot — 24x7 KIIT help.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-ecell-cyan to-campus-blue",
   },
   {
     id: "study-material",
@@ -41,7 +41,7 @@ const services = [
     title: "Study Material (PYQs, Notes, YouTube Videos)",
     description: "Seniors' notes, solved papers, lab manuals, and curated YouTube playlists — all in one place.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-kiit-green to-fedkiit-green",
   },
   {
     id: "lost-and-found-portal",
@@ -49,7 +49,7 @@ const services = [
     title: "Lost & Found Portal",
     description: "Lost your ID card? Found someone's AirPods? Report it here.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-campus-orange to-usc-orange",
   },
   {
     id: "campus-map",
@@ -57,7 +57,7 @@ const services = [
     title: "Campus Map",
     description: "Explore the vibrant campus of KIIT and everything it has to offer.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-campus-blue to-kiit-green",
   },
   {
     id: "kiit-societies-fests-sports",
@@ -65,7 +65,7 @@ const services = [
     title: "KIIT Societies, Fests and Sports",
     description: "One calendar. All societies. Never miss an interview again.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-campus-purple to-usc-maroon",
   },
   {
     id: "resume-saathi",
@@ -73,7 +73,7 @@ const services = [
     title: "Resume Saathi",
     description: "AI-powered ATS-optimized resume builder with multiple templates and instant PDF download.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple"
+    gradient: "from-campus-blue to-ecell-cyan"
   },
   {
     id: "split-saathi",
@@ -81,7 +81,7 @@ const services = [
     title: "SplitSaathi – Group Expense Manager",
     description: "Simplify how you and your friends split bills during trips, café visits, or fests.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-fedkiit-green to-usc-green",
   },
   {
     id: "sgpa-cgpa-calculator",
@@ -89,7 +89,7 @@ const services = [
     title: "SGPA & CGPA Calculator",
     description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-kiit-green to-campus-blue",
     action: () => window.location.href = "/sgpa-calculator",
   },
   {
@@ -98,7 +98,7 @@ const services = [
     title: "Printouts on Demand",
     description: "Too lazy to go out? Just send a PDF and get it printed and delivered.",
     price: "₹2/page",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-usc-maroon to-campus-purple",
   },
   {
     id: "senior-connect",
@@ -106,7 +106,7 @@ const services = [
     title: "Senior Connect",
     description: "Connect with experienced Seniors with genuine insights & book mentorship sessions with ease.",
     price: "₹99/session",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-campus-purple to-ecell-cyan",
   },
   {
     id: "handwritten-assignments",
@@ -122,7 +122,7 @@ const services = [
     title: "Tutoring & Counselling",
     description: "Struggling in class or life? Book a session with a real senior mentor.",
     price: "₹199/hour",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-kiit-green to-campus-blue",
   },
   {
     id: "campus-tour-booking",
@@ -130,7 +130,7 @@ const services = [
     title: "Campus Tour Booking",
     description: "Auto tours for parents across KIIT, KIMS, and KISS campuses.",
     price: "₹500/tour",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-campus-blue to-fedkiit-green",
   },
   {
     id: "carton-packing-hostel-transfers",
@@ -138,7 +138,7 @@ const services = [
     title: "Carton Packing & Hostel Transfers",
     description: "Making moving day hassle free with cartons, packing and hostel to hostel delivery – All in one tap.",
     price: "₹50/carton",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-usc-orange to-campus-orange",
   },
   {
     id: "book-buyback-resale",
@@ -146,7 +146,7 @@ const services = [
     title: "Book Buyback & Resale",
     description: "Sell your old semester books for a better price and help juniors save money — by students, for students.",
     price: "Fair Price",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-usc-green to-kiit-green",
   },
   {
     id: "kiit-saathi-celebrations",
@@ -154,7 +154,7 @@ const services = [
     title: "KIIT Saathi Celebrations",
     description: "From surprise birthday parties to last-minute cake deliveries, decorations, and fun party combos — all planned & delivered for you.",
     price: "₹299+",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-campus-purple to-campus-orange",
   },
   {
     id: "kiit-saathi-meetups",
@@ -162,7 +162,7 @@ const services = [
     title: "KIIT Saathi Meetups",
     description: "Find your people, create your moments - campus meetups made easy",
     price: "Free",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-ecell-cyan to-campus-purple",
   },
   {
     id: "food-micro-essentials-delivery",
@@ -170,7 +170,7 @@ const services = [
     title: "Food and micro-essentials delivery",
     description: "From wholesome mini meals to everyday essentials - delivered from trusted campus and nearby stores.",
     price: "₹20 delivery",
-    gradient: "from-campus-orange to-campus-purple",
+    gradient: "from-usc-orange to-fedkiit-green",
   }
 ];
 
