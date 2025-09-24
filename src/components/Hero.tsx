@@ -2,7 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Heart, Box, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
+import KiitCampus3 from "@/assets/KIIT-University-Camus-3-Library.jpg"
 import heroCampus from "@/assets/KIIT_img.webp";
+import KiitCampus17 from "@/assets/cam17.jpg";
+import KiiTSchoolofArch from "@/assets/KIIT-School-of-Architecture-Planning-.jpg";
+import KiitAbout from "@/assets/About-kiit.jpg"
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import { useRef, useEffect, useState, useMemo } from "react";
@@ -317,11 +321,11 @@ export const Hero = () => {
               <div className="flex flex-col items-center">
                 <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
                   <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
-                    <img src="src/assets/KIIT_img.webp" className="w-full flex-shrink-0" alt="Slide 1" />
-                    <img src="src/assets/KIIT-University-Camus-3-Library.jpg" className="w-full flex-shrink-0" alt="Slide 2" />
                     <img src={heroCampus} className="w-full flex-shrink-0" alt="Slide 3" />
-                    <img src="@/assets\KIIT-School-of-Architecture-Planning-.jpg" className="w-full flex-shrink-0" alt="Slide 4" />
-                    <img src="@/assets/cam17.jpg" className="w-full flex-shrink-0" alt="Slide 5" />
+                    <img src={KiiTSchoolofArch} className="w-full flex-shrink-0" alt="Slide 1" />
+                    <img src={KiitCampus3} className="w-full flex-shrink-0" alt="Slide 2" />
+                    <img src={KiitAbout} className="w-full flex-shrink-0" alt="Slide 4" />
+                    <img src={KiitCampus17} className="w-full flex-shrink-0" alt="Slide 5" />
                   </div>
                   <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
                     <span className="w-3 h-3 bg-black/20 rounded-full"></span>
