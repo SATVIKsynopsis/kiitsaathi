@@ -19,6 +19,7 @@ export function HelperDashboard() {
     sendToShopkeeper,
     notifyStatusUpdate,
     fetchJobs, 
+    markJobCompleted,
     isLoading 
   } = usePrintJobManager();
   const [availableJobs, setAvailableJobs] = useState<any[]>([]);
@@ -104,6 +105,13 @@ export function HelperDashboard() {
 
   const handleSendToShopkeeper = async (jobId: string, method: 'email' | 'whatsapp') => {
     await sendToShopkeeper(jobId, method);
+  };
+
+  const handleMarkCompleted = async (jobId: string, userType: 'customer' | 'helper') => {
+    const success = await markJobCompleted(jobId, userType);
+    if (success) {
+      loadJobs();
+    }
   };
 
   return (
@@ -262,6 +270,7 @@ export function HelperDashboard() {
                       onUpdateStatus={handleUpdateStatus}
                       onDownload={handleDownloadFile}
                       onSendToShopkeeper={handleSendToShopkeeper}
+                      onMarkCompleted={handleMarkCompleted}
                       isLoading={isLoading}
                     />
                   ))}

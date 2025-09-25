@@ -11,6 +11,7 @@ interface PrintJobCardProps {
   onUpdateStatus?: (jobId: string, status: string) => void;
   onDownload?: (filePath: string, fileName: string) => void;
   onSendToShopkeeper?: (jobId: string, method: 'email' | 'whatsapp') => void;
+  onMarkCompleted?: (jobId: string, userType: 'customer' | 'helper') => void;
   isLoading?: boolean;
 }
 
@@ -21,6 +22,7 @@ export function PrintJobCard({
   onUpdateStatus, 
   onDownload,
   onSendToShopkeeper,
+  onMarkCompleted,
   isLoading = false 
 }: PrintJobCardProps) {
   const getStatusColor = (status: string) => {
@@ -216,29 +218,42 @@ export function PrintJobCard({
                 </div>
               )}
 
-              {(job.status === 'ready_for_pickup' || job.status === 'delivered') && onUpdateStatus && (
+              {(job.status === 'ready_for_pickup' || job.status === 'delivered') && onMarkCompleted && (
                 <Button
-                  onClick={() => onUpdateStatus(job.id, 'completed')}
+                  onClick={() => onMarkCompleted(job.id, 'helper')}
                   disabled={isLoading}
                   className="w-full"
-                  variant="default"
+                  variant={job.helper_completed ? "secondary" : "default"}
                 >
-                  Complete Job
+                  {job.helper_completed ? '✓ You Confirmed' : 'Mark Completed'}
                 </Button>
               )}
             </>
           )}
 
-          {/* Customer can download file if job is completed */}
-          {userType === 'customer' && job.status === 'completed' && onDownload && job.file_storage_path && (
-            <Button
-              variant="outline"
-              onClick={() => onDownload(job.file_storage_path!, job.file_name)}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Download File
-            </Button>
+          {/* Customer Actions */}
+          {userType === 'customer' && (
+            <>
+              {/* Customer can mark as completed when delivered */}
+              {(job.status === 'ready_for_pickup' || job.status === 'delivered') && onMarkCompleted && (
+                <Button
+                  onClick={() => onMarkCompleted(job.id, 'customer')}
+                  disabled={isLoading}
+                  className="w-full"
+                  variant={job.customer_completed ? "secondary" : "default"}
+                >
+                  {job.customer_completed ? '✓ You Confirmed' : 'Mark Completed'}
+                </Button>
+              )}
+              
+              {/* Show completion status */}
+              {job.status === 'completed' && job.file_deleted_at && (
+                <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                  <p className="text-green-800 font-medium">✅ Job Completed!</p>
+                  <p className="text-sm text-green-600">File has been permanently deleted for privacy</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 

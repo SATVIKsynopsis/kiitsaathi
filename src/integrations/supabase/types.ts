@@ -232,6 +232,39 @@ export type Database = {
         }
         Relationships: []
       }
+      bakery_partners: {
+        Row: {
+          address: string
+          contact_person: string
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string
+        }
+        Insert: {
+          address: string
+          contact_person: string
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone: string
+        }
+        Update: {
+          address?: string
+          contact_person?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       book_buyback_requests: {
         Row: {
           admin_notes: string | null
@@ -283,6 +316,45 @@ export type Database = {
           student_name?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      book_exchanges: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          status: string | null
+          user1_books: Json
+          user1_id: string
+          user1_wants: Json
+          user2_books: Json
+          user2_id: string
+          user2_wants: Json
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          user1_books: Json
+          user1_id: string
+          user1_wants: Json
+          user2_books: Json
+          user2_id: string
+          user2_wants: Json
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          user1_books?: Json
+          user1_id?: string
+          user1_wants?: Json
+          user2_books?: Json
+          user2_id?: string
+          user2_wants?: Json
         }
         Relationships: []
       }
@@ -840,12 +912,15 @@ export type Database = {
       celebration_bookings: {
         Row: {
           admin_notes: string | null
+          bakery_fulfilled: boolean | null
           celebration_type: string
           contact_number: string
           created_at: string
           date_time: string
           id: string
           name: string
+          payment_completed: boolean | null
+          promo_code: string | null
           special_requests: string | null
           status: string
           updated_at: string
@@ -854,12 +929,15 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          bakery_fulfilled?: boolean | null
           celebration_type: string
           contact_number: string
           created_at?: string
           date_time: string
           id?: string
           name: string
+          payment_completed?: boolean | null
+          promo_code?: string | null
           special_requests?: string | null
           status?: string
           updated_at?: string
@@ -868,17 +946,88 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          bakery_fulfilled?: boolean | null
           celebration_type?: string
           contact_number?: string
           created_at?: string
           date_time?: string
           id?: string
           name?: string
+          payment_completed?: boolean | null
+          promo_code?: string | null
           special_requests?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
           venue_location?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          flagged_reason: string | null
+          id: string
+          is_flagged: boolean | null
+          message: string
+          sender_id: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          flagged_reason?: string | null
+          id?: string
+          is_flagged?: boolean | null
+          message: string
+          sender_id: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          flagged_reason?: string | null
+          id?: string
+          is_flagged?: boolean | null
+          message?: string
+          sender_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string | null
+          ended_at: string | null
+          id: string
+          session_type: string | null
+          status: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          session_type?: string | null
+          status?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          session_type?: string | null
+          status?: string | null
+          user1_id?: string
+          user2_id?: string
         }
         Relationships: []
       }
@@ -918,6 +1067,27 @@ export type Database = {
           subject?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      demo_names: {
+        Row: {
+          category: string
+          id: string
+          is_used: boolean | null
+          name: string
+        }
+        Insert: {
+          category: string
+          id?: string
+          is_used?: boolean | null
+          name: string
+        }
+        Update: {
+          category?: string
+          id?: string
+          is_used?: boolean | null
+          name?: string
         }
         Relationships: []
       }
@@ -1549,15 +1719,18 @@ export type Database = {
           binding_option: string | null
           copies: number
           created_at: string
+          customer_completed: boolean | null
           delivered_at: string | null
           delivery_fee: number | null
           delivery_location: string
           delivery_time: string | null
           delivery_type: string | null
+          file_deleted_at: string | null
           file_name: string
           file_size: number
           file_storage_path: string | null
           file_url: string
+          helper_completed: boolean | null
           helper_fee: number
           helper_id: string | null
           id: string
@@ -1583,15 +1756,18 @@ export type Database = {
           binding_option?: string | null
           copies?: number
           created_at?: string
+          customer_completed?: boolean | null
           delivered_at?: string | null
           delivery_fee?: number | null
           delivery_location: string
           delivery_time?: string | null
           delivery_type?: string | null
+          file_deleted_at?: string | null
           file_name: string
           file_size: number
           file_storage_path?: string | null
           file_url: string
+          helper_completed?: boolean | null
           helper_fee: number
           helper_id?: string | null
           id?: string
@@ -1617,15 +1793,18 @@ export type Database = {
           binding_option?: string | null
           copies?: number
           created_at?: string
+          customer_completed?: boolean | null
           delivered_at?: string | null
           delivery_fee?: number | null
           delivery_location?: string
           delivery_time?: string | null
           delivery_type?: string | null
+          file_deleted_at?: string | null
           file_name?: string
           file_size?: number
           file_storage_path?: string | null
           file_url?: string
+          helper_completed?: boolean | null
           helper_fee?: number
           helper_id?: string | null
           id?: string
@@ -1673,6 +1852,48 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      promo_code_usage: {
+        Row: {
+          bakery_partner_id: string | null
+          booking_id: string
+          id: string
+          promo_code: string
+          used_at: string | null
+          used_by_bakery: boolean | null
+        }
+        Insert: {
+          bakery_partner_id?: string | null
+          booking_id: string
+          id?: string
+          promo_code: string
+          used_at?: string | null
+          used_by_bakery?: boolean | null
+        }
+        Update: {
+          bakery_partner_id?: string | null
+          booking_id?: string
+          id?: string
+          promo_code?: string
+          used_at?: string | null
+          used_by_bakery?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_usage_bakery_partner_id_fkey"
+            columns: ["bakery_partner_id"]
+            isOneToOne: false
+            referencedRelation: "bakery_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_code_usage_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "celebration_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pyqs: {
         Row: {
@@ -2098,9 +2319,17 @@ export type Database = {
         }
         Returns: string
       }
+      delete_all_resume_data: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       export_group_summary: {
         Args: { _group_id: string }
         Returns: Json
+      }
+      generate_promo_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
