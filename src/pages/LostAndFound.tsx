@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth"
 import LostFoundPaymentComponent from "@/components/LostFoundPaymentComponent"
 
 interface LostFoundItem {
+satvik
   id: string
   title: string
   description: string
@@ -37,6 +38,24 @@ interface LostFoundItem {
   created_at: string
   updated_at: string
   user_id?: string
+
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  contact_name: string;
+  contact_email?: string;
+  contact_phone?: string;
+  category: string;
+  item_type: 'lost' | 'found';
+  image_url?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
+  marked_complete_at?: string;
+
 }
 
 interface FormData {
@@ -322,6 +341,7 @@ export default function LostAndFound() {
     setImagePreview(null)
   }
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
             <Navbar />
@@ -329,6 +349,48 @@ export default function LostAndFound() {
         <div className="absolute inset-0 opacity-30">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:60px_60px]"></div>
         </div>
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleMarkComplete = async (itemId: string) => {
+    if (!user) {
+      toast({ title: "Authentication required", description: "Please sign in to mark items as complete.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('mark_lost_found_complete', { 
+        item_id: itemId 
+      });
+
+      if (error) throw error;
+      
+      if (data) {
+        toast({ 
+          title: "✅ Item Marked Complete!", 
+          description: "Your contact information has been anonymized and the item is now marked as resolved." 
+        });
+        refreshItems(); // Refresh the items list
+      } else {
+        toast({ 
+          title: "Unable to complete", 
+          description: "You can only mark your own items as complete.", 
+          variant: "destructive" 
+        });
+      }
+    } catch (error: any) {
+      console.error('Error marking item complete:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to mark item as complete. Please try again.", 
+        variant: "destructive" 
+      });
+    }
+  };
+
 
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
@@ -515,7 +577,83 @@ export default function LostAndFound() {
                           </div>
                         </div>
 
+
                         {paidItems[item.id] ? (
+
+      {/* Tabs for Lost/Found */}
+      <section className="py-8">
+        <div className="container mx-auto px-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto mb-8">
+              <TabsTrigger value="all">All ({items.length})</TabsTrigger>
+              <TabsTrigger value="lost">Lost ({items.filter(i => i.item_type === 'lost').length})</TabsTrigger>
+              <TabsTrigger value="found">Found ({items.filter(i => i.item_type === 'found').length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab}>
+              {error ? <DatabaseErrorFallback error={error} onRetry={refreshItems} />
+              : loading ? <div className="text-center py-12"><p>Loading items...</p></div>
+              : filteredItems.length === 0 ? <div className="text-center py-12"><h3 className="text-xl font-semibold">No items found</h3></div>
+              : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredItems.map((item) => (
+                    <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative">
+                        <img src={item.image_url || "/placeholder.svg"} alt={item.title} className="w-full h-48 object-cover" />
+                        <Badge className={`absolute top-2 left-2 ${item.item_type === "lost" ? "bg-destructive hover:bg-destructive/90" : "bg-green-500 hover:bg-green-600"}`}>
+                          {item.item_type === "lost" ? "Lost" : "Found"}
+                        </Badge>
+                        <Badge variant="secondary" className="absolute top-2 right-2">{item.category}</Badge>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
+                        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{item.description}</p>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center text-sm text-muted-foreground"><MapPin className="w-4 h-4 mr-2" />{item.location}</div>
+                          <div className="flex items-center text-sm text-muted-foreground"><Calendar className="w-4 h-4 mr-2" />{new Date(item.date).toLocaleDateString()}</div>
+                          <div className="flex items-center text-sm text-muted-foreground"><Clock className="w-4 h-4 mr-2" />Posted {new Date(item.created_at).toLocaleDateString()}</div>
+                        </div>
+                        {/* FIX 4: Removed redundant paidItemId check */}
+                        {paidItems[item.id] ? (
+                          <div className="mt-2 p-2 border rounded bg-muted">
+                            <div className="font-semibold">Contact Details:</div>
+                            <div>Name: {item.contact_name}</div>
+                            <div>Email: {item.contact_email}</div>
+                            <div>Phone: {item.contact_phone}</div>
+                          </div>
+                        ) : (
+                          <Button className="w-full" onClick={() => handleContactClick(item)}>
+                            <Phone className="w-4 h-4 mr-2" /> Contact {item.contact_name}
+                          </Button>
+                        )}
+                        
+                        {/* Mark as Complete Button - Only show for item owner */}
+                        {user?.id === item.user_id && !item.marked_complete_at && (
+                          <Button 
+                            variant="outline" 
+                            className="w-full mt-2 border-green-500 text-green-600 hover:bg-green-50"
+                            onClick={() => handleMarkComplete(item.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Mark as Complete
+                          </Button>
+                        )}
+                        
+                        {/* Completed Status */}
+                        {item.marked_complete_at && (
+                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
+                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+
 
                           <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
                             <div className="flex items-center mb-3">

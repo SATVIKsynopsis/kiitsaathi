@@ -4,7 +4,7 @@ import { Bot, ChevronDown, HelpCircle } from "lucide-react";
 const faqs = [
   {
     question: "Is this legal? Are you officially affiliated with KIIT?",
-    answer: "We're an independent student startup serving the KIIT community. While not officially affiliated with the university, we operate within all legal guidelines and focus on helping students with legitimate campus needs. We're students, for students! 👨‍🎓"
+    answer: "We are building a student-focused platform serving the KIIT community. While not officially affiliated with the university, we operate within all legal guidelines and focus on helping students with legitimate campus needs. We're students, for students! 👨‍🎓"
   },
   {
     question: "How much does it cost to use the app?",
@@ -12,7 +12,7 @@ const faqs = [
   },
   {
     question: "Who are you? Can I trust you with my assignments?",
-    answer: "We're current KIIT students who faced the same problems you do! Our team includes seniors from various branches who understand academic integrity. For assignments, we provide handwriting services, not academic dishonesty. You still need to understand the content! 📚"
+    answer: "We are building a student-focused platform with current KIIT students who faced the same problems you do! Our team includes seniors from various branches who understand academic integrity. For assignments, we provide handwriting services, not academic dishonesty. You still need to understand the content! 📚"
   },
   {
     question: "How fast is the delivery for printouts and assignments?",
