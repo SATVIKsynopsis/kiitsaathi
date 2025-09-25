@@ -46,25 +46,47 @@ const CampusMap: React.FC = () => {
 
         {/* Temporary Campus Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 25 }, (_, i) => i + 1).map((campusNum) => (
-            <div
-              key={campusNum}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500">
-                  <MapIcon className="w-4 h-4 text-white" />
+          {Array.from({ length: 25 }, (_, i) => i + 1).map((campusNum) => {
+            const isDetailed = campusNum === 1 || campusNum === 2;
+            return (
+              <div
+                key={campusNum}
+                className={`bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 transition-all cursor-pointer ${
+                  isDetailed ? 'hover:bg-white/20 hover:scale-105' : 'opacity-60'
+                }`}
+                onClick={() => {
+                  if (isDetailed) {
+                    navigate(`/campus-map/${campusNum}`);
+                  }
+                }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2 rounded-xl ${
+                    isDetailed 
+                      ? 'bg-gradient-to-r from-green-500 to-blue-500' 
+                      : 'bg-gray-500'
+                  }`}>
+                    <MapIcon className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Campus {campusNum}</h3>
+                    <p className="text-xs text-white/70">KIIT Campus {campusNum}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-white">Campus {campusNum}</h3>
-                  <p className="text-xs text-white/70">KIIT Campus {campusNum}</p>
-                </div>
+                <p className="text-sm text-white/80">
+                  {isDetailed 
+                    ? `Explore Campus ${campusNum} facilities and detailed room layout.`
+                    : `Campus ${campusNum} details coming soon.`
+                  }
+                </p>
+                {isDetailed && (
+                  <div className="mt-3 text-xs text-green-400 font-medium">
+                    ✨ Interactive Map Available
+                  </div>
+                )}
               </div>
-              <p className="text-sm text-white/80">
-                Explore Campus {campusNum} facilities and departments.
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Coming Soon Notice */}

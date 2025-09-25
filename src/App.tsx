@@ -36,6 +36,7 @@ import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
 import FoodOrderHelper from "./pages/FoodOrderHelper";
 import CampusMap from "./pages/CampusMap";
+import CampusDetailPage from "./components/campus-map/CampusDetailPage";
 import SGPACalculator from "./pages/SGPACalculator";
 import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
@@ -86,6 +87,7 @@ const App = () => {
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/chatbot" element={<ChatBotPage />} />
                 <Route path="/campus-map" element={<CampusMap />} />
+                <Route path="/campus-map/:campusId" element={<CampusDetailPage />} />
                 <Route path="/sgpa-calculator" element={<SGPACalculator />} />
                 <Route path="/resume-saathi" element={<ResumeSaathi />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />

@@ -1173,6 +1173,10 @@ export type Database = {
           image_url: string | null
           item_type: string
           location: string
+          marked_complete_at: string | null
+          original_contact_email: string | null
+          original_contact_name: string | null
+          original_contact_phone: string | null
           status: string
           title: string
           updated_at: string
@@ -1190,6 +1194,10 @@ export type Database = {
           image_url?: string | null
           item_type: string
           location: string
+          marked_complete_at?: string | null
+          original_contact_email?: string | null
+          original_contact_name?: string | null
+          original_contact_phone?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -1207,6 +1215,10 @@ export type Database = {
           image_url?: string | null
           item_type?: string
           location?: string
+          marked_complete_at?: string | null
+          original_contact_email?: string | null
+          original_contact_name?: string | null
+          original_contact_phone?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -2129,6 +2141,10 @@ export type Database = {
       log_failed_query: {
         Args: { error_details: string; query_type: string }
         Returns: undefined
+      }
+      mark_lost_found_complete: {
+        Args: { item_id: string }
+        Returns: boolean
       }
       safe_table_query: {
         Args: { query_filters?: Json; table_name: string }
