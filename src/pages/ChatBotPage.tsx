@@ -82,15 +82,15 @@ const ChatBotPage = () => {
       
       {/* Hero Section */}
       <section className="pt-24 pb-8 px-4">
-        <div className="max-w-4xl mx-auto text-center">
           <Button 
             variant="ghost" 
             onClick={() => navigate('/')}
-            className="mb-6 self-start"
+            className="mb-2 self-start"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
+        <div className="max-w-4xl mx-auto text-center">
           
           <div className="inline-flex items-center gap-2 mb-4">
             <img src={kiitMascot} alt="KIIT Buddy" className="w-12 h-12" />
@@ -99,8 +99,8 @@ const ChatBotPage = () => {
             </Badge>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-6">
-            Your 24/7 KIIT Buddy 🤖
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-6">
+            Your 24/7 KIIT Buddy 
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">

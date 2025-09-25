@@ -1375,6 +1375,39 @@ export type Database = {
         }
         Relationships: []
       }
+      policy_acceptances: {
+        Row: {
+          created_at: string
+          id: string
+          last_updated: string
+          privacy_policy_accepted: boolean
+          privacy_policy_version: string
+          terms_conditions_accepted: boolean
+          terms_conditions_version: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          privacy_policy_accepted?: boolean
+          privacy_policy_version?: string
+          terms_conditions_accepted?: boolean
+          terms_conditions_version?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          privacy_policy_accepted?: boolean
+          privacy_policy_version?: string
+          terms_conditions_accepted?: boolean
+          terms_conditions_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ppts: {
         Row: {
           branch: string
@@ -1490,44 +1523,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "print_job_audit_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "print_jobs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      print_job_notifications: {
-        Row: {
-          created_at: string
-          id: string
-          is_read: boolean | null
-          job_id: string
-          message: string
-          notification_type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          job_id: string
-          message: string
-          notification_type: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          job_id?: string
-          message?: string
-          notification_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "print_job_notifications_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "print_jobs"

@@ -516,6 +516,7 @@ export default function LostAndFound() {
                         </div>
 
                         {paidItems[item.id] ? (
+
                           <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
                             <div className="flex items-center mb-3">
                               <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
@@ -584,6 +585,58 @@ export default function LostAndFound() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-6 pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                          <div className="mt-2 p-2 border rounded bg-muted">
+                            <div className="font-semibold">Contact Details:</div>
+                            <div>Name: {item.contact_name}</div>
+                            <div>Email: {item.contact_email}</div>
+                            <div>Phone: {item.contact_phone}</div>
+                          </div>
+                        ) : (
+                          <Button className="w-full" onClick={() => handleContactClick(item)}>
+                            <Phone className="w-4 h-4 mr-2" /> Contact {item.contact_name}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+
+      {/* Payment Dialog */}
+      {showPayment.open && showPayment.item && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Unlock Contact Details</h3>
+            <p className="mb-4">Pay ₹50 to view contact details for <span className="font-semibold">{showPayment.item.title}</span>.</p>
+            <PaymentComponent
+              amount={50}
+              user_id={user?.id || ""}
+              service_name="LostAndFoundContact"
+              subservice_name={showPayment.item.title}
+              payment_method="card"
+              autoOpen={true}
+            />
+            <Button className="mt-4 w-full" variant="outline" onClick={() => setShowPayment({item: null, open: false})}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Form Dialog */}
+      <Dialog open={showUploadForm} onOpenChange={setShowUploadForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{formData.item_type === "lost" ? "📋 Post Lost Item" : "📷 Post Found Item"}</DialogTitle>
+            <DialogDescription>Fill in the details to help reunite items with their owners.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            {/* Form content remains the same */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
               <div>
                 <Label htmlFor="item_type" className="text-base font-semibold mb-3 block">
                   Type *

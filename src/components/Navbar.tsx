@@ -24,6 +24,7 @@ export const Navbar = () => {
   };
 
   const navItems = [
+    { label: "Home", href: "#home" },
     { label: "Services", href: "#services" },
     { label: "How It Works", href: "#how-it-works" },
     { label: "Testimonials", href: "#testimonials" },
@@ -58,9 +59,12 @@ export const Navbar = () => {
 
   // Scroll spy functionality
   useEffect(() => {
-    if (location.pathname !== "/") return;
+    if (location.pathname !== "/"){
+      setActiveSection("home")
+       return;
+    }
 
-    const sections = navItems.map((item) => item.href.substring(1));
+    const sections = ["home", ...navItems.map((item) => item.href.substring(1))]
 
     const observerOptions = {
       root: null,
@@ -91,7 +95,7 @@ export const Navbar = () => {
         }
       });
     };
-  }, [location.pathname]);
+  }, [location.pathname, navItems]);
 
   const isActive = (href: string) => {
     const sectionId = href.substring(1);
@@ -99,8 +103,8 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-green-500 text-white border-b border-white/20 shadow-lg">
-      <div className="container mx-auto px-4">
+    <nav className="  rounded-full fixed  w-full m-2 p-0 z-50 backdrop-blur-md bg-kiit-green  text-white border-b border-white/20 shadow-lg">
+      <div className="container mx-auto mr-4 F">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div
@@ -110,26 +114,26 @@ export const Navbar = () => {
             <img
               src={kiitMascot}
               alt="KIIT Saathi Mascot"
-              className="w-10 h-10 animate-pulse"
+              className="w-10 h-10 animate-pulse rounded-full"
             />
-            <div className="font-poppins font-bold text-2xl lg:text-xl text-blue-700 drop-shadow-lg">
+            <div className="font-poppins font-bold text-2xl lg:text-xl text-white-700 drop-shadow-lg">
               KIIT Saathi
             </div>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => navigate("/")}
+            {/* <button
+              onClick={() => { setActiveSection("home"); scrollToSection("#home");}}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${
-                location.pathname === "/"
+                isActive("#home")
                   ? "text-black bg-white/40 shadow-md"
                   : "text-white hover:text-kiit-black hover:bg-kiit-black"
               }`}
             >
               <Home className="w-5 h-5" />
               Home
-            </button>
+            </button> */}
 
             {navItems.map((item) => (
               <button
@@ -196,9 +200,10 @@ export const Navbar = () => {
               onClick={() => {
                 navigate("/");
                 setIsOpen(false);
+                setActiveSection("home");
               }}
               className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 ${
-                location.pathname === "/"
+                isActive("#home")
                   ? "text-black bg-white/40"
                   : "text-white hover:text-kiit-green hover:bg-kiit-green/5"
               }`}
