@@ -7,33 +7,41 @@ const faqs = [
     answer: "We are building a student-focused platform serving the KIIT community. While not officially affiliated with the university, we operate within all legal guidelines and focus on helping students with legitimate campus needs. We're students, for students! 👨‍🎓"
   },
   {
-    question: "How much does it cost to use the app?",
-    answer: "Many services are completely free (like our AI assistant, fest updates, campus map). Paid services have transparent pricing - printouts start at ₹2/page, assignments at ₹5/page, mentorship at ₹99/session. No hidden fees, ever! 💰"
+    question: "How much does it cost to use KIIT Saathi?",
+    answer: "Many services are completely free (like Senior Connect chat, Book Exchange, AI assistant, campus map, Split Saathi). Paid services have transparent pricing - printouts start at ₹2/page, assignments at ₹5/page, celebrations from ₹299. No hidden fees, ever! 💰"
   },
   {
-    question: "Who are you? Can I trust you with my assignments?",
-    answer: "We are building a student-focused platform with current KIIT students who faced the same problems you do! Our team includes seniors from various branches who understand academic integrity. For assignments, we provide handwriting services, not academic dishonesty. You still need to understand the content! 📚"
+    question: "Who are you? Can I trust you with my services?",
+    answer: "We are building a student-focused platform with current KIIT students who faced the same problems you do! Our team includes seniors from various branches who understand student needs. All services prioritize privacy and security. 📚"
   },
   {
-    question: "How fast is the delivery for printouts and assignments?",
-    answer: "Printouts: Usually within 2-3 hours during campus hours. Assignments: 24-48 hours depending on length and complexity. Urgent orders available for extra charges. We're faster than your friend who 'will definitely help' but never does! ⚡"
+    question: "How fast is delivery for services like printouts and assignments?",
+    answer: "Printouts: Usually within 2-3 hours during campus hours. Assignments: 24-48 hours depending on complexity. Celebrations: 2-4 hours notice for same-day setup. Book Exchange: Instant matching with other students! ⚡"
   },
   {
     question: "What if something goes wrong with my order?",
-    answer: "We've got you covered! Every order comes with our student-friendly guarantee. Issues with quality? We'll fix it free. Late delivery? You get service credits. Not satisfied? We'll work it out together or provide a refund. Our support team is always here to help make things right! 🛡️"
+    answer: "We've got you covered! Every service comes with our student-friendly guarantee. Issues with quality? We'll fix it free. Late delivery? You get service credits. Not satisfied? We'll work it out together. Our support team is always here! 🛡️"
   },
   {
-    question: "Can my parents track my usage or payments?",
-    answer: "We respect your privacy completely. Parents can't see your order history or usage patterns. Payments are discreet (shows as 'Campus Services'). Your hostel transfer and assignment needs stay between us! 🤐"
+    question: "Is my data safe? What about privacy?",
+    answer: "Absolutely! We respect your privacy completely. Your personal data is encrypted and secure. For Resume Saathi, you can delete all data after downloading. Senior Connect uses demo names only. Book exchanges are anonymous until you choose to connect. 🔒"
   },
   {
-    question: "Do you work during exams and holidays?",
-    answer: "Yes! We know that's when you need us most. Limited services during major holidays, but our AI assistant and emergency services (like printouts) are always available. Because deadlines don't take breaks! 📅"
+    question: "Do services work during exams and holidays?",
+    answer: "Yes! We know that's when you need us most. Emergency services like printouts are always available. Senior Connect, Book Exchange, and Split Saathi work 24/7. Celebrations and assignments have limited availability during major holidays. 📅"
   },
   {
-    question: "How do I know which seniors are good for mentorship?",
-    answer: "All our mentors are verified with academic records and student reviews. You can see their CGPA, branch, placement status, and previous mentee feedback. Plus, first 15 minutes are free to check compatibility! ⭐"
+    question: "How does the free Book Exchange work?",
+    answer: "Simply list books you want to give away and books you need. Our system matches you with other students. Exchange directly - no money involved! It's completely free and helps reduce textbook costs for everyone. 📖"
   },
+  {
+    question: "Is Senior Connect really anonymous and safe?",
+    answer: "Yes! You only use demo names like 'TechGuru' or 'MathWhiz'. Our AI monitors chats and blocks any phone numbers or personal info sharing. Everything stays anonymous until you choose otherwise. Perfect for getting academic help safely! 💬"
+  },
+  {
+    question: "How does Split Saathi simplify group expenses?",
+    answer: "Add your group expenses and we calculate who owes what. Our 'Simplify Debts' feature shows the minimum transactions needed to settle everything. Export summaries to share with your group. Makes group trips and shared expenses super easy! 💸"
+  }
 ];
 
 export const FAQ = () => {
@@ -63,7 +71,7 @@ export const FAQ = () => {
           </h2>
           
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Everything you need to know about using KIIT Buddy. 
+            Everything you need to know about using KIIT Saathi. 
             <span className="font-semibold text-kiit-green"> Still have questions? Just ask our AI assistant!</span>
           </p>
         </div>
