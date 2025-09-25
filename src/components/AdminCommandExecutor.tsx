@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
-import { hideServicesDirectly } from "@/utils/adminCommands";
+import { restoreServicesDirectly } from "@/utils/adminCommands";
 
 export const AdminCommandExecutor = () => {
   const [executed, setExecuted] = useState(false);
 
   useEffect(() => {
     if (!executed) {
-      const executeHideCommand = async () => {
+      const executeRestoreCommand = async () => {
         try {
-          console.log('🔧 Executing admin command: Hide the next services again');
-          const result = await hideServicesDirectly();
+          console.log('🔧 Executing admin command: Restore the hidden services');
+          const result = await restoreServicesDirectly();
           
           if (result.success) {
-            console.log('✅ Services hidden successfully:', {
-              hiddenServices: result.hidden_services,
+            console.log('✅ Services restored successfully:', {
+              restoredServices: result.restored_services,
               message: result.message
             });
-            console.log('📋 The following services are now hidden from homepage:');
+            console.log('📋 The following services are now visible on homepage:');
             console.log('- Senior Connect');
             console.log('- Handwritten Assignments');
             console.log('- Tutoring & Counselling');
@@ -26,8 +26,8 @@ export const AdminCommandExecutor = () => {
             console.log('- KIIT Saathi Celebrations');
             console.log('- KIIT Saathi Meetups');
             console.log('- Food and micro-essentials delivery');
-            console.log('🔄 Printout on Demand replaced with "More Services Coming Soon...." placeholder');
-            console.log('🔗 All internal service pages remain accessible via direct URLs');
+            console.log('🔄 Printout on Demand restored to normal functionality');
+            console.log('🔗 All services are now accessible and visible');
           } else {
             console.error('❌ Admin command failed:', result.error);
           }
@@ -39,7 +39,7 @@ export const AdminCommandExecutor = () => {
         }
       };
 
-      executeHideCommand();
+      executeRestoreCommand();
     }
   }, [executed]);
 
