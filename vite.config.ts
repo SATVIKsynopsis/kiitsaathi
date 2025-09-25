@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       // ✅ Forward /create-order to backend
       "/create-order": {
-        target: "http://localhost:3001",
+        target: "https://kiitsaathi-4.onrender.com",
         changeOrigin: true,
       },
     },

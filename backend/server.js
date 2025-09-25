@@ -16,8 +16,20 @@ const allowedOrigins = [
   "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app"
 ];
 
-// Fixed CORS configuration
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -29,14 +41,86 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-
-
-
-// Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Test Supabase connection
+    const { data, error } = await supabase
+      .from('lost_and_found_items')
+      .select('id')
+      .limit(1);
+    
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      supabase: error ? 'Error' : 'Connected',
+      razorpay: process.env.RAZORPAY_KEY_ID ? 'Configured' : 'Missing'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'Error', 
+      error: error.message,
+      timestamp: new Date().toISOString() 
+    });
+  }
 });
+
+// Test endpoint
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is running!' });
+});
+
+// Test Lost & Found order creation (simplified)
+app.post('/test-lost-found-order', async (req, res) => {
+  try {
+    console.log('🧪 Test Lost & Found Order Request:', req.body);
+    const { amount } = req.body;
+    
+    // Check if Razorpay is available
+    if (!razorpay) {
+      return res.status(500).json({ 
+        error: 'Razorpay not configured',
+        details: 'Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET environment variables'
+      });
+    }
+    
+    // Simple Razorpay order creation test
+    const order = await razorpay.orders.create({
+      amount: amount || 1500, // Default 15 rupees in paise
+      currency: 'INR',
+      receipt: 'test_' + Date.now(),
+      notes: {
+        test: 'true'
+      }
+    });
+    
+    console.log('✅ Test order created:', order.id);
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('❌ Test order error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+// Razorpay instance - only create if environment variables are available
+let razorpay = null;
+
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  try {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+    console.log('✅ Razorpay initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize Razorpay:', error.message);
+  }
+} else {
+  console.warn('⚠️  Razorpay not initialized - missing environment variables');
+}
 
 console.log('🔧 Environment Debug Info:');
 console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing');
@@ -80,6 +164,14 @@ app.get('/has-paid-contact', async (req, res) => {
 // ✅ Create Razorpay order
 app.post('/create-order', async (req, res) => {
   const { amount, currency = 'INR', receipt } = req.body;
+  
+  if (!razorpay) {
+    return res.status(500).json({ 
+      error: 'Payment service not available - Razorpay not configured',
+      details: 'Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET environment variables'
+    });
+  }
+  
   try {
     const order = await razorpay.orders.create({
       amount: amount * 100, // in paise
@@ -223,6 +315,9 @@ app.get('/orders', async (req, res) => {
 app.post('/create-lost-found-order', async (req, res) => {
   try {
     console.log('🔍 Lost & Found Order Request:', req.body);
+    console.log('🔍 Environment check - Supabase URL:', process.env.SUPABASE_URL ? 'Set' : 'Missing');
+    console.log('🔍 Environment check - Razorpay Key:', process.env.RAZORPAY_KEY_ID ? 'Set' : 'Missing');
+    
     const { amount, itemId, itemTitle, itemPosterEmail, payerUserId, receipt } = req.body;
 
     // Validate required fields
@@ -272,6 +367,11 @@ app.post('/create-lost-found-order', async (req, res) => {
       return res.status(500).json({ error: 'Failed to validate item', details: itemError });
     }
 
+    if (!itemData) {
+      console.error('❌ Item not found with ID:', itemId);
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
     console.log('⏳ Fetching user details...');
     // Get user's email to check if they're the poster
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(payerUserId);
@@ -279,6 +379,11 @@ app.post('/create-lost-found-order', async (req, res) => {
     if (userError) {
       console.error('❌ Error fetching user details:', userError);
       return res.status(500).json({ error: 'Failed to validate user', details: userError });
+    }
+
+    if (!userData?.user?.email) {
+      console.error('❌ User email not found for ID:', payerUserId);
+      return res.status(404).json({ error: 'User not found' });
     }
 
     // Prevent users from paying for their own items (both lost and found)
@@ -291,6 +396,17 @@ app.post('/create-lost-found-order', async (req, res) => {
     }
 
     console.log('⏳ Creating Razorpay order...');
+    
+    // Check if Razorpay is available
+    if (!razorpay) {
+      console.error('❌ Razorpay not initialized - missing environment variables');
+      return res.status(500).json({ 
+        error: 'Payment service not available', 
+        details: 'Razorpay not configured - missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET',
+        message: 'Payment service is temporarily unavailable. Please contact support.' 
+      });
+    }
+    
     // Create Razorpay order
     const options = {
       amount: amount, // amount in paise (15 rupees = 1500 paise)
@@ -432,4 +548,5 @@ app.get('/has-paid-lost-found-contact', async (req, res) => {
 });
 
 /* ---------------------- SERVER ---------------------- */
-app.listen(3001, () => console.log('Server running on port 3001'));
+const PORT = 3001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
