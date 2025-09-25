@@ -606,7 +606,7 @@ export default function LostAndFound() {
           </form>
         </DialogContent>
       </Dialog>      {/* Payment Dialog */}
-      {showPayment.open && showPayment.item && (
+ {showPayment.open && showPayment.item && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Unlock Contact Details</h3>
@@ -743,7 +743,7 @@ export default function LostAndFound() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors bg-muted/30">
+                 <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors bg-muted/30">
                     <input
                       type="file"
                       accept="image/*"
