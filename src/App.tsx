@@ -42,8 +42,11 @@ import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import { useEffect } from "react";
+import { lazy } from "react";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
+
+import BakeryDashboard from "./pages/BakeryDashboard";
 
 const queryClient = new QueryClient();
 
@@ -92,7 +95,8 @@ const App = () => {
                 <Route path="/resume-saathi" element={<ResumeSaathi />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                <Route path="*" element={<NotFound />} />
+              <Route path="/bakery-dashboard" element={<BakeryDashboard />} />
+              <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>

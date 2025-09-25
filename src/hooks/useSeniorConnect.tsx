@@ -130,46 +130,6 @@ export function useSeniorConnect() {
     }
   }, [user]);
 
-  // Send message with content filtering
-  const sendMessage = useCallback(async (sessionId: string, message: string): Promise<boolean> => {
-    if (!user) {
-      toast.error('You must be logged in to send messages');
-      return false;
-    }
-
-    // Check message safety
-    const safetyCheck = checkContentSafety(message);
-    if (!safetyCheck.safe) {
-      toast.error(`⚠️ Message blocked: ${safetyCheck.reason}. Sharing personal numbers is strictly prohibited.`);
-      return false;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .insert({
-          session_id: sessionId,
-          sender_id: user.id,
-          message: message.trim()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Add to local messages immediately for better UX
-      setMessages(prev => [...prev, data]);
-      return true;
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
   // Load messages for a session
   const loadMessages = useCallback(async (sessionId: string) => {
     try {
@@ -187,6 +147,43 @@ export function useSeniorConnect() {
       toast.error('Failed to load messages');
     }
   }, []);
+
+  // Send message with content filtering
+  const sendMessage = useCallback(async (sessionId: string, message: string): Promise<boolean> => {
+    if (!user) {
+      toast.error('You must be logged in to send messages');
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      // Use moderation edge function
+      const { data, error } = await supabase.functions.invoke('moderate-chat-message', {
+        body: {
+          message: message.trim(),
+          sessionId,
+          senderId: user.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (!data.allowed) {
+        toast.error(data.warningMessage || 'Message blocked due to policy violation');
+        return false;
+      }
+
+      // Reload messages to get the new message
+      await loadMessages(sessionId);
+      return true;
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, loadMessages]);
 
   // End chat session
   const endChatSession = useCallback(async (sessionId: string): Promise<boolean> => {

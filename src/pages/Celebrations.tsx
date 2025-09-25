@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { PromoCodeDisplay } from "@/components/PromoCodeDisplay";
 import { 
   Heart, 
   Gift, 
@@ -106,6 +107,9 @@ const howItWorks = [
 
 export default function Celebrations() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPromoCode, setShowPromoCode] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [orderDetails, setOrderDetails] = useState<any>(null);
 
   const form = useForm<CelebrationFormData>({
     resolver: zodResolver(celebrationSchema)
@@ -120,12 +124,21 @@ export default function Celebrations() {
 
       if (error) throw error;
 
+      // Store the promo code and order details for display
+      setPromoCode(result.promoCode);
+      setOrderDetails({
+        celebrationType: data.celebrationType,
+        dateTime: data.dateTime,
+        venueLocation: data.venueLocation,
+        specialRequests: data.specialRequests
+      });
+      setShowPromoCode(true);
+
       toast({
         title: "Celebration Booked! 🎉",
-        description: "We'll contact you soon to finalize the details and make this celebration unforgettable!"
+        description: "Your promo code has been generated. Share it with your chosen bakery!"
       });
       
-      form.reset();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -261,10 +274,16 @@ export default function Celebrations() {
         </div>
       </section>
 
-      {/* Booking Form */}
+      {/* Booking Form or Promo Code Display */}
       <section id="booking-form" className="py-16 px-4">
         <div className="container mx-auto max-w-2xl">
-          <Card className="glass-card border-2 border-white/30">
+          {showPromoCode && promoCode && orderDetails ? (
+            <PromoCodeDisplay 
+              promoCode={promoCode} 
+              orderDetails={orderDetails}
+            />
+          ) : (
+            <Card className="glass-card border-2 border-white/30">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-poppins">
                 <span className="bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent">
@@ -394,6 +413,7 @@ export default function Celebrations() {
               </form>
             </CardContent>
           </Card>
+          )}
         </div>
       </section>
 
