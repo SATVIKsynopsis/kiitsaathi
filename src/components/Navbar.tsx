@@ -103,8 +103,8 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="  rounded-full fixed  w-full m-2 p-0 z-50 backdrop-blur-md bg-kiit-green  text-white border-b border-white/20 shadow-lg">
-      <div className="container mx-auto mr-4 F">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-kiit-green text-white border-b border-white/20 shadow-lg mx-2 mt-2 rounded-full">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div
@@ -116,7 +116,7 @@ export const Navbar = () => {
               alt="KIIT Saathi Mascot"
               className="w-10 h-10 animate-pulse rounded-full"
             />
-            <div className="font-poppins font-bold text-2xl lg:text-xl text-white-700 drop-shadow-lg">
+            <div className="font-poppins font-bold text-lg sm:text-xl lg:text-2xl text-white-700 drop-shadow-lg">
               KIIT Saathi
             </div>
           </div>

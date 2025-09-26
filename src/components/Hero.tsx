@@ -262,13 +262,13 @@ export const Hero = () => {
 
             {/* Main Heading */}
             <div className="space-y-4 my-4">
-              <h1 className="text-5xl lg:text-5xl font-poppins font-bold text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-poppins font-bold text-white leading-tight">
                 One app that
                 <span className="block text-white">solves all</span>
                 your campus needs
               </h1>
 
-              <p className="text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
+              <p className="text-lg sm:text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
                 From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
               </p>
 
@@ -298,28 +298,28 @@ export const Hero = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="flex flex-wrap gap-8 justify-center lg:justify-start pt-8">
+            <div className="flex flex-wrap gap-4 sm:gap-8 justify-center lg:justify-start pt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">More than 7</div>
-                <div className="text-white/70 font-medium">Campus Services</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">More than 7</div>
+                <div className="text-sm sm:text-base text-white/70 font-medium">Campus Services</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">24/7</div>
-                <div className="text-white/70 font-medium">AI Assistant</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">24/7</div>
+                <div className="text-sm sm:text-base text-white/70 font-medium">AI Assistant</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">100%</div>
-                <div className="text-white/70 font-medium">KIIT Focused</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">100%</div>
+                <div className="text-sm sm:text-base text-white/70 font-medium">KIIT Focused</div>
               </div>
             </div>
           </div>
 
           {/* Right Content - Mascot and Campus */}
-          <div className="relative mt-8">
+          <div className="relative mt-8 lg:mt-0">
             {/* Campus Background */}
             <div className="relative">
               <div className="flex flex-col items-center">
-                <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
+                <div className="w-full max-w-[600px] h-[240px] sm:h-[300px] lg:h-[360px] overflow-hidden relative rounded-3xl">
                   <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
                     <img src={heroCampus} className="w-full flex-shrink-0" alt="Slide 3" />
                     <img src={KiiTSchoolofArch} className="w-full flex-shrink-0" alt="Slide 1" />

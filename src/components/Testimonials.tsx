@@ -50,24 +50,24 @@ export const Testimonials = () => {
     <section id="testimonials" className="py-10 bg-gradient-to-br from-white to-kiit-green-soft">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 px-4">
           <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
             <Star className="w-4 h-4" />
             Student Love
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
             What KIIT Students
             <span className="block">Are Saying</span>
           </h2>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             Don't just take our word for it — hear from your fellow KIITians who've made their campus life easier!
           </p>
         </div>
 
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-4">
           {testimonials.map((testimonial, index) => (
             <div 
               key={index}
@@ -106,22 +106,14 @@ export const Testimonials = () => {
         </div>
 
         {/* Stats */}
-        <div className="mt-16 flex justify-around ">
-          {/* <div className="text-center">
-            <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">2000+</div>
-            <div className="text-muted-foreground font-medium">Happy Students</div>
-          </div> */}
+        <div className="mt-12 flex flex-col sm:flex-row justify-around gap-6 px-4">
           <div className="text-center">
-            <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">4.9⭐</div>
-            <div className="text-muted-foreground font-medium">Average Rating</div>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient mb-2">4.9⭐</div>
+            <div className="text-sm sm:text-base text-muted-foreground font-medium">Average Rating</div>
           </div>
-          {/* <div className="text-center">
-            <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">50K+</div>
-            <div className="text-muted-foreground font-medium">Services Delivered</div>
-          </div> */}
           <div className="text-center">
-            <div className="text-3xl lg:text-4xl font-bold text-gradient mb-2">24/7</div>
-            <div className="text-muted-foreground font-medium">Support Available</div>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient mb-2">24/7</div>
+            <div className="text-sm sm:text-base text-muted-foreground font-medium">Support Available</div>
           </div>
         </div>
       </div>

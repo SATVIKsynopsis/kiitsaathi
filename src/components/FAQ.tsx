@@ -59,44 +59,44 @@ export const FAQ = () => {
     <section id="faq" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 px-4">
           <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
             <HelpCircle className="w-4 h-4" />
             Got Questions?
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
             Frequently Asked
             <span className="block">Questions</span>
           </h2>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             Everything you need to know about using KIIT Saathi. 
             <span className="font-semibold text-kiit-green"> Still have questions? Just ask our AI assistant!</span>
           </p>
         </div>
 
         {/* FAQ List */}
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-4 px-4">
           {faqs.map((faq, index) => (
             <div key={index} className="glass-card overflow-hidden">
               <button
                 onClick={() => toggleItem(index)}
-                className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-kiit-green-soft/50 transition-colors"
+                className="w-full px-4 sm:px-6 py-4 sm:py-5 text-left flex items-start sm:items-center justify-between hover:bg-kiit-green-soft/50 transition-colors"
               >
-                <h3 className="text-lg font-semibold text-foreground pr-4">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground pr-4 leading-snug">
                   {faq.question}
                 </h3>
                 <ChevronDown 
-                  className={`w-5 h-5 text-kiit-green transition-transform duration-300 ${
+                  className={`w-5 h-5 text-kiit-green transition-transform duration-300 flex-shrink-0 mt-1 sm:mt-0 ${
                     openItems.includes(index) ? 'rotate-180' : ''
                   }`} 
                 />
               </button>
               
               {openItems.includes(index) && (
-                <div className="px-6 pb-6 border-t border-white/20">
-                  <p className="text-muted-foreground leading-relaxed pt-4">
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-white/20">
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-4">
                     {faq.answer}
                   </p>
                 </div>
@@ -106,17 +106,18 @@ export const FAQ = () => {
         </div>
 
         {/* Contact CTA */}
-        <div className="text-center mt-12">
-          <div className="glass-card p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-poppins font-bold text-gradient mb-4">
+        <div className="text-center mt-12 px-4">
+          <div className="glass-card p-6 sm:p-8 max-w-2xl mx-auto">
+            <h3 className="text-xl sm:text-2xl font-poppins font-bold text-gradient mb-4">
               Still need help?
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-sm sm:text-base text-muted-foreground mb-6">
               Our AI assistant is available 24/7, or you can reach out to our student support team on WhatsApp!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 bg-gradient-to-r from-campus-purple to-campus-orange text-white rounded-lg font-semibold hover:shadow-lg transition-all">
-                <Bot height={20} width={20} /> Ask AI Assistant
+              <button className="px-6 py-3 bg-gradient-to-r from-campus-purple to-campus-orange text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                <Bot height={20} width={20} /> 
+                Ask AI Assistant
               </button>
             </div>
           </div>
