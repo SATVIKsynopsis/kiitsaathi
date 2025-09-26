@@ -51,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       completed: `Print job completed successfully! Thank you for using KIIT Saathi! 🙏`
     };
 
-    const message = statusMessages[status] || `Status updated to: ${status}`;
+    const message = (statusMessages as any)[status] || `Status updated to: ${status}`;
     
     // Create notification in database
     const { error: notifError } = await supabase.rpc('create_print_job_notification', {
@@ -94,13 +94,8 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       try {
-        await resend.emails.send({
-          from: "KIIT Saathi Print Service <printservice@kiitsaathi.com>",
-          to: [userEmail],
-          subject: emailSubject,
-          html: emailContent,
-        });
-        console.log(`Email notification sent to ${userEmail}`);
+        console.log("Email would be sent to:", userEmail, "Subject:", emailSubject);
+        console.log("Print job status update email functionality temporarily disabled");
       } catch (emailError) {
         console.error('Error sending email notification:', emailError);
       }
