@@ -5,7 +5,6 @@ import {
   MessageCircle, 
   Phone, 
   Video, 
-  MapPin,
   Heart,
   Users,
   Sparkles
@@ -39,15 +38,6 @@ const MentorshipFeatures = () => {
       color: "from-campus-purple to-campus-purple/80",
       bgColor: "from-campus-purple/10 to-campus-purple/5",
       delay: 0.3
-    },
-    {
-      id: "meetup",
-      icon: MapPin,
-      title: "Physical Meetup",
-      description: "In-person campus meetings because some conversations are best had in person",
-      color: "from-campus-orange to-campus-orange/80", 
-      bgColor: "from-campus-orange/10 to-campus-orange/5",
-      delay: 0.4
     }
   ];
 
@@ -101,7 +91,7 @@ const MentorshipFeatures = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
