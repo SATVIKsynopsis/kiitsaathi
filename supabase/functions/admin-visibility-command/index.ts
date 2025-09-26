@@ -59,11 +59,10 @@ serve(async (req) => {
         visible: false 
       }));
       
-      // Add printout placeholder
+      // Add printout placeholder (removing replaced_text as it's not in the schema)
       updates.push({
         service_id: 'printout-on-demand',
-        visible: false,
-        replaced_text: 'More Services Coming Soon....'
+        visible: false
       });
 
       for (const update of updates) {
@@ -71,7 +70,6 @@ serve(async (req) => {
           .from('service_visibility')
           .update({
             visible: update.visible,
-            replaced_text: update.replaced_text || null,
             updated_at: new Date().toISOString()
           })
           .eq('service_id', update.service_id);
@@ -102,11 +100,10 @@ serve(async (req) => {
         visible: true 
       }));
       
-      // Restore printout service
+      // Restore printout service (removing replaced_text)
       updates.push({
         service_id: 'printout-on-demand',
-        visible: true,
-        replaced_text: null
+        visible: true
       });
 
       for (const update of updates) {
@@ -114,7 +111,6 @@ serve(async (req) => {
           .from('service_visibility')
           .update({
             visible: update.visible,
-            replaced_text: update.replaced_text,
             updated_at: new Date().toISOString()
           })
           .eq('service_id', update.service_id);
@@ -148,10 +144,10 @@ serve(async (req) => {
       );
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in admin visibility command:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ error: 'Internal server error', details: error?.message || 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

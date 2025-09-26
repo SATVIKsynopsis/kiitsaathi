@@ -37,9 +37,9 @@ serve(async (req) => {
       isBlocked = true;
       flaggedReason = 'Contains WhatsApp reference';
     } else if (numericRegex.test(message)) {
-      // Additional check for suspicious numeric strings
+      // Additional check for suspicious numeric strings (fixed type annotation)
       const numericMatches = message.match(numericRegex) || [];
-      if (numericMatches.some(match => match.length >= 10)) {
+      if (numericMatches.some((match: string) => match.length >= 10)) {
         isBlocked = true;
         flaggedReason = 'Contains suspicious numeric string';
       }
@@ -96,11 +96,11 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in moderate-chat-message function:', error);
     return new Response(JSON.stringify({ 
       error: 'Internal server error',
-      details: error.message 
+      details: error?.message || 'Unknown error' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

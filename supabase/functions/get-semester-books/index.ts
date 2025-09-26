@@ -17,9 +17,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Initialize Supabase client
-    const supabaseUrl = globalThis['SUPABASE_URL'] as string;
-    const supabaseKey = globalThis['SUPABASE_SERVICE_ROLE_KEY'] as string;
+    // Initialize Supabase client using proper environment variable access
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     if (req.method === 'GET') {
