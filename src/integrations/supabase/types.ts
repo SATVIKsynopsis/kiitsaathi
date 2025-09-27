@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_actions: {
+        Row: {
+          action_type: string
+          admin_email: string
+          admin_user_id: string | null
+          created_at: string | null
+          id: string
+          payload: Json | null
+          reason: string | null
+          target_id: string
+          target_table: string
+        }
+        Insert: {
+          action_type: string
+          admin_email: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          reason?: string | null
+          target_id: string
+          target_table: string
+        }
+        Update: {
+          action_type?: string
+          admin_email?: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          reason?: string | null
+          target_id?: string
+          target_table?: string
+        }
+        Relationships: []
+      }
       assignment_files: {
         Row: {
           assignment_id: string
@@ -1330,6 +1366,72 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_event_requests: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          end_time: string | null
+          event_date: string
+          event_name: string
+          id: string
+          notes: string | null
+          organiser: string
+          rejection_reason: string | null
+          requester_email: string
+          requirements: string[] | null
+          society_name: string
+          start_time: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          validation: boolean | null
+          venue: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          end_time?: string | null
+          event_date: string
+          event_name: string
+          id?: string
+          notes?: string | null
+          organiser: string
+          rejection_reason?: string | null
+          requester_email: string
+          requirements?: string[] | null
+          society_name: string
+          start_time?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          validation?: boolean | null
+          venue: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          end_time?: string | null
+          event_date?: string
+          event_name?: string
+          id?: string
+          notes?: string | null
+          organiser?: string
+          rejection_reason?: string | null
+          requester_email?: string
+          requirements?: string[] | null
+          society_name?: string
+          start_time?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          validation?: boolean | null
+          venue?: string
+        }
+        Relationships: []
+      }
       lost_and_found_items: {
         Row: {
           category: string
@@ -1392,6 +1494,72 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      lost_found_requests: {
+        Row: {
+          category: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string | null
+          description: string | null
+          file_name: string | null
+          id: string
+          image_url: string | null
+          item_type: string
+          location: string
+          metadata: Json | null
+          rejection_reason: string | null
+          requester_email: string
+          status: string | null
+          storage_path: string | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at?: string | null
+          description?: string | null
+          file_name?: string | null
+          id?: string
+          image_url?: string | null
+          item_type: string
+          location: string
+          metadata?: Json | null
+          rejection_reason?: string | null
+          requester_email: string
+          status?: string | null
+          storage_path?: string | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string | null
+          description?: string | null
+          file_name?: string | null
+          id?: string
+          image_url?: string | null
+          item_type?: string
+          location?: string
+          metadata?: Json | null
+          rejection_reason?: string | null
+          requester_email?: string
+          status?: string | null
+          storage_path?: string | null
+          title?: string
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -1832,6 +2000,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          is_admin: boolean | null
           role: string | null
           updated_at: string | null
         }
@@ -1840,6 +2009,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          is_admin?: boolean | null
           role?: string | null
           updated_at?: string | null
         }
@@ -1848,6 +2018,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_admin?: boolean | null
           role?: string | null
           updated_at?: string | null
         }
@@ -2354,6 +2525,10 @@ export type Database = {
       handle_db_error: {
         Args: { error_message: string }
         Returns: Json
+      }
+      is_admin_user: {
+        Args: { user_uuid?: string }
+        Returns: boolean
       }
       is_group_creator: {
         Args: { _group_id: string; _user_id: string }

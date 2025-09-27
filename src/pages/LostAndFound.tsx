@@ -206,12 +206,25 @@ export default function LostAndFound() {
       ) {
         throw new Error("Please fill in all required fields")
       }
+      
       const imageUrl = selectedImage ? await uploadImage(selectedImage) : undefined
-      await addItem({ ...formData, image_url: imageUrl })
+      
+      // Submit to pending requests table instead of direct publication
+      const { error } = await supabase
+        .from('lost_found_requests')
+        .insert({
+          ...formData,
+          image_url: imageUrl,
+          requester_email: user.email,
+          user_id: user.id,
+          status: 'pending'
+        });
+
+      if (error) throw error;
 
       toast({
-        title: "✅ Posted Successfully!",
-        description: "Your item has been posted and is now visible to everyone.",
+        title: "✅ Submitted Successfully!",
+        description: "Your submission is under review. You'll be notified once it's approved.",
       })
       setFormData({
         title: "",
@@ -231,7 +244,7 @@ export default function LostAndFound() {
       console.error("Error submitting item:", error)
       toast({
         title: "Error",
-        description: error.message || "Failed to post item. Please try again.",
+        description: error.message || "Failed to submit item. Please try again.",
         variant: "destructive",
       })
     } finally {

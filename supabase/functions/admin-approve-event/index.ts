@@ -1,0 +1,149 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
+// Remove Resend for now - will be added when email notifications are needed
+// import { Resend } from "npm:resend@4.0.0";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+  { auth: { persistSession: false } }
+);
+
+// const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { requestId, adminUserId } = await req.json();
+    
+    // Verify admin access
+    const { data: adminProfile, error: adminError } = await supabase
+      .from('profiles')
+      .select('is_admin, email')
+      .eq('id', adminUserId)
+      .single();
+      
+    if (adminError || !adminProfile?.is_admin) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get the request details
+    const { data: request, error: requestError } = await supabase
+      .from('interview_event_requests')
+      .select('*')
+      .eq('id', requestId)
+      .eq('status', 'pending')
+      .single();
+      
+    if (requestError || !request) {
+      return new Response(
+        JSON.stringify({ error: 'Request not found or already processed' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Move to public calendar_events table
+    const { data: newEvent, error: insertError } = await supabase
+      .from('calendar_events')
+      .insert({
+        society_name: request.society_name,
+        event_name: request.event_name,
+        description: request.description,
+        category: request.category,
+        event_date: request.event_date,
+        start_time: request.start_time,
+        end_time: request.end_time,
+        venue: request.venue,
+        organiser: request.organiser,
+        requirements: request.requirements,
+        validation: true // Auto-validate admin-approved events
+      })
+      .select()
+      .single();
+      
+    if (insertError) {
+      console.error('Error inserting to calendar_events:', insertError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to publish event' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Update request status
+    await supabase
+      .from('interview_event_requests')
+      .update({ status: 'approved' })
+      .eq('id', requestId);
+
+    // Log admin action
+    await supabase
+      .from('admin_actions')
+      .insert({
+        admin_email: adminProfile.email,
+        admin_user_id: adminUserId,
+        action_type: 'approve_event',
+        target_table: 'interview_event_requests',
+        target_id: requestId,
+        payload: { event_name: request.event_name, society: request.society_name }
+      });
+
+    // Send approval email to requester
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: 'KIIT Saathi <noreply@ksaathi.vercel.app>',
+          to: [request.requester_email],
+          subject: `🎉 Your event "${request.event_name}" has been approved!`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #10B981;">Congratulations! Your event has been approved</h2>
+              <p>Hello,</p>
+              <p>Your event "<strong>${request.event_name}</strong>" has been approved and is now live on the KIIT Saathi Interview Deadlines Tracker!</p>
+              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h4>Event Details:</h4>
+                <p><strong>Event:</strong> ${request.event_name}</p>
+                <p><strong>Society:</strong> ${request.society_name}</p>
+                <p><strong>Date:</strong> ${request.event_date}</p>
+                <p><strong>Time:</strong> ${request.start_time} - ${request.end_time}</p>
+                <p><strong>Venue:</strong> ${request.venue}</p>
+                <p><strong>Category:</strong> ${request.category}</p>
+              </div>
+              <p>You can view it here: <a href="https://ksaathi.vercel.app/interview-deadlines-tracker">KIIT Saathi Events Tracker</a></p>
+              <p>Students can now discover and add your event to their calendars!</p>
+              <p>Thank you for using KIIT Saathi!</p>
+            </div>
+          `
+        });
+      } catch (emailError) {
+        console.warn('Email notification failed:', emailError);
+      }
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Event approved successfully',
+        publicEventId: newEvent.id
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Admin approve event error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
