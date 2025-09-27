@@ -1,8 +1,6 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Html } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Building, Layers, RotateCcw } from 'lucide-react';
 
 interface Room {
   id: string;
@@ -27,118 +25,7 @@ interface Map3DProps {
   highlightRoom: string | null;
 }
 
-// Convert SVG path to THREE.Shape (simplified rectangular rooms)
-const pathToShape = (path: string): THREE.Shape => {
-  const shape = new THREE.Shape();
-  
-  // Parse simple rectangular path (M x y L x y L x y L x y Z)
-  const coords = path.match(/\d+\.?\d*/g)?.map(Number) || [];
-  if (coords.length >= 8) {
-    const [x1, y1, , , x2, y2] = coords;
-    const width = Math.abs(x2 - x1) / 100; // Scale down
-    const height = Math.abs(y2 - y1) / 100;
-    
-    shape.moveTo(0, 0);
-    shape.lineTo(width, 0);
-    shape.lineTo(width, height);
-    shape.lineTo(0, height);
-    shape.lineTo(0, 0);
-  }
-  
-  return shape;
-};
-
-// Individual room component
-const Room3D: React.FC<{
-  room: Room;
-  floor: number;
-  isSelected: boolean;
-  isHighlighted: boolean;
-  onClick: () => void;
-}> = ({ room, floor, isSelected, isHighlighted, onClick }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-  
-  // Position based on centroid
-  const x = (room.centroid.xPct - 0.5) * 12; // Center and scale
-  const z = (0.5 - room.centroid.yPct) * 8; // Flip Y and scale
-  const y = floor * 0.5; // Stack floors
-  
-  // Create geometry from room shape
-  const shape = pathToShape(room.path);
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.4,
-    bevelEnabled: false
-  });
-  
-  // Material based on state
-  const getMaterial = () => {
-    if (isSelected || isHighlighted) {
-      return new THREE.MeshLambertMaterial({ 
-        color: '#10b981',
-        emissive: '#10b981',
-        emissiveIntensity: 0.2
-      });
-    }
-    if (hovered) {
-      return new THREE.MeshLambertMaterial({ 
-        color: '#3b82f6',
-        emissive: '#3b82f6',
-        emissiveIntensity: 0.1
-      });
-    }
-    return new THREE.MeshLambertMaterial({ 
-      color: floor === 0 ? '#e5e7eb' : '#f3f4f6'
-    });
-  };
-
-  useFrame(() => {
-    if (meshRef.current && (isSelected || isHighlighted)) {
-      meshRef.current.rotation.y += 0.01;
-    }
-  });
-
-  return (
-    <group position={[x, y, z]}>
-      <mesh
-        ref={meshRef}
-        geometry={geometry}
-        material={getMaterial()}
-        onClick={onClick}
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
-      />
-      
-      {/* Room label */}
-      <Text
-        position={[0.5, 0.6, 0.5]}
-        fontSize={0.15}
-        color={isSelected || isHighlighted ? '#10b981' : '#374151'}
-        anchorX="center"
-        anchorY="middle"
-      >
-        {room.label}
-      </Text>
-      
-      {/* Floating info when selected */}
-      {isSelected && (
-        <Html position={[0.5, 1, 0.5]} center>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-background/95 backdrop-blur-sm border border-border 
-                     rounded-lg p-2 shadow-lg pointer-events-none"
-          >
-            <div className="text-sm font-medium">{room.label}</div>
-            <div className="text-xs text-muted-foreground">{room.description}</div>
-          </motion.div>
-        </Html>
-      )}
-    </group>
-  );
-};
-
-// Building structure component
+// CSS-based 3D building visualization component
 const Building3D: React.FC<Map3DProps> = ({ 
   groundFloor, 
   firstFloor, 
@@ -146,140 +33,125 @@ const Building3D: React.FC<Map3DProps> = ({
   onRoomSelect, 
   highlightRoom 
 }) => {
-  const { camera } = useThree();
+  const [perspective, setPerspective] = useState<'isometric' | 'side' | 'front'>('isometric');
   
-  // Camera presets
-  const setCameraView = (preset: 'overview' | 'ground' | 'first') => {
-    switch (preset) {
-      case 'overview':
-        camera.position.set(8, 6, 8);
-        break;
-      case 'ground':
-        camera.position.set(0, 2, 6);
-        break;
-      case 'first':
-        camera.position.set(0, 3, 6);
-        break;
-    }
+  const renderFloor = (floorData: FloorData, floorLevel: number) => {
+    const floorId = floorLevel === 0 ? 'ground' : 'first';
+    
+    return (
+      <div 
+        key={floorId}
+        className={`absolute w-80 h-48 border-2 border-gray-400 bg-gray-100/90 
+                   transform transition-all duration-700 ${
+          perspective === 'isometric' 
+            ? `translate-y-${floorLevel * 12} -translate-x-${floorLevel * 8} rotate-12 skew-x-12`
+            : perspective === 'side'
+            ? `translate-y-${floorLevel * 24}`
+            : 'translate-y-0'
+        }`}
+        style={{
+          transformStyle: 'preserve-3d',
+          zIndex: 10 - floorLevel,
+        }}
+      >
+        {/* Floor label */}
+        <div className="absolute -top-6 left-2 text-xs font-medium text-gray-600">
+          {floorData.label}
+        </div>
+        
+        {/* Rooms grid */}
+        <div className="grid grid-cols-8 grid-rows-6 gap-px p-2 h-full">
+          {floorData.rooms.map((room, index) => {
+            const isSelected = selectedRoom === room.id;
+            const isHighlighted = highlightRoom === room.id;
+            
+            return (
+              <div
+                key={room.id}
+                onClick={() => onRoomSelect(room.id)}
+                className={`
+                  border border-gray-300 cursor-pointer transition-all duration-200
+                  flex items-center justify-center text-xs font-medium
+                  ${isSelected || isHighlighted 
+                    ? 'bg-primary text-primary-foreground shadow-lg' 
+                    : 'bg-white hover:bg-accent hover:text-accent-foreground'
+                  }
+                  ${isHighlighted ? 'animate-pulse' : ''}
+                `}
+                title={room.description}
+              >
+                {room.label}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <>
-      {/* Lighting */}
-      <ambientLight intensity={0.6} />
-      <directionalLight 
-        position={[10, 10, 5]} 
-        intensity={0.8}
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-      />
-      <pointLight position={[0, 5, 0]} intensity={0.4} />
+    <div className="flex flex-col items-center justify-center h-full relative">
+      {/* Perspective controls */}
+      <div className="absolute top-4 right-4 z-20 flex gap-2">
+        <button
+          onClick={() => setPerspective('isometric')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                   ${perspective === 'isometric' 
+                     ? 'bg-primary text-primary-foreground' 
+                     : 'bg-background/90 backdrop-blur-sm border border-border hover:bg-accent'}`}
+        >
+          <Layers className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setPerspective('side')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                   ${perspective === 'side' 
+                     ? 'bg-primary text-primary-foreground' 
+                     : 'bg-background/90 backdrop-blur-sm border border-border hover:bg-accent'}`}
+        >
+          <Building className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setPerspective('front')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                   ${perspective === 'front' 
+                     ? 'bg-primary text-primary-foreground' 
+                     : 'bg-background/90 backdrop-blur-sm border border-border hover:bg-accent'}`}
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+      </div>
 
-      {/* Building base */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <boxGeometry args={[14, 0.2, 10]} />
-        <meshLambertMaterial color="#d1d5db" />
-      </mesh>
-
-      {/* Ground floor rooms */}
-      {groundFloor.rooms.map((room) => (
-        <Room3D
-          key={`ground-${room.id}`}
-          room={room}
-          floor={0}
-          isSelected={selectedRoom === room.id}
-          isHighlighted={highlightRoom === room.id}
-          onClick={() => onRoomSelect(room.id)}
-        />
-      ))}
-
-      {/* First floor rooms */}
-      {firstFloor.rooms.map((room) => (
-        <Room3D
-          key={`first-${room.id}`}
-          room={room}
-          floor={1}
-          isSelected={selectedRoom === room.id}
-          isHighlighted={highlightRoom === room.id}
-          onClick={() => onRoomSelect(room.id)}
-        />
-      ))}
-
-      {/* Floor labels */}
-      <Text
-        position={[-6, 0.2, -4]}
-        fontSize={0.3}
-        color="#374151"
-        anchorX="left"
+      {/* Building visualization */}
+      <div 
+        className="relative"
+        style={{ 
+          perspective: '1000px',
+          transformStyle: 'preserve-3d'
+        }}
       >
-        Ground Floor
-      </Text>
-      
-      <Text
-        position={[-6, 0.7, -4]}
-        fontSize={0.3}
-        color="#374151"
-        anchorX="left"
-      >
-        First Floor
-      </Text>
+        {renderFloor(firstFloor, 1)}
+        {renderFloor(groundFloor, 0)}
+      </div>
 
-      {/* Camera controls */}
-      <OrbitControls
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
-        minDistance={3}
-        maxDistance={20}
-        minPolarAngle={0}
-        maxPolarAngle={Math.PI / 2}
-      />
-    </>
+      {/* Info panel */}
+      <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-sm 
+                    border border-border rounded-lg p-4 text-sm">
+        <div className="font-medium mb-2">Campus 25 - 3D View</div>
+        <div className="text-muted-foreground space-y-1">
+          <div>• Click perspective buttons to change view</div>
+          <div>• Click rooms to select and focus</div>
+          <div>• Hover for room details</div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 const Map3D: React.FC<Map3DProps> = (props) => {
   return (
     <div className="relative w-full h-full bg-gradient-to-b from-sky-100 to-sky-50 rounded-xl overflow-hidden">
-      {/* Camera Controls */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-        <button className="px-3 py-2 bg-background/90 backdrop-blur-sm border border-border 
-                         rounded-lg text-sm hover:bg-accent transition-colors">
-          Overview
-        </button>
-        <button className="px-3 py-2 bg-background/90 backdrop-blur-sm border border-border 
-                         rounded-lg text-sm hover:bg-accent transition-colors">
-          Ground Floor
-        </button>
-        <button className="px-3 py-2 bg-background/90 backdrop-blur-sm border border-border 
-                         rounded-lg text-sm hover:bg-accent transition-colors">
-          First Floor
-        </button>
-      </div>
-
-      {/* 3D Canvas */}
-      <Canvas
-        shadows
-        camera={{ position: [8, 6, 8], fov: 60 }}
-        className="w-full h-full"
-      >
-        <Suspense fallback={null}>
-          <Building3D {...props} />
-        </Suspense>
-      </Canvas>
-
-      {/* Loading overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <motion.div
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          className="bg-background/80 backdrop-blur-sm rounded-lg p-4"
-        >
-          <div className="text-sm text-muted-foreground">Loading 3D view...</div>
-        </motion.div>
-      </div>
+      <Building3D {...props} />
     </div>
   );
 };

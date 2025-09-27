@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Command } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Fuse from 'fuse.js';
 
 interface Room {
   id: string;
@@ -28,12 +27,44 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Fuse.js for fuzzy search
-  const fuse = new Fuse(rooms, {
-    keys: ['id', 'label', 'description'],
-    threshold: 0.3,
-    includeScore: true
-  });
+  // Simple fuzzy search function (native JavaScript replacement for Fuse.js)
+  const fuzzySearch = (query: string, rooms: Room[]): Room[] => {
+    if (!query.trim()) return [];
+    
+    const searchTerm = query.toLowerCase();
+    
+    return rooms
+      .map(room => {
+        let score = 0;
+        const id = room.id.toLowerCase();
+        const label = room.label.toLowerCase();
+        const description = room.description.toLowerCase();
+        
+        // Exact matches get highest score
+        if (id === searchTerm || label === searchTerm) score += 100;
+        else if (id.includes(searchTerm) || label.includes(searchTerm)) score += 50;
+        else if (description.includes(searchTerm)) score += 25;
+        
+        // Character matching for partial matches
+        if (score === 0) {
+          let matchCount = 0;
+          for (let i = 0; i < searchTerm.length; i++) {
+            if (id.includes(searchTerm[i]) || label.includes(searchTerm[i])) {
+              matchCount++;
+            }
+          }
+          if (matchCount > searchTerm.length * 0.5) {
+            score = matchCount * 2;
+          }
+        }
+        
+        return { room, score };
+      })
+      .filter(result => result.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(result => result.room)
+      .slice(0, 8);
+  };
 
   // Handle global keyboard shortcuts
   useEffect(() => {
@@ -55,15 +86,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
   // Handle search and filter results
   useEffect(() => {
     if (query.trim()) {
-      const searchResults = fuse.search(query).map(result => result.item);
-      setResults(searchResults.slice(0, 8)); // Limit to 8 results
+      const searchResults = fuzzySearch(query, rooms);
+      setResults(searchResults);
       setSelectedIndex(0);
       setIsOpen(true);
     } else {
       setResults([]);
       setIsOpen(false);
     }
-  }, [query, fuse]);
+  }, [query, rooms]);
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
