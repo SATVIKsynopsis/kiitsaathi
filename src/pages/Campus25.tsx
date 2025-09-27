@@ -116,22 +116,26 @@ const Campus25: React.FC = () => {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            {/* Back Navigation */}
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/campus-map')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Campus Map
-            </Button>
+            {/* Breadcrumb Navigation */}
+            <div className="flex items-center gap-2 text-sm">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/campus-map')}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Campus Map
+              </Button>
+              <span className="text-muted-foreground">/</span>
+              <span className="font-medium">Campus 25</span>
+            </div>
             
             {/* Title */}
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-secondary">
                 <Building className="w-5 h-5 text-white" />
               </div>
-              <div>
+              <div className="text-center">
                 <h1 className="text-xl font-bold">Campus 25</h1>
                 <p className="text-sm text-muted-foreground">Interactive Floor Plan</p>
               </div>
@@ -228,7 +232,18 @@ const Campus25: React.FC = () => {
                   Total Rooms: {allRooms.length}
                 </div>
                 <div className="text-xs text-muted-foreground pt-2 border-t border-border">
-                  Tip: Press "/" to quickly search for rooms
+                  Press "/" to quickly search • ESC to close
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/campus-map')}
+                    className="w-full mt-2"
+                  >
+                    <ArrowLeft className="w-3 h-3 mr-2" />
+                    Back to Campus List
+                  </Button>
                 </div>
               </div>
             </div>
