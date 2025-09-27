@@ -82,34 +82,8 @@ serve(async (req) => {
         reason
       });
 
-    // Send rejection email to requester
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: 'KIIT Saathi <noreply@ksaathi.vercel.app>',
-          to: [request.requester_email],
-          subject: `❌ Your ${request.item_type} item submission needs review`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #EF4444;">Submission Review Required</h2>
-              <p>Hello,</p>
-              <p>Thank you for your submission to KIIT Saathi Lost & Found. After review, we need some adjustments to your <strong>${request.item_type}</strong> item "<strong>${request.title}</strong>" submission.</p>
-              
-              <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 8px; margin: 16px 0;">
-                <h4 style="color: #dc2626; margin-top: 0;">Review Notes:</h4>
-                <p style="margin-bottom: 0;">${reason || 'Please review and resubmit with more details.'}</p>
-              </div>
-              
-              <p>You can submit a new request here: <a href="https://ksaathi.vercel.app/lost-and-found">KIIT Saathi Lost & Found</a></p>
-              <p>If you have any questions, please contact our support team.</p>
-              <p>Thank you for using KIIT Saathi!</p>
-            </div>
-          `
-        });
-      } catch (emailError) {
-        console.warn('Email notification failed:', emailError);
-      }
-    }
+    // Send rejection email to requester (email notifications disabled for now)
+    // TODO: Configure Resend API key to enable email notifications
 
     return new Response(
       JSON.stringify({ 

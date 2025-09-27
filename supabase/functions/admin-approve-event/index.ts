@@ -98,37 +98,8 @@ serve(async (req) => {
         payload: { event_name: request.event_name, society: request.society_name }
       });
 
-    // Send approval email to requester
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: 'KIIT Saathi <noreply@ksaathi.vercel.app>',
-          to: [request.requester_email],
-          subject: `🎉 Your event "${request.event_name}" has been approved!`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #10B981;">Congratulations! Your event has been approved</h2>
-              <p>Hello,</p>
-              <p>Your event "<strong>${request.event_name}</strong>" has been approved and is now live on the KIIT Saathi Interview Deadlines Tracker!</p>
-              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
-                <h4>Event Details:</h4>
-                <p><strong>Event:</strong> ${request.event_name}</p>
-                <p><strong>Society:</strong> ${request.society_name}</p>
-                <p><strong>Date:</strong> ${request.event_date}</p>
-                <p><strong>Time:</strong> ${request.start_time} - ${request.end_time}</p>
-                <p><strong>Venue:</strong> ${request.venue}</p>
-                <p><strong>Category:</strong> ${request.category}</p>
-              </div>
-              <p>You can view it here: <a href="https://ksaathi.vercel.app/interview-deadlines-tracker">KIIT Saathi Events Tracker</a></p>
-              <p>Students can now discover and add your event to their calendars!</p>
-              <p>Thank you for using KIIT Saathi!</p>
-            </div>
-          `
-        });
-      } catch (emailError) {
-        console.warn('Email notification failed:', emailError);
-      }
-    }
+    // Send approval email to requester (email notifications disabled for now)
+    // TODO: Configure Resend API key to enable email notifications
 
     return new Response(
       JSON.stringify({ 
