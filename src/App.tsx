@@ -40,6 +40,7 @@ import CampusDetailPage from "./components/campus-map/CampusDetailPage";
 import Campus25 from "./pages/Campus25";
 import SGPACalculator from "./pages/SGPACalculator";
 import AdminDashboard from "./pages/AdminDashboard";
+import { AdminGuard } from "@/components/AdminGuard";
 import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
@@ -95,7 +96,11 @@ const App = () => {
                 <Route path="/campus-map/:campusId" element={<CampusDetailPage />} />
                 <Route path="/campus-map/campus-25" element={<Campus25 />} />
                 <Route path="/sgpa-calculator" element={<SGPACalculator />} />
-                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin-dashboard" element={
+                  <AdminGuard>
+                    <AdminDashboard />
+                  </AdminGuard>
+                } />
                 <Route path="/resume-saathi" element={<ResumeSaathi />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
