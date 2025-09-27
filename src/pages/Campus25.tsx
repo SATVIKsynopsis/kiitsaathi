@@ -177,7 +177,7 @@ const Campus25: React.FC = () => {
   const getSelectedRoomData = () => selectedRoom ? allRooms.find(r => r.id === selectedRoom) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/[0.02] to-secondary/[0.03] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/[0.02] to-secondary/[0.03] relative">
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 opacity-[0.02]" 
            style={{
@@ -190,9 +190,9 @@ const Campus25: React.FC = () => {
       />
       
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             {/* Breadcrumb Navigation */}
             <div className="flex items-center gap-2">
               <Button
@@ -208,7 +208,7 @@ const Campus25: React.FC = () => {
             </div>
             
             {/* Search Bar */}
-            <div className="flex-1 max-w-md mx-8">
+            <div className="flex-1 w-full max-w-md">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -216,16 +216,16 @@ const Campus25: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search Classroom (e.g., A012)"
-                  className="w-full pl-10 pr-4 py-2.5 bg-background/60 backdrop-blur-sm border border-border/60 rounded-xl 
+                  className="w-full pl-10 pr-4 py-2.5 bg-background/80 backdrop-blur-sm border border-border/60 rounded-xl 
                            focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50
                            text-foreground placeholder:text-muted-foreground transition-all duration-200
-                           hover:bg-background/80"
+                           hover:bg-background/90 shadow-sm"
                 />
               </div>
             </div>
 
             {/* Campus Info */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ml-auto">
               <div className="hidden sm:block text-right">
                 <h1 className="text-lg font-bold">Campus 25</h1>
                 <p className="text-xs text-muted-foreground">Interactive Floor Plan</p>
@@ -238,104 +238,45 @@ const Campus25: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[calc(100vh-10rem)]">
-          
-          {/* Control Panel */}
-          <div className="lg:col-span-1 space-y-4">
-            
-            {/* Floor Selector */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-5 shadow-lg"
+      {/* Floor Tabs - Mobile First */}
+      <div className="container mx-auto px-4 sm:px-6 pt-6">
+        <div className="flex justify-center mb-6">
+          <div className="bg-background/80 backdrop-blur-xl border border-border/50 rounded-2xl p-1 shadow-lg">
+            <button
+              onClick={() => handleFloorChange('ground')}
+              className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                       ${currentFloor === 'ground' 
+                         ? 'bg-primary text-primary-foreground shadow-md' 
+                         : 'text-muted-foreground hover:text-foreground hover:bg-accent/30'}`}
             >
-              <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                Floor Selection
-              </h2>
-              
-              {/* Segmented Control */}
-              <div className="bg-accent/50 backdrop-blur-sm rounded-xl p-1">
-                <button
-                  onClick={() => handleFloorChange('ground')}
-                  className={`w-full p-3 rounded-lg text-sm font-medium transition-all duration-300
-                           ${currentFloor === 'ground' 
-                             ? 'bg-background shadow-sm text-foreground border border-border/50' 
-                             : 'text-muted-foreground hover:text-foreground hover:bg-background/30'}`}
-                >
-                  Ground Floor
-                  <div className={`text-xs mt-0.5 ${currentFloor === 'ground' ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
-                    A001-A026, B001-B012
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleFloorChange('first')}
-                  className={`w-full p-3 rounded-lg text-sm font-medium transition-all duration-300
-                           ${currentFloor === 'first' 
-                             ? 'bg-background shadow-sm text-foreground border border-border/50' 
-                             : 'text-muted-foreground hover:text-foreground hover:bg-background/30'}`}
-                >
-                  First Floor
-                  <div className={`text-xs mt-0.5 ${currentFloor === 'first' ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
-                    A101-A126, B101-B112
-                  </div>
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Quick Info */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-5 shadow-lg"
+              Ground Floor
+            </button>
+            <button
+              onClick={() => handleFloorChange('first')}
+              className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                       ${currentFloor === 'first' 
+                         ? 'bg-primary text-primary-foreground shadow-md' 
+                         : 'text-muted-foreground hover:text-foreground hover:bg-accent/30'}`}
             >
-              <h2 className="text-base font-semibold mb-4">Campus Info</h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                    <Home className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Campus 25</p>
-                    <p className="text-xs text-muted-foreground">KIIT University</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="text-center p-2 bg-accent/30 rounded-lg">
-                    <p className="text-lg font-bold text-primary">{allRooms.length}</p>
-                    <p className="text-xs text-muted-foreground">Total Rooms</p>
-                  </div>
-                  <div className="text-center p-2 bg-accent/30 rounded-lg">
-                    <p className="text-lg font-bold text-primary">2</p>
-                    <p className="text-xs text-muted-foreground">Floors</p>
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted-foreground pt-3 border-t border-border/30 space-y-1">
-                  <p>• Click classrooms for details</p>
-                  <p>• Use search to find specific rooms</p>
-                  <p>• Switch floors with tabs above</p>
-                </div>
-              </div>
-            </motion.div>
+              First Floor
+            </button>
           </div>
+        </div>
 
-          {/* Map Area */}
-          <div className="lg:col-span-4 relative">
-            <motion.div
-              key={currentFloor}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="h-full bg-background/40 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden shadow-xl relative"
-            >
-              {/* Modern Floor Plan */}
+        {/* Map Container with Scroll */}
+        <div className="relative">
+          <motion.div
+            key={currentFloor}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-auto"
+            style={{ height: '70vh' }}
+          >
+            {/* Scrollable Floor Plan */}
+            <div className="min-w-[1400px] min-h-[900px] p-8">
               <svg
-                viewBox="0 0 1200 800"
+                viewBox="0 0 1400 900"
                 className="w-full h-full"
                 style={{ background: 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--accent)/0.1) 100%)' }}
               >
@@ -356,23 +297,36 @@ const Campus25: React.FC = () => {
 
                 {/* Main Building Outline */}
                 <rect
-                  x="60" y="130" width="1080" height="640"
+                  x="80" y="50" width="1240" height="800"
                   fill="hsl(var(--background)/0.8)"
                   stroke="hsl(var(--border))"
-                  strokeWidth="2"
-                  rx="16"
-                  className="drop-shadow-sm"
+                  strokeWidth="3"
+                  rx="20"
+                  className="drop-shadow-lg"
                 />
 
-                {/* Center Campus Logo */}
-                <circle
-                  cx="600" cy="400" r="100"
-                  fill="url(#roomGradient)"
-                  stroke="hsl(var(--primary)/0.3)"
-                  strokeWidth="2"
-                />
-                <text x="600" y="385" textAnchor="middle" className="fill-primary text-3xl font-bold">KS</text>
-                <text x="600" y="415" textAnchor="middle" className="fill-primary/80 text-sm font-medium">Campus 25</text>
+                {/* You Are Here Indicator */}
+                <g transform="translate(70, 60)">
+                  <circle
+                    cx="0" cy="0" r="12"
+                    fill="hsl(var(--primary))"
+                    className="animate-pulse"
+                  />
+                  <circle
+                    cx="0" cy="0" r="20"
+                    fill="none"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="2"
+                    strokeOpacity="0.3"
+                    className="animate-ping"
+                  />
+                  <text
+                    x="25" y="5"
+                    className="fill-primary text-sm font-semibold"
+                  >
+                    You are here
+                  </text>
+                </g>
 
                 {/* Rooms */}
                 {getCurrentFloorData().rooms.map((room) => {
@@ -384,25 +338,25 @@ const Campus25: React.FC = () => {
                       {/* Room Shape */}
                       <path
                         d={room.path}
-                        fill={isSelected || isHighlighted ? 'hsl(var(--primary)/0.15)' : 'url(#roomGradient)'}
+                        fill={isSelected || isHighlighted ? 'hsl(var(--primary)/0.2)' : 'url(#roomGradient)'}
                         stroke={isSelected || isHighlighted ? 'hsl(var(--primary))' : 'hsl(var(--border)/0.6)'}
-                        strokeWidth={isSelected || isHighlighted ? '3' : '1'}
-                        className="transition-all duration-300 hover:stroke-primary/60 hover:stroke-2"
+                        strokeWidth={isSelected || isHighlighted ? '3' : '1.5'}
+                        className="transition-all duration-300 hover:stroke-primary/70 hover:stroke-2 hover:fill-primary/10"
                         onClick={() => handleMapRoomSelect(room.id)}
                         style={{
-                          filter: isSelected || isHighlighted ? 'filter: url(#softGlow)' : 'none'
+                          filter: isSelected || isHighlighted ? 'url(#softGlow)' : 'none'
                         }}
                       />
 
                       {/* Room Label */}
                       <text
-                        x={room.centroid.xPct * 1200}
-                        y={room.centroid.yPct * 800}
+                        x={room.centroid.xPct * 1400}
+                        y={room.centroid.yPct * 900}
                         textAnchor="middle"
                         dominantBaseline="middle"
-                        className={`text-sm font-semibold pointer-events-none select-none transition-colors duration-300
-                                   ${isSelected || isHighlighted ? 'fill-primary' : 'fill-foreground/80'}`}
-                        style={{ fontSize: '14px' }}
+                        className={`text-sm font-bold pointer-events-none select-none transition-colors duration-300
+                                   ${isSelected || isHighlighted ? 'fill-primary' : 'fill-foreground/90'}`}
+                        style={{ fontSize: '16px' }}
                       >
                         {room.label}
                       </text>
@@ -414,8 +368,8 @@ const Campus25: React.FC = () => {
                 <AnimatePresence>
                   {highlightRoom && (
                     <motion.circle
-                      cx={getCurrentFloorData().rooms.find(r => r.id === highlightRoom)?.centroid.xPct! * 1200}
-                      cy={getCurrentFloorData().rooms.find(r => r.id === highlightRoom)?.centroid.yPct! * 800}
+                      cx={getCurrentFloorData().rooms.find(r => r.id === highlightRoom)?.centroid.xPct! * 1400}
+                      cy={getCurrentFloorData().rooms.find(r => r.id === highlightRoom)?.centroid.yPct! * 900}
                       r="0"
                       fill="none"
                       stroke="hsl(var(--primary))"
@@ -423,7 +377,7 @@ const Campus25: React.FC = () => {
                       strokeOpacity="0.8"
                       initial={{ r: 0, strokeOpacity: 0.8 }}
                       animate={{ 
-                        r: [0, 80, 0], 
+                        r: [0, 100, 0], 
                         strokeOpacity: [0.8, 0.2, 0] 
                       }}
                       transition={{ 
@@ -442,39 +396,40 @@ const Campus25: React.FC = () => {
                 onClose={handleClosePopover}
                 isOpen={showRoomPopover}
               />
-            </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Enhanced Legend */}
+          <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-md border border-border/50 rounded-2xl p-4 shadow-xl">
+            <h3 className="text-sm font-semibold mb-3 text-foreground">Legend</h3>
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded bg-gradient-to-br from-background to-accent/30 border border-border/60" />
+                <span className="text-muted-foreground">Classroom</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded bg-primary/20 border-2 border-primary" />
+                <span className="text-muted-foreground">Selected</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary animate-pulse" />
+                <span className="text-muted-foreground">You are here</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Back Button */}
+          <div className="absolute bottom-4 right-4">
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/campus-map')}
+              className="bg-background/95 backdrop-blur-md border border-border/50 shadow-xl hover:shadow-2xl transition-all duration-300"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Campus List
+            </Button>
           </div>
         </div>
-      </div>
-
-      {/* Legend */}
-      <div className="fixed bottom-6 left-6 bg-background/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-lg">
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-gradient-to-br from-background to-accent/30 border border-border/60" />
-            <span className="text-muted-foreground">Classroom</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-primary/15 border-2 border-primary" />
-            <span className="text-muted-foreground">Selected</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-primary" />
-            <span className="text-muted-foreground">You are here</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Back to Campus List Button */}
-      <div className="fixed bottom-6 right-6">
-        <Button
-          variant="secondary"
-          onClick={() => navigate('/campus-map')}
-          className="bg-background/90 backdrop-blur-md border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Campus List
-        </Button>
       </div>
     </div>
   );
