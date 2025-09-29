@@ -287,7 +287,7 @@ export const ServicesGrid = () => {
               return (
                 <div 
                   key={index}
-                  className="service-card  group text-kiit-green-dark"
+                  className="service-card bg-white group text-kiit-green-dark"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Service Header */}
