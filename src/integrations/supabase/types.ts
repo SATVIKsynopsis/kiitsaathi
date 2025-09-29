@@ -2001,7 +2001,10 @@ export type Database = {
           full_name: string | null
           id: string
           is_admin: boolean | null
+          is_verified: boolean | null
+          rating_avg: number | null
           role: string | null
+          total_sales: number | null
           updated_at: string | null
         }
         Insert: {
@@ -2010,7 +2013,10 @@ export type Database = {
           full_name?: string | null
           id: string
           is_admin?: boolean | null
+          is_verified?: boolean | null
+          rating_avg?: number | null
           role?: string | null
+          total_sales?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -2019,7 +2025,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
+          is_verified?: boolean | null
+          rating_avg?: number | null
           role?: string | null
+          total_sales?: number | null
           updated_at?: string | null
         }
         Relationships: []
@@ -2110,6 +2119,540 @@ export type Database = {
           year?: string
         }
         Relationships: []
+      }
+      resale_admin_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          created_at: string | null
+          id: string
+          payload: Json | null
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_admin_actions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_conversations: {
+        Row: {
+          buyer_id: string
+          created_at: string | null
+          id: string
+          listing_id: string | null
+          seller_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string | null
+          id?: string
+          listing_id?: string | null
+          seller_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string | null
+          id?: string
+          listing_id?: string | null
+          seller_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_conversations_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "resale_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_conversations_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_exchange_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          requester_id: string
+          requester_listing_id: string
+          status: string | null
+          target_listing_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          requester_id: string
+          requester_listing_id: string
+          status?: string | null
+          target_listing_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          requester_id?: string
+          requester_listing_id?: string
+          status?: string | null
+          target_listing_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_exchange_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_exchange_requests_requester_listing_id_fkey"
+            columns: ["requester_listing_id"]
+            isOneToOne: false
+            referencedRelation: "resale_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_exchange_requests_target_listing_id_fkey"
+            columns: ["target_listing_id"]
+            isOneToOne: false
+            referencedRelation: "resale_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_favourites: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_favourites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "resale_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_favourites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_listing_images: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          listing_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          listing_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          listing_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_listing_images_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "resale_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_listings: {
+        Row: {
+          campus: number | null
+          category: string
+          condition: string
+          created_at: string | null
+          currency: string | null
+          delivery_fee: number | null
+          description: string
+          exchange_with: Json | null
+          id: string
+          is_exchange: boolean | null
+          pickup_option: string
+          price: number
+          seller_id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          campus?: number | null
+          category: string
+          condition: string
+          created_at?: string | null
+          currency?: string | null
+          delivery_fee?: number | null
+          description: string
+          exchange_with?: Json | null
+          id?: string
+          is_exchange?: boolean | null
+          pickup_option: string
+          price: number
+          seller_id: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          campus?: number | null
+          category?: string
+          condition?: string
+          created_at?: string | null
+          currency?: string | null
+          delivery_fee?: number | null
+          description?: string
+          exchange_with?: Json | null
+          id?: string
+          is_exchange?: boolean | null
+          pickup_option?: string
+          price?: number
+          seller_id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_listings_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_messages: {
+        Row: {
+          attachments: Json | null
+          conversation_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_text: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_text: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_text?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "resale_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string | null
+          target_id: string
+          target_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string | null
+          target_id: string
+          target_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string | null
+          target_id?: string
+          target_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          rating: number
+          review_text: string | null
+          reviewee_id: string
+          reviewer_id: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewee_id: string
+          reviewer_id: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewee_id?: string
+          reviewer_id?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_reviews_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "resale_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_transaction_events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_transaction_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_transaction_events_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "resale_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resale_transactions: {
+        Row: {
+          amount: number
+          buyer_id: string
+          created_at: string | null
+          currency: string | null
+          escrow_status: string | null
+          id: string
+          listing_id: string
+          payment_method: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          seller_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          created_at?: string | null
+          currency?: string | null
+          escrow_status?: string | null
+          id?: string
+          listing_id: string
+          payment_method?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          seller_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          created_at?: string | null
+          currency?: string | null
+          escrow_status?: string | null
+          id?: string
+          listing_id?: string
+          payment_method?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          seller_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resale_transactions_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "resale_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resale_transactions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       resume_downloads_daily: {
         Row: {

@@ -50,6 +50,8 @@ import { lazy } from "react";
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
 import BakeryDashboard from "./pages/BakeryDashboard";
+import Resale from "./pages/Resale";
+import ResaleBrowse from "./pages/ResaleBrowse";
 
 const queryClient = new QueryClient();
 
@@ -104,8 +106,14 @@ const App = () => {
                 <Route path="/resume-saathi" element={<ResumeSaathi />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-              <Route path="/bakery-dashboard" element={<BakeryDashboard />} />
-              <Route path="*" element={<NotFound />} />
+                <Route path="/bakery-dashboard" element={<BakeryDashboard />} />
+                
+                {/* Resale Saathi Routes */}
+                <Route path="/resale" element={<Resale />} />
+                <Route path="/resale/browse" element={<ResaleBrowse />} />
+                <Route path="/resale/categories/:category" element={<ResaleBrowse />} />
+                
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>

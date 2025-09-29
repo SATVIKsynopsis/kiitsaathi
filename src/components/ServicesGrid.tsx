@@ -101,6 +101,14 @@ const services = [
     gradient: "from-usc-maroon to-campus-purple",
   },
   {
+    id: "resale-saathi",
+    icon: ShoppingBag,
+    title: "Resale Saathi",
+    description: "Buy, sell, and exchange items within the KIIT campus. Verified students only, safe transactions.",
+    price: "Free to List",
+    gradient: "from-campus-blue to-kiit-green",
+  },
+  {
     id: "senior-connect",
     icon: Users,
     title: "Senior Connect",
@@ -181,7 +189,8 @@ export const ServicesGrid = () => {
   const handleServiceClick = (service: typeof services[0]) => {
     const routeMap: Record<string, string> = {
       "Carton Packing & Hostel Transfers": "/carton-transfer",
-      "Printouts on Demand": "/printout-on-demand", 
+      "Printouts on Demand": "/printout-on-demand",
+      "Resale Saathi": "/resale",
       "Senior Connect": "/senior-connect",
       "Handwritten Assignments": "/handwritten-assignments",
       "KIIT Societies, Fests and Sports": "/kiit-societies",
