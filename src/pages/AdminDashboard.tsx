@@ -91,9 +91,11 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
   const [activeTab, setActiveTab] = useState('lost-found');
+  const [resaleListings, setResaleListings] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalPendingLostFound: 0,
     totalPendingEvents: 0,
+    totalPendingResale: 0,
     totalActionsToday: 0,
     totalUsers: 0
   });
@@ -176,6 +178,7 @@ export default function AdminDashboard() {
       setStats({
         totalPendingLostFound: lfRequests?.filter(r => r.status === 'pending').length || 0,
         totalPendingEvents: eventReqs?.filter(r => r.status === 'pending').length || 0,
+        totalPendingResale: 0, // Will be fetched
         totalActionsToday: actionsToday,
         totalUsers: totalUsers || 0
       });
@@ -387,21 +390,24 @@ export default function AdminDashboard() {
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="border-b border-gray-200 px-6 pt-6">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+                <TabsList className="grid w-full grid-cols-4 bg-gray-100">
                   <TabsTrigger value="lost-found" className="flex items-center gap-2 text-sm font-medium">
-                    🕵️ Lost & Found Requests
+                    🕵️ Lost & Found
                   </TabsTrigger>
                   <TabsTrigger value="events" className="flex items-center gap-2 text-sm font-medium">
-                    📅 Event Requests
+                    📅 Events
+                  </TabsTrigger>
+                  <TabsTrigger value="resale" className="flex items-center gap-2 text-sm font-medium">
+                    🛍️ Resale
                   </TabsTrigger>
                   <TabsTrigger value="audit" className="flex items-center gap-2 text-sm font-medium">
-                    📊 Audit Log
+                    📊 Audit
                   </TabsTrigger>
                 </TabsList>
               </div>
 
               {/* Filters */}
-              {(activeTab === 'lost-found' || activeTab === 'events') && (
+              {(activeTab === 'lost-found' || activeTab === 'events' || activeTab === 'resale') && (
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">

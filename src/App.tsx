@@ -55,6 +55,10 @@ import ResaleBrowse from "./pages/ResaleBrowse";
 import ResaleNewListing from "./pages/ResaleNewListing";
 import ResaleListingDetail from "./pages/ResaleListingDetail";
 import ResaleChat from "./pages/ResaleChat";
+import ResaleCheckout from "./pages/ResaleCheckout";
+import ResaleTransactions from "./pages/ResaleTransactions";
+import ResaleFavourites from "./pages/ResaleFavourites";
+import ResaleMyListings from "./pages/ResaleMyListings";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +122,10 @@ const App = () => {
                 <Route path="/resale/:id" element={<ResaleListingDetail />} />
                 <Route path="/resale/categories/:category" element={<ResaleBrowse />} />
                 <Route path="/resale/chat/:conversationId" element={<ResaleChat />} />
+                <Route path="/resale/checkout/:id" element={<ResaleCheckout />} />
+                <Route path="/resale/transactions" element={<ResaleTransactions />} />
+                <Route path="/resale/favourites" element={<ResaleFavourites />} />
+                <Route path="/resale/my-listings" element={<ResaleMyListings />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
