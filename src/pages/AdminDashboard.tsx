@@ -134,9 +134,21 @@ export default function AdminDashboard() {
       })
       .subscribe();
 
+    const resaleListingsChannel = supabase
+      .channel('resale_listings_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'resale_listings'
+      }, () => {
+        fetchData();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(lostFoundChannel);
       supabase.removeChannel(eventRequestsChannel);
+      supabase.removeChannel(resaleListingsChannel);
     };
   }, [isAdmin, loading, navigate]);
 
@@ -153,6 +165,16 @@ export default function AdminDashboard() {
         .from('interview_event_requests')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Fetch resale listings
+      const { data: resaleReqs } = await supabase
+        .from('resale_listings')
+        .select(`
+          *,
+          seller:profiles!seller_id(full_name, email),
+          images:resale_listing_images(storage_path)
+        `)
+        .order('created_at', { ascending: false });
         
       // Fetch admin actions
       const { data: actions } = await supabase
@@ -168,6 +190,7 @@ export default function AdminDashboard() {
 
       setLostFoundRequests(lfRequests || []);
       setEventRequests(eventReqs || []);
+      setResaleListings(resaleReqs || []);
       setAdminActions(actions || []);
       
       const today = new Date().toISOString().split('T')[0];
@@ -178,7 +201,7 @@ export default function AdminDashboard() {
       setStats({
         totalPendingLostFound: lfRequests?.filter(r => r.status === 'pending').length || 0,
         totalPendingEvents: eventReqs?.filter(r => r.status === 'pending').length || 0,
-        totalPendingResale: 0, // Will be fetched
+        totalPendingResale: resaleReqs?.filter(r => r.status === 'pending').length || 0,
         totalActionsToday: actionsToday,
         totalUsers: totalUsers || 0
       });
@@ -211,10 +234,65 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResaleApprove = async (listing: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('moderate-resale-listing', {
+        body: { 
+          listingId: listing.id,
+          action: 'approve',
+          adminUserId: user?.id
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success('Listing approved and published! ✅');
+      setSelectedItem(null);
+      fetchData();
+    } catch (error) {
+      console.error('Resale approval error:', error);
+      toast.error('Failed to approve listing');
+    }
+  };
+
+  const handleResaleReject = async () => {
+    if (!selectedItem || !rejectReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('moderate-resale-listing', {
+        body: { 
+          listingId: selectedItem.id,
+          action: 'reject',
+          adminUserId: user?.id,
+          reason: rejectReason
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success('Listing rejected and seller notified');
+      setShowRejectDialog(false);
+      setRejectReason('');
+      setSelectedItem(null);
+      fetchData();
+    } catch (error) {
+      console.error('Resale rejection error:', error);
+      toast.error('Failed to reject listing');
+    }
+  };
+
   const handleReject = async () => {
     if (!selectedItem || !rejectReason.trim()) {
       toast.error('Please provide a rejection reason');
       return;
+    }
+
+    // Handle resale rejection separately
+    if (activeTab === 'resale') {
+      return handleResaleReject();
     }
 
     try {
@@ -290,6 +368,13 @@ export default function AdminDashboard() {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredResaleListings = resaleListings.filter(item => {
+    const matchesSearch = item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <Navbar />
@@ -323,7 +408,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8 -mt-4">
         {/* Premium Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-400 to-orange-600 text-white overflow-hidden relative">
             <CardContent className="p-6">
               <div className="flex items-center justify-between relative z-10">
@@ -354,6 +439,21 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-400 to-pink-600 text-white overflow-hidden relative">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between relative z-10">
+                <div>
+                  <p className="text-pink-100 text-sm font-medium mb-1">Pending Resale</p>
+                  <p className="text-3xl font-bold">{stats.totalPendingResale}</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+            </CardContent>
+          </Card>
+          
           <Card className="border-0 shadow-lg bg-gradient-to-br from-green-400 to-green-600 text-white overflow-hidden relative">
             <CardContent className="p-6">
               <div className="flex items-center justify-between relative z-10">
@@ -368,7 +468,7 @@ export default function AdminDashboard() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-400 to-purple-600 text-white overflow-hidden relative">
             <CardContent className="p-6">
               <div className="flex items-center justify-between relative z-10">
@@ -522,6 +622,106 @@ export default function AdminDashboard() {
                       <FileText className="w-8 h-8 text-gray-400" />
                     </div>
                     <p className="text-gray-500 text-lg">No lost & found requests match your filters.</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Resale Listings */}
+              <TabsContent value="resale" className="p-6 space-y-4">
+                {filteredResaleListings.map((listing) => (
+                  <Card key={listing.id} className="border border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-blue-300">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="font-bold text-lg text-gray-900">{listing.title}</h3>
+                            <Badge variant="secondary" className="px-3 py-1 text-xs font-semibold">
+                              ₹{listing.price}
+                            </Badge>
+                            <Badge variant={
+                              listing.status === 'pending' ? 'secondary' :
+                              listing.status === 'active' ? 'default' : 'outline'
+                            } className="px-3 py-1 text-xs font-semibold">
+                              {listing.status === 'pending' ? '⏳ Pending' :
+                               listing.status === 'active' ? '✅ Active' : '❌ Removed'}
+                            </Badge>
+                            {listing.moderation_notes && (
+                              <Badge variant="destructive" className="px-3 py-1 text-xs">
+                                🚩 Flagged
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-3 text-sm leading-relaxed">
+                            {listing.description?.substring(0, 120)}...
+                          </p>
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Building className="w-3 h-3" />
+                              <span>Category: {listing.category}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <User2 className="w-3 h-3" />
+                              <span>Seller: {listing.seller?.full_name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              <span>{listing.seller?.email}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>{new Date(listing.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          {listing.moderation_notes && (
+                            <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                              <strong>⚠️ Auto-moderation flags:</strong> {listing.moderation_notes}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedItem(listing)}
+                            className="hover:bg-blue-50 hover:border-blue-300"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                          {listing.status === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleResaleApprove(listing)}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedItem(listing);
+                                  setShowRejectDialog(true);
+                                }}
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {filteredResaleListings.length === 0 && (
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <TrendingUp className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 text-lg">No resale listings match your filters.</p>
                   </div>
                 )}
               </TabsContent>
