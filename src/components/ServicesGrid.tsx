@@ -218,7 +218,7 @@ export const ServicesGrid = () => {
         <div className="text-center mb-12 px-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
             <Star className="w-4 h-4" />
-            7+ Campus Services
+            15+ Campus Services
           </div>
           
           <h2 className="text-3xl sm:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
