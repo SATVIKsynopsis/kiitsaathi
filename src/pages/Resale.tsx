@@ -10,6 +10,8 @@ import {
   Clock, Users, ArrowRight, Sparkles, Award, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 
 const categories = [
   { id: 'books', name: 'Books', icon: Book, gradient: 'from-kiit-green to-fedkiit-green', count: '500+' },
@@ -55,6 +57,7 @@ export default function Resale() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-kiit-green-soft to-background">
+      <Navbar />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-kiit-green via-campus-blue to-campus-purple py-24 px-4">
@@ -491,6 +494,8 @@ export default function Resale() {
           </Card>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }
