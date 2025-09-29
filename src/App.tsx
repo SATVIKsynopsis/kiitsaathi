@@ -52,6 +52,9 @@ console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 import BakeryDashboard from "./pages/BakeryDashboard";
 import Resale from "./pages/Resale";
 import ResaleBrowse from "./pages/ResaleBrowse";
+import ResaleNewListing from "./pages/ResaleNewListing";
+import ResaleListingDetail from "./pages/ResaleListingDetail";
+import ResaleChat from "./pages/ResaleChat";
 
 const queryClient = new QueryClient();
 
@@ -111,7 +114,10 @@ const App = () => {
                 {/* Resale Saathi Routes */}
                 <Route path="/resale" element={<Resale />} />
                 <Route path="/resale/browse" element={<ResaleBrowse />} />
+                <Route path="/resale/new" element={<ResaleNewListing />} />
+                <Route path="/resale/:id" element={<ResaleListingDetail />} />
                 <Route path="/resale/categories/:category" element={<ResaleBrowse />} />
+                <Route path="/resale/chat/:conversationId" element={<ResaleChat />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
