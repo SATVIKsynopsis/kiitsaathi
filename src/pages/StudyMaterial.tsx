@@ -11,7 +11,8 @@ import {
   Users,
   Upload,
   File,
-  BookOpen
+  BookOpen,
+  Bot
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "../components/Footer";
@@ -50,7 +51,7 @@ export default function StudyMaterial() {
   const [selectedYear, setSelectedYear] = useState("all");
   const [activeSection, setActiveSection] = useState("notes");
   const [materials, setMaterials] = useState<StudyMaterialItem[]>([]);
-  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -238,7 +239,7 @@ const availableSubjects =
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                 <button 
-                  onClick={() => setRequestDialogOpen(true)} 
+                  onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')} 
                   className="group bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-kiit-secondary/90 hover:to-kiit-secondary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
@@ -480,35 +481,41 @@ const availableSubjects =
             </div>
           </div>
         )}
-      </div>
 
-      {/* Enhanced Request Dialog */}
-      <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader className="text-center pb-2">
-            <DialogTitle className="text-xl font-bold">Request Study Material</DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-kiit-primary to-kiit-secondary rounded-2xl mb-6 shadow-lg">
-              <File className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold mb-3 text-foreground">Missing Something?</h3>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Can't find the study material you need? Let us know and we'll do our best to add it to our collection.
+        {/* Still Need Help? Section */}
+        <div className="mt-16 mb-8">
+          <div className="glass-card p-8 rounded-2xl border border-border/50 bg-gradient-to-br from-card/50 to-muted/20 text-center">
+            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-kiit-primary to-kiit-secondary bg-clip-text text-transparent">
+              Still Need Help?
+            </h3>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
+              Can't find what you're looking for? Our AI assistant is here 24/7 to help, or submit a resource request and we'll add it to our collection.
             </p>
-            <Button 
-              onClick={() => {
-                window.open('mailto:contact@kiitsaathi.com?subject=Study Material Request', '_blank');
-                setRequestDialogOpen(false);
-              }}
-              className="bg-gradient-to-r from-kiit-primary to-kiit-secondary hover:from-kiit-primary/90 hover:to-kiit-secondary/90 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Send Request
-            </Button>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
+              <button 
+                onClick={() => window.location.href = '/chatbot'}
+                className="group w-full sm:w-auto bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Bot className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                Ask AI Assistant
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+              
+              <button 
+                onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')}
+                aria-label="Request Resource Form"
+                className="group w-full sm:w-auto bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                Request Resource
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
 
       <Footer />
     </div>
