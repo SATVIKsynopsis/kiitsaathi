@@ -56,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Store contact form data in database
     try {
       const { error: dbError } = await supabase
-        .from("contact_forms")
+        .from("contacts")
         .insert({
           full_name: fullName,
           email: email,
