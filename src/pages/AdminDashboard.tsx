@@ -28,7 +28,9 @@ import {
   Building,
   User2,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  MessageSquare,
+  CheckCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -78,6 +80,19 @@ interface AdminAction {
   created_at: string;
 }
 
+interface ContactSubmission {
+  id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  status: 'new' | 'read' | 'resolved';
+  user_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { isAdmin, loading, error, user } = useAdminAuth();
@@ -85,6 +100,7 @@ export default function AdminDashboard() {
   const [lostFoundRequests, setLostFoundRequests] = useState<LostFoundRequest[]>([]);
   const [eventRequests, setEventRequests] = useState<EventRequest[]>([]);
   const [adminActions, setAdminActions] = useState<AdminAction[]>([]);
+  const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -96,6 +112,7 @@ export default function AdminDashboard() {
     totalPendingLostFound: 0,
     totalPendingEvents: 0,
     totalPendingResale: 0,
+    totalPendingContacts: 0,
     totalActionsToday: 0,
     totalUsers: 0
   });
@@ -145,10 +162,22 @@ export default function AdminDashboard() {
       })
       .subscribe();
 
+    const contactsChannel = supabase
+      .channel('contacts_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'contacts'
+      }, () => {
+        fetchData();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(lostFoundChannel);
       supabase.removeChannel(eventRequestsChannel);
       supabase.removeChannel(resaleListingsChannel);
+      supabase.removeChannel(contactsChannel);
     };
   }, [isAdmin, loading, navigate]);
 
@@ -175,6 +204,12 @@ export default function AdminDashboard() {
           images:resale_listing_images(storage_path)
         `)
         .order('created_at', { ascending: false });
+
+      // Fetch contact submissions
+      const { data: contacts } = await supabase
+        .from('contacts')
+        .select('*')
+        .order('created_at', { ascending: false });
         
       // Fetch admin actions
       const { data: actions } = await supabase
@@ -191,6 +226,7 @@ export default function AdminDashboard() {
       setLostFoundRequests(lfRequests || []);
       setEventRequests(eventReqs || []);
       setResaleListings(resaleReqs || []);
+      setContactSubmissions(contacts || []);
       setAdminActions(actions || []);
       
       const today = new Date().toISOString().split('T')[0];
@@ -202,6 +238,7 @@ export default function AdminDashboard() {
         totalPendingLostFound: lfRequests?.filter(r => r.status === 'pending').length || 0,
         totalPendingEvents: eventReqs?.filter(r => r.status === 'pending').length || 0,
         totalPendingResale: resaleReqs?.filter(r => r.status === 'pending').length || 0,
+        totalPendingContacts: contacts?.filter(c => c.status === 'new').length || 0,
         totalActionsToday: actionsToday,
         totalUsers: totalUsers || 0
       });
@@ -375,6 +412,34 @@ export default function AdminDashboard() {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredContacts = contactSubmissions.filter(item => {
+    const matchesSearch = item.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.message.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'pending' && item.status === 'new') ||
+                         item.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleContactStatusUpdate = async (contactId: string, newStatus: 'new' | 'read' | 'resolved') => {
+    try {
+      const { error } = await supabase
+        .from('contacts')
+        .update({ status: newStatus })
+        .eq('id', contactId);
+
+      if (error) throw error;
+      
+      toast.success(`Contact marked as ${newStatus}`);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating contact status:', error);
+      toast.error('Failed to update contact status');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <Navbar />
@@ -408,7 +473,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8 -mt-4">
         {/* Premium Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-400 to-orange-600 text-white overflow-hidden relative">
             <CardContent className="p-6">
               <div className="flex items-center justify-between relative z-10">
@@ -453,6 +518,21 @@ export default function AdminDashboard() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             </CardContent>
           </Card>
+
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-400 to-teal-600 text-white overflow-hidden relative">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between relative z-10">
+                <div>
+                  <p className="text-teal-100 text-sm font-medium mb-1">New Contacts</p>
+                  <p className="text-3xl font-bold">{stats.totalPendingContacts}</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+            </CardContent>
+          </Card>
           
           <Card className="border-0 shadow-lg bg-gradient-to-br from-green-400 to-green-600 text-white overflow-hidden relative">
             <CardContent className="p-6">
@@ -490,7 +570,7 @@ export default function AdminDashboard() {
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="border-b border-gray-200 px-6 pt-6">
-                <TabsList className="grid w-full grid-cols-4 bg-gray-100">
+                <TabsList className="grid w-full grid-cols-5 bg-gray-100">
                   <TabsTrigger value="lost-found" className="flex items-center gap-2 text-sm font-medium">
                     🕵️ Lost & Found
                   </TabsTrigger>
@@ -500,6 +580,9 @@ export default function AdminDashboard() {
                   <TabsTrigger value="resale" className="flex items-center gap-2 text-sm font-medium">
                     🛍️ Resale
                   </TabsTrigger>
+                  <TabsTrigger value="contacts" className="flex items-center gap-2 text-sm font-medium">
+                    💬 Contacts
+                  </TabsTrigger>
                   <TabsTrigger value="audit" className="flex items-center gap-2 text-sm font-medium">
                     📊 Audit
                   </TabsTrigger>
@@ -507,7 +590,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Filters */}
-              {(activeTab === 'lost-found' || activeTab === 'events' || activeTab === 'resale') && (
+              {(activeTab === 'lost-found' || activeTab === 'events' || activeTab === 'resale' || activeTab === 'contacts') && (
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 relative">
@@ -524,10 +607,21 @@ export default function AdminDashboard() {
                       onChange={(e) => setStatusFilter(e.target.value)}
                       className="px-4 py-3 border border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:ring-blue-500 text-sm font-medium min-w-[160px]"
                     >
-                      <option value="pending">⏳ Pending</option>
-                      <option value="approved">✅ Approved</option>
-                      <option value="rejected">❌ Rejected</option>
-                      <option value="all">📋 All Status</option>
+                      {activeTab === 'contacts' ? (
+                        <>
+                          <option value="pending">🆕 New</option>
+                          <option value="read">👁️ Read</option>
+                          <option value="resolved">✅ Resolved</option>
+                          <option value="all">📋 All Status</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="pending">⏳ Pending</option>
+                          <option value="approved">✅ Approved</option>
+                          <option value="rejected">❌ Rejected</option>
+                          <option value="all">📋 All Status</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -816,6 +910,92 @@ export default function AdminDashboard() {
                 )}
               </TabsContent>
 
+              {/* Contact Submissions */}
+              <TabsContent value="contacts" className="p-6 space-y-4">
+                {filteredContacts.map((contact) => (
+                  <Card key={contact.id} className="border border-gray-200 hover:shadow-lg transition-all duration-300 hover:border-blue-300">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="font-bold text-lg text-gray-900">{contact.subject}</h3>
+                            <Badge variant={
+                              contact.status === 'new' ? 'default' :
+                              contact.status === 'read' ? 'secondary' : 'outline'
+                            } className="px-3 py-1 text-xs font-semibold">
+                              {contact.status === 'new' ? '🆕 New' :
+                               contact.status === 'read' ? '👁️ Read' : '✅ Resolved'}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-600 mb-3 text-sm leading-relaxed">
+                            {contact.message.substring(0, 150)}...
+                          </p>
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <User2 className="w-3 h-3" />
+                              <span>{contact.full_name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              <span>{contact.email}</span>
+                            </div>
+                            {contact.phone && (
+                              <div className="flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                <span>{contact.phone}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>{new Date(contact.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4 flex-col">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedItem(contact)}
+                            className="hover:bg-blue-50 hover:border-blue-300"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                          {contact.status === 'new' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleContactStatusUpdate(contact.id, 'read')}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Mark Read
+                            </Button>
+                          )}
+                          {contact.status !== 'resolved' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleContactStatusUpdate(contact.id, 'resolved')}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <CheckCheck className="w-4 h-4 mr-1" />
+                              Resolve
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {filteredContacts.length === 0 && (
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 text-lg">No contact submissions match your filters.</p>
+                  </div>
+                )}
+              </TabsContent>
+
               {/* Audit Log */}
               <TabsContent value="audit" className="p-6">
                 <div className="space-y-3">
@@ -870,8 +1050,8 @@ export default function AdminDashboard() {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              {activeTab === 'lost-found' ? '🕵️' : '📅'} 
-              {selectedItem?.title || selectedItem?.event_name}
+              {activeTab === 'contacts' ? '💬' : activeTab === 'lost-found' ? '🕵️' : activeTab === 'resale' ? '🛍️' : '📅'} 
+              {selectedItem?.subject || selectedItem?.title || selectedItem?.event_name}
             </DialogTitle>
           </DialogHeader>
           {selectedItem && (
@@ -885,75 +1065,194 @@ export default function AdminDashboard() {
                   />
                 </div>
               )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700">Description</Label>
-                  <p className="text-sm text-gray-600 mt-1 leading-relaxed">{selectedItem.description}</p>
-                </div>
-                {activeTab === 'lost-found' ? (
-                  <>
+              {/* Contact Submission Details */}
+              {activeTab === 'contacts' ? (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">Full Message</Label>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{selectedItem.message}</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-semibold text-gray-700">Location</Label>
-                      <p className="text-sm text-gray-600 mt-1">{selectedItem.location}</p>
+                      <Label className="text-sm font-semibold text-gray-700">Contact Name</Label>
+                      <p className="text-sm text-gray-600 mt-1">{selectedItem.full_name}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-gray-700">Contact</Label>
+                      <Label className="text-sm font-semibold text-gray-700">Email</Label>
+                      <p className="text-sm text-gray-600 mt-1">{selectedItem.email}</p>
+                    </div>
+                    {selectedItem.phone && (
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Phone</Label>
+                        <p className="text-sm text-gray-600 mt-1">{selectedItem.phone}</p>
+                      </div>
+                    )}
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700">Status</Label>
+                      <p className="text-sm text-gray-600 mt-1 capitalize">{selectedItem.status}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700">Submitted At</Label>
                       <p className="text-sm text-gray-600 mt-1">
-                        {selectedItem.contact_name}<br/>
-                        {selectedItem.contact_email}<br/>
-                        {selectedItem.contact_phone}
+                        {new Date(selectedItem.created_at).toLocaleString()}
                       </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-4 border-t">
+                    {selectedItem.status === 'new' && (
+                      <Button 
+                        onClick={() => {
+                          handleContactStatusUpdate(selectedItem.id, 'read');
+                          setSelectedItem(null);
+                        }}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Mark as Read
+                      </Button>
+                    )}
+                    {selectedItem.status !== 'resolved' && (
+                      <Button 
+                        onClick={() => {
+                          handleContactStatusUpdate(selectedItem.id, 'resolved');
+                          setSelectedItem(null);
+                        }}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <CheckCheck className="w-4 h-4 mr-2" />
+                        Mark as Resolved
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : activeTab === 'resale' ? (
+                /* Resale Listing Details */
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">Description</Label>
+                    <p className="text-sm text-gray-600 leading-relaxed">{selectedItem.description}</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700">Price</Label>
+                      <p className="text-sm text-gray-600 mt-1">₹{selectedItem.price}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-semibold text-gray-700">Category</Label>
                       <p className="text-sm text-gray-600 mt-1">{selectedItem.category}</p>
                     </div>
-                  </>
-                ) : (
-                  <>
                     <div>
-                      <Label className="text-sm font-semibold text-gray-700">Society</Label>
-                      <p className="text-sm text-gray-600 mt-1">{selectedItem.society_name}</p>
+                      <Label className="text-sm font-semibold text-gray-700">Condition</Label>
+                      <p className="text-sm text-gray-600 mt-1 capitalize">{selectedItem.condition}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold text-gray-700">Date & Time</Label>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {new Date(selectedItem.event_date).toLocaleDateString()}<br/>
-                        {selectedItem.start_time} - {selectedItem.end_time}
-                      </p>
+                      <Label className="text-sm font-semibold text-gray-700">Seller</Label>
+                      <p className="text-sm text-gray-600 mt-1">{selectedItem.seller?.full_name}</p>
                     </div>
-                    <div>
-                      <Label className="text-sm font-semibold text-gray-700">Venue</Label>
-                      <p className="text-sm text-gray-600 mt-1">{selectedItem.venue}</p>
+                  </div>
+                  {selectedItem.moderation_notes && (
+                    <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                      <Label className="text-sm font-semibold text-red-700 mb-2 block">⚠️ Auto-Moderation Flags</Label>
+                      <p className="text-sm text-red-600">{selectedItem.moderation_notes}</p>
                     </div>
-                    <div>
-                      <Label className="text-sm font-semibold text-gray-700">Organiser</Label>
-                      <p className="text-sm text-gray-600 mt-1">{selectedItem.organiser}</p>
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="flex gap-3 pt-4 border-t">
-                {selectedItem.status === 'pending' && (
-                  <>
-                    <Button 
-                      onClick={() => handleApprove(selectedItem, activeTab as 'lost-found' | 'event')}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Approve & Publish
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      onClick={() => setShowRejectDialog(true)}
-                      className="flex-1"
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Reject
-                    </Button>
-                  </>
-                )}
-              </div>
+                  )}
+                  <div className="flex gap-3 pt-4 border-t">
+                    {selectedItem.status === 'pending' && (
+                      <>
+                        <Button 
+                          onClick={() => {
+                            handleResaleApprove(selectedItem);
+                            setSelectedItem(null);
+                          }}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Approve & Publish
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => setShowRejectDialog(true)}
+                          className="flex-1"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Lost & Found / Events Details */
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-semibold text-gray-700">Description</Label>
+                    <p className="text-sm text-gray-600 mt-1 leading-relaxed">{selectedItem.description}</p>
+                  </div>
+                  {activeTab === 'lost-found' ? (
+                    <>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Location</Label>
+                        <p className="text-sm text-gray-600 mt-1">{selectedItem.location}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Contact</Label>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {selectedItem.contact_name}<br/>
+                          {selectedItem.contact_email}<br/>
+                          {selectedItem.contact_phone}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Category</Label>
+                        <p className="text-sm text-gray-600 mt-1">{selectedItem.category}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Society</Label>
+                        <p className="text-sm text-gray-600 mt-1">{selectedItem.society_name}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Date & Time</Label>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {new Date(selectedItem.event_date).toLocaleDateString()}<br/>
+                          {selectedItem.start_time} - {selectedItem.end_time}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Venue</Label>
+                        <p className="text-sm text-gray-600 mt-1">{selectedItem.venue}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-700">Organiser</Label>
+                        <p className="text-sm text-gray-600 mt-1">{selectedItem.organiser}</p>
+                      </div>
+                    </>
+                  )}
+                  <div className="col-span-2 flex gap-3 pt-4 border-t">
+                    {selectedItem.status === 'pending' && (
+                      <>
+                        <Button 
+                          onClick={() => handleApprove(selectedItem, activeTab as 'lost-found' | 'event')}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Approve & Publish
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => setShowRejectDialog(true)}
+                          className="flex-1"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
