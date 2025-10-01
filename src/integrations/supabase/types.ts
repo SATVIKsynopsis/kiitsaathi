@@ -1505,6 +1505,7 @@ export type Database = {
           contact_name: string
           contact_phone: string
           created_at: string | null
+          date: string | null
           description: string | null
           file_name: string | null
           id: string
@@ -1526,6 +1527,7 @@ export type Database = {
           contact_name: string
           contact_phone: string
           created_at?: string | null
+          date?: string | null
           description?: string | null
           file_name?: string | null
           id?: string
@@ -1547,6 +1549,7 @@ export type Database = {
           contact_name?: string
           contact_phone?: string
           created_at?: string | null
+          date?: string | null
           description?: string | null
           file_name?: string | null
           id?: string

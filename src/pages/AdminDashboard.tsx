@@ -135,8 +135,14 @@ export default function AdminDashboard() {
         event: '*',
         schema: 'public',
         table: 'lost_found_requests'
-      }, () => {
+      }, (payload) => {
+        // Auto-sync on any change
         fetchData();
+        // Notify admin on new submissions
+        if ((payload as any).eventType === 'INSERT') {
+          const newItem = (payload as any).new as any;
+          toast.success(`New Lost & Found submission: ${newItem?.title || 'Untitled'}`);
+        }
       })
       .subscribe();
 
@@ -459,14 +465,24 @@ export default function AdminDashboard() {
                 </p>
               </div>
             </div>
-            <Button 
-              variant="secondary" 
-              onClick={() => navigate('/')}
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="secondary" 
+                onClick={fetchData}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <Activity className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => navigate('/')}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            </div>
           </div>
         </div>
       </div>
