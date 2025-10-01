@@ -88,3 +88,9 @@ verify_jwt = true
 
 [functions.moderate-resale-listing]
 verify_jwt = false
+
+[functions.auth-monitor]
+verify_jwt = false
+
+[functions.verify-email-callback]
+verify_jwt = true
