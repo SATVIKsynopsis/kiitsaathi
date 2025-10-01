@@ -108,6 +108,7 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('pending');
   const [activeTab, setActiveTab] = useState('lost-found');
   const [resaleListings, setResaleListings] = useState<any[]>([]);
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
   const [stats, setStats] = useState({
     totalPendingLostFound: 0,
     totalPendingEvents: 0,
@@ -128,7 +129,7 @@ export default function AdminDashboard() {
     
     fetchData();
     
-    // Set up real-time subscriptions
+    // Set up real-time subscriptions with notifications for ALL modules
     const lostFoundChannel = supabase
       .channel('lost_found_requests_changes')
       .on('postgres_changes', {
@@ -136,15 +137,23 @@ export default function AdminDashboard() {
         schema: 'public',
         table: 'lost_found_requests'
       }, (payload) => {
-        // Auto-sync on any change
+        console.log('🔔 Lost & Found real-time event:', payload);
         fetchData();
-        // Notify admin on new submissions
-        if ((payload as any).eventType === 'INSERT') {
-          const newItem = (payload as any).new as any;
-          toast.success(`New Lost & Found submission: ${newItem?.title || 'Untitled'}`);
+        if (payload.eventType === 'INSERT') {
+          const newItem = payload.new as any;
+          toast.success(`🕵️ New Lost & Found: ${newItem?.title || 'Untitled'}`, {
+            description: `${newItem?.item_type === 'lost' ? 'Lost' : 'Found'} item submitted`,
+            duration: 5000
+          });
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Lost & Found channel status:', status);
+        if (status === 'SUBSCRIBED') {
+          setIsRealtimeActive(true);
+          console.log('✅ Real-time active for Lost & Found');
+        }
+      });
 
     const eventRequestsChannel = supabase
       .channel('event_requests_changes')
@@ -152,8 +161,16 @@ export default function AdminDashboard() {
         event: '*',
         schema: 'public',
         table: 'interview_event_requests'
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 Event Request real-time event:', payload);
         fetchData();
+        if (payload.eventType === 'INSERT') {
+          const newEvent = payload.new as any;
+          toast.success(`📅 New Event Request: ${newEvent?.event_name || 'Untitled'}`, {
+            description: `${newEvent?.society_name || 'Unknown society'} - ${newEvent?.category || 'Event'}`,
+            duration: 5000
+          });
+        }
       })
       .subscribe();
 
@@ -163,8 +180,16 @@ export default function AdminDashboard() {
         event: '*',
         schema: 'public',
         table: 'resale_listings'
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 Resale Listing real-time event:', payload);
         fetchData();
+        if (payload.eventType === 'INSERT') {
+          const newListing = payload.new as any;
+          toast.success(`🛍️ New Resale Listing: ${newListing?.title || 'Untitled'}`, {
+            description: `Price: ₹${newListing?.price || '0'}`,
+            duration: 5000
+          });
+        }
       })
       .subscribe();
 
@@ -174,8 +199,16 @@ export default function AdminDashboard() {
         event: '*',
         schema: 'public',
         table: 'contacts'
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 Contact Submission real-time event:', payload);
         fetchData();
+        if (payload.eventType === 'INSERT') {
+          const newContact = payload.new as any;
+          toast.success(`💬 New Contact Message: ${newContact?.subject || 'No subject'}`, {
+            description: `From: ${newContact?.full_name || 'Unknown'}`,
+            duration: 5000
+          });
+        }
       })
       .subscribe();
 
@@ -466,6 +499,12 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {isRealtimeActive && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-400/30 rounded-lg">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-white">Live Updates Active</span>
+                </div>
+              )}
               <Button 
                 variant="secondary" 
                 onClick={fetchData}
