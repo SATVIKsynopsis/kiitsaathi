@@ -49,7 +49,8 @@ serve(async (req) => {
       'book-buyback-resale',
       'kiit-saathi-celebrations',
       'kiit-saathi-meetups',
-      'food-micro-essentials-delivery'
+      'food-micro-essentials-delivery',
+      'resale-saathi'
     ];
 
     if (command === CMD_HIDE) {

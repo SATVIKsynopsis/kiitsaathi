@@ -49,6 +49,7 @@ When hiding, these services are removed from homepage display:
 7. KIIT Saathi Celebrations
 8. KIIT Saathi Meetups
 9. Food and micro-essentials delivery
+10. Resale Saathi
 
 Additionally, "Printout on Demand" is replaced with a "More Services Coming Soon...." placeholder card.
 

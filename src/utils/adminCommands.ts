@@ -34,7 +34,8 @@ export async function hideServicesDirectly() {
       'book-buyback-resale',
       'kiit-saathi-celebrations',
       'kiit-saathi-meetups',
-      'food-micro-essentials-delivery'
+      'food-micro-essentials-delivery',
+      'resale-saathi'
     ];
 
     // Hide the specified services
@@ -102,7 +103,8 @@ export async function restoreServicesDirectly() {
       'kiit-saathi-celebrations',
       'kiit-saathi-meetups',
       'food-micro-essentials-delivery',
-      'printout-on-demand'
+      'printout-on-demand',
+      'resale-saathi'
     ];
 
     // Restore all services
