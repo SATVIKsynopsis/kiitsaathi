@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { 
+import {
   Plus,
-  MessageSquare, 
+  MessageSquare,
   X,
   AlertTriangle,
   Loader,
@@ -12,7 +12,8 @@ import {
   Upload,
   File,
   BookOpen,
-  Bot
+  Bot,
+  Search
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "../components/Footer";
@@ -20,13 +21,9 @@ import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/study-materials/FilterBar";
 import { DataTable } from "@/components/study-materials/DataTable";
 import { TabNavigation } from "@/components/study-materials/TabNavigation";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { semesters, years,semesterSubjects } from "@/data/studyMaterials";
+import { semesters, years, semesterSubjects } from "@/data/studyMaterials";
+import { Input } from "@/components/ui/input";
 
 
 // Types
@@ -51,7 +48,7 @@ export default function StudyMaterial() {
   const [selectedYear, setSelectedYear] = useState("all");
   const [activeSection, setActiveSection] = useState("notes");
   const [materials, setMaterials] = useState<StudyMaterialItem[]>([]);
-  
+
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -65,6 +62,138 @@ export default function StudyMaterial() {
     year: "",
     file: null as File | null
   });
+
+  //playlist from youtube 
+  const playlistYoutube = [
+    {
+      "course_name": "Data Structures & Algorithms (DSA)",
+      "playlist_name": "Master Data Structures & Algorithms: DSA Bootcamp 2025",
+      "channel_name": "HelloWorld by Prince",
+      "videos": "60+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLA3GkZPtsafYzRj2lk6OyquJtRXoDLR_S"
+    },
+    {
+      "course_name": "Data Structures & Algorithms (DSA)",
+      "playlist_name": "Ultimate Playlist - Master DSA for Free",
+      "channel_name": "Take U Forward",
+      "videos": "90+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLKtofb3HgEyygy1CDrP17k2xKfvETIMr5"
+    },
+    {
+      "course_name": "Object Oriented Programming (OOPS)",
+      "playlist_name": "Object Oriented Programming (OOP) in Java Course",
+      "channel_name": "Kunal Kushwaha",
+      "videos": "28+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PL9gnSGHSqcno1G3XjUbwzXHL8_EttOuKk"
+    },
+    {
+      "course_name": "Design and Analysis of Algorithms (DAA)",
+      "playlist_name": "Design and Analysis of Algorithms (DAA)",
+      "channel_name": "Gate Smashers",
+      "videos": "45+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLxCzCOWd7aiHcmS4i14bI0VrMbZTUvlTa"
+    },
+    {
+      "course_name": "Java (Full Course)",
+      "playlist_name": "Java Full Course for free ☕ (2025)",
+      "channel_name": "Bro Code",
+      "videos": "1 (full course)",
+      "playlist_link": "https://www.youtube.com/watch?v=xTtL8E4LzTQ"
+    },
+    {
+      "course_name": "Java (Beginner to Advanced)",
+      "playlist_name": "Java Tutorial for Beginners",
+      "channel_name": "CodeWithHarry",
+      "videos": "75+",
+      "playlist_link": "https://www.youtube.com/watch?v=BGTx91t8q50"
+    },
+    {
+      "course_name": "SQL (Complete Course)",
+      "playlist_name": "Complete SQL Course For Beginners",
+      "channel_name": "Edureka",
+      "videos": "1 (full course)",
+      "playlist_link": "https://www.youtube.com/watch?v=q_JsgpiuY98"
+    },
+    {
+      "course_name": "SQL (Hindi, Full Tutorial)",
+      "playlist_name": "SQL Tutorial for Beginners | Full SQL Course In Hindi",
+      "channel_name": "Rishabh Mishra",
+      "videos": "1 (full course)",
+      "playlist_link": "https://www.youtube.com/watch?v=On9eSN3F8w0"
+    },
+    {
+      "course_name": "SQL for Beginners",
+      "playlist_name": "SQL Playlist 2025 | SQL Tutorial For Beginners | SQL Course",
+      "channel_name": "Simplilearn",
+      "videos": "25+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z"
+    },
+    {
+      "course_name": "Data Structures & Algorithms (DSA)",
+      "playlist_name": "Master Data Structures & Algorithms: DSA Bootcamp 2025",
+      "channel_name": "HelloWorld by Prince",
+      "videos": "60+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLA3GkZPtsafYzRj2lk6OyquJtRXoDLR_S"
+    },
+    {
+      "course_name": "Data Structures & Algorithms (DSA)",
+      "playlist_name": "Ultimate Playlist - Master DSA for Free",
+      "channel_name": "Take U Forward",
+      "videos": "90+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLKtofb3HgEyygy1CDrP17k2xKfvETIMr5"
+    },
+    {
+      "course_name": "Object Oriented Programming (OOPS)",
+      "playlist_name": "Object Oriented Programming (OOP) in Java Course",
+      "channel_name": "Kunal Kushwaha",
+      "videos": "28+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PL9gnSGHSqcno1G3XjUbwzXHL8_EttOuKk"
+    },
+    {
+      "course_name": "Design and Analysis of Algorithms (DAA)",
+      "playlist_name": "Design and Analysis of Algorithms (DAA)",
+      "channel_name": "Gate Smashers",
+      "videos": "45+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLxCzCOWd7aiHcmS4i14bI0VrMbZTUvlTa"
+    },
+    {
+      "course_name": "Java (Full Course)",
+      "playlist_name": "Java Full Course for free ☕ (2025)",
+      "channel_name": "Bro Code",
+      "videos": "1 (full course)",
+      "playlist_link": "https://www.youtube.com/watch?v=xTtL8E4LzTQ"
+    },
+    {
+      "course_name": "Java (Beginner to Advanced)",
+      "playlist_name": "Java Tutorial for Beginners",
+      "channel_name": "CodeWithHarry",
+      "videos": "75+",
+      "playlist_link": "https://www.youtube.com/watch?v=BGTx91t8q50"
+    },
+    {
+      "course_name": "SQL (Complete Course)",
+      "playlist_name": "Complete SQL Course For Beginners",
+      "channel_name": "Edureka",
+      "videos": "1 (full course)",
+      "playlist_link": "https://www.youtube.com/watch?v=q_JsgpiuY98"
+    },
+    {
+      "course_name": "SQL (Hindi, Full Tutorial)",
+      "playlist_name": "SQL Tutorial for Beginners | Full SQL Course In Hindi",
+      "channel_name": "Rishabh Mishra",
+      "videos": "1 (full course)",
+      "playlist_link": "https://www.youtube.com/watch?v=On9eSN3F8w0"
+    },
+    {
+      "course_name": "SQL for Beginners",
+      "playlist_name": "SQL Playlist 2025 | SQL Tutorial For Beginners | SQL Course",
+      "channel_name": "Simplilearn",
+      "videos": "25+",
+      "playlist_link": "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z"
+    }
+  ]
+
+
 
   // Get current user session
   useEffect(() => {
@@ -127,15 +256,15 @@ export default function StudyMaterial() {
 
     fetchMaterials();
   }, [activeSection]);
-const availableSubjects =
-  selectedSemester === "all"
-    ? semesterSubjects.flatMap(s => s.subjects) // all subjects
-    : semesterSubjects.find(s => s.semester === selectedSemester)?.subjects || [];
+  const availableSubjects =
+    selectedSemester === "all"
+      ? semesterSubjects.flatMap(s => s.subjects) // all subjects
+      : semesterSubjects.find(s => s.semester === selectedSemester)?.subjects || [];
 
   // Filter function for study materials
   const filterMaterials = (materials: StudyMaterialItem[]) => {
     return materials.filter(item => {
-      const matchesSearch = searchQuery === "" || 
+      const matchesSearch = searchQuery === "" ||
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subject.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -179,42 +308,42 @@ const availableSubjects =
   }
 
   const handleView = async (id: number) => {
-  try {
-    // Update view count first
-    const table = activeSection === "notes" 
-      ? "notes" 
-      : activeSection === "pyqs" 
-      ? "pyqs" 
-      : "ppts";
+    try {
+      // Update view count first
+      const table = activeSection === "notes"
+        ? "notes"
+        : activeSection === "pyqs"
+          ? "pyqs"
+          : "ppts";
 
-    const { error } = await supabase
-      .from(table)
-      .update({ views: materials.find(m => m.id === id)?.views! + 1 })
-      .eq("id", id);
+      const { error } = await supabase
+        .from(table)
+        .update({ views: materials.find(m => m.id === id)?.views! + 1 })
+        .eq("id", id);
 
-    if (error) {
-      throw error;
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setMaterials(materials.map(material =>
+        material.id === id
+          ? { ...material, views: material.views + 1 }
+          : material
+      ));
+
+      // Find material and open PDF
+      const material = materials.find(m => m.id === id);
+      if (material && material.downloadUrl) {
+        // Method 1: Open in new tab with PDF viewer
+        window.open(material.downloadUrl, '_blank', 'noopener,noreferrer');
+      }
+
+    } catch (error) {
+      console.error("Error updating view count:", error);
+      toast.error("Failed to update view count");
     }
-
-    // Update local state
-    setMaterials(materials.map(material => 
-      material.id === id 
-        ? { ...material, views: material.views + 1 }
-        : material
-    ));
-
-    // Find material and open PDF
-    const material = materials.find(m => m.id === id);
-    if (material && material.downloadUrl) {
-      // Method 1: Open in new tab with PDF viewer
-      window.open(material.downloadUrl, '_blank', 'noopener,noreferrer');
-    }
-
-  } catch (error) {
-    console.error("Error updating view count:", error);
-    toast.error("Failed to update view count");
-  }
-};;
+  };;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -232,17 +361,17 @@ const availableSubjects =
                 Study Materials
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Access comprehensive notes, previous year questions, presentations, and curated study resources 
+                Access comprehensive notes, previous year questions, presentations, and curated study resources
                 to excel in your academic journey
               </p>
-              
+
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                <button 
-                  onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')} 
+                <button
+                  onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')}
                   className="group bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-kiit-secondary/90 hover:to-kiit-secondary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
-                  <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                  <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   Request Resource
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
@@ -253,7 +382,7 @@ const availableSubjects =
 
         {/* Enhanced Tab Navigation */}
         <div className="mb-8">
-          <TabNavigation 
+          <TabNavigation
             activeSection={activeSection}
             setActiveSection={setActiveSection}
           />
@@ -269,8 +398,8 @@ const availableSubjects =
               <p className="font-medium">Something went wrong</p>
               <p className="text-sm opacity-80">{error}</p>
             </div>
-            <button 
-              onClick={() => setError("")} 
+            <button
+              onClick={() => setError("")}
               className="flex-shrink-0 w-8 h-8 rounded-full hover:bg-destructive/20 flex items-center justify-center transition-colors"
             >
               <X className="w-4 h-4" />
@@ -322,19 +451,63 @@ const availableSubjects =
         {/* Enhanced Playlists Section */}
         {activeSection === "playlists" && (
           <div className="glass-card p-12 rounded-2xl text-center border border-border/50 bg-gradient-to-br from-card/50 to-muted/20">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-6 shadow-lg">
+            {/* <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-6 shadow-lg">
               <Youtube className="w-10 h-10 text-white" />
             </div>
-            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+             <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent"> 
               YouTube Playlists
             </h3>
             <p className="text-muted-foreground text-lg max-w-md mx-auto leading-relaxed">
               Curated educational playlists and video lectures are coming soon to enhance your learning experience
-            </p>
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span>Coming Soon</span>
+            </p> */}
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-kiit-primary transition-colors">
+                <Search className="w-5 h-5" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search by title, subject, or topic..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-14 text-base rounded-xl border-border/50 bg-background/50 focus:bg-background transition-all duration-300 focus:ring-2 focus:ring-kiit-primary/20 focus:border-kiit-primary/50"
+              />
             </div>
+
+            {/* Filter playlists based on search query */}
+            {playlistYoutube
+              .filter((playlist) =>
+                playlist.course_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                playlist.playlist_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                playlist.channel_name.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((playlist, idx) => (
+                <div
+                  key={idx}
+                  className="glass-card my-6 p-6 rounded-xl border border-border/30 flex flex-col md:flex-row items-center gap-6 text-left shadow-md bg-white/60"
+                >
+                  <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+                    <Youtube className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-lg mb-1">{playlist.course_name}</h4>
+                    <p className="text-md font-semibold mb-1">{playlist.playlist_name}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Channel: <span className="font-medium">{playlist.channel_name}</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Videos: {playlist.videos}
+                    </p>
+                    <a
+                      href={playlist.playlist_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Watch Playlist
+                    </a>
+                  </div>
+                </div>
+              ))}
           </div>
         )}
 
@@ -491,24 +664,24 @@ const availableSubjects =
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
               Can't find what you're looking for? Our AI assistant is here 24/7 to help, or submit a resource request and we'll add it to our collection.
             </p>
-            
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
-              <button 
+              <button
                 onClick={() => window.location.href = '/chatbot'}
                 className="group w-full sm:w-auto bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                <Bot className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                <Bot className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 Ask AI Assistant
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')}
                 aria-label="Request Resource Form"
                 className="group w-full sm:w-auto bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 Request Resource
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
