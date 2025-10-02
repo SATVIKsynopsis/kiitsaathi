@@ -26,8 +26,8 @@ interface TeamMember {
 const teamMembers: TeamMember[] = [
   { 
     id: 1, 
-    name: 'Aarav Sharma', 
-    role: 'Founder & CEO', 
+    name: 'Aditya Sharma', 
+    role: 'Coordinator', 
     images: {
       center: '/team/member-1-center.png',
       north: '/team/member-1-north.png',
@@ -45,8 +45,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 2, 
-    name: 'Priya Patel', 
-    role: 'Co-Founder & CTO', 
+    name: 'Anushka Gupta', 
+    role: 'Marketing Lead', 
     images: {
       center: '/team/member-2-center.png',
       north: '/team/member-2-north.png',
@@ -64,8 +64,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 3, 
-    name: 'Arjun Reddy', 
-    role: 'Product Manager', 
+    name: 'Prajjwal Patel', 
+    role: 'Operations', 
     images: {
       center: '/team/member-3-center.png',
       north: '/team/member-3-north.png',
@@ -83,8 +83,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 4, 
-    name: 'Ananya Singh', 
-    role: 'Lead Developer', 
+    name: 'Piyush Kumar Swain', 
+    role: 'Operations', 
     images: {
       center: '/team/member-4-center.png',
       north: '/team/member-4-north.png',
@@ -102,8 +102,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 5, 
-    name: 'Rohan Gupta', 
-    role: 'UI/UX Designer', 
+    name: 'Prangshu', 
+    role: 'Web Developer', 
     images: {
       center: '/team/member-5-center.png',
       north: '/team/member-5-north.png',
@@ -121,8 +121,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 6, 
-    name: 'Sneha Iyer', 
-    role: 'Marketing Lead', 
+    name: 'Krishna', 
+    role: 'Web Developer', 
     images: {
       center: '/team/member-6-center.png',
       north: '/team/member-6-north.png',
@@ -140,8 +140,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 7, 
-    name: 'Vikram Malhotra', 
-    role: 'Content Strategist', 
+    name: 'Satvik', 
+    role: 'Web Developer', 
     images: {
       center: '/team/member-7-center.png',
       north: '/team/member-7-north.png',
@@ -159,8 +159,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 8, 
-    name: 'Kavya Nair', 
-    role: 'Backend Developer', 
+    name: 'Aadarsh Gupta', 
+    role: 'Graphic Designer', 
     images: {
       center: '/team/member-8-center.png',
       north: '/team/member-8-north.png',
@@ -178,8 +178,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 9, 
-    name: 'Aditya Joshi', 
-    role: 'Frontend Developer', 
+    name: 'Anushka Sinha', 
+    role: 'Graphic Designer', 
     images: {
       center: '/team/member-9-center.png',
       north: '/team/member-9-north.png',
@@ -197,8 +197,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 10, 
-    name: 'Ishita Desai', 
-    role: 'Data Analyst', 
+    name: 'Aditi Srivastav', 
+    role: 'Graphic Designer', 
     images: {
       center: '/team/member-10-center.png',
       north: '/team/member-10-north.png',
@@ -216,8 +216,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 11, 
-    name: 'Karan Mehta', 
-    role: 'Business Development', 
+    name: 'Siddharth khubchandani', 
+    role: 'Video Editor', 
     images: {
       center: '/team/member-11-center.png',
       north: '/team/member-11-north.png',
@@ -235,8 +235,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 12, 
-    name: 'Diya Kapoor', 
-    role: 'Operations Manager', 
+    name: 'Vedant Agrawal', 
+    role: 'Video Editor', 
     images: {
       center: '/team/member-12-center.png',
       north: '/team/member-12-north.png',
@@ -254,8 +254,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 13, 
-    name: 'Sahil Verma', 
-    role: 'Community Manager', 
+    name: 'Smit Bharat Patil', 
+    role: 'Marketing', 
     images: {
       center: '/team/member-13-center.png',
       north: '/team/member-13-north.png',
@@ -273,8 +273,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 14, 
-    name: 'Riya Agarwal', 
-    role: 'QA Engineer', 
+    name: 'Kirti Kumari', 
+    role: 'Marketing', 
     images: {
       center: '/team/member-14-center.png',
       north: '/team/member-14-north.png',
@@ -292,8 +292,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 15, 
-    name: 'Nikhil Rao', 
-    role: 'DevOps Engineer', 
+    name: 'Shree', 
+    role: 'Marketing', 
     images: {
       center: '/team/member-15-center.png',
       north: '/team/member-15-north.png',
@@ -311,8 +311,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 16, 
-    name: 'Pooja Khanna', 
-    role: 'Growth Hacker', 
+    name: 'Diya', 
+    role: 'Marketing', 
     images: {
       center: '/team/member-16-center.png',
       north: '/team/member-16-north.png',
@@ -330,8 +330,8 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 17, 
-    name: 'Dr. Rajesh Kumar', 
-    role: 'Technical Advisor', 
+    name: 'Shreyansh Duggar', 
+    role: 'Marketing', 
     images: {
       center: '/team/member-17-center.png',
       north: '/team/member-17-north.png',
