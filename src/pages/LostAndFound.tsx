@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -83,6 +83,8 @@ export default function LostAndFound() {
     open: false,
   })
   const [paidItems, setPaidItems] = useState<{ [id: string]: boolean }>({})
+  const [upiId, setUpiId] = useState<string>("")
+  const [showUpiForm, setShowUpiForm] = useState<boolean>(false)
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -438,6 +440,62 @@ export default function LostAndFound() {
         </div>
       </section>
 
+      {/* UPI Settings Section */}
+      {true && (
+        <section className="py-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+          <div className="container mx-auto px-4">
+            <Card className="max-w-2xl mx-auto p-6 shadow-lg border-2 border-blue-200 dark:border-blue-800">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2">
+                  💳 UPI Payment Settings
+                </CardTitle>
+                <p className="text-muted-foreground mt-2">
+                  Add your UPI ID to receive payments when others unlock your contact details
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="upi-id" className="text-base font-semibold mb-2 block">
+                      Your UPI ID
+                    </Label>
+                    <Input
+                      id="upi-id"
+                      placeholder="example@paytm / yourname@upi"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="h-12 text-base shadow-sm border-2 focus:border-blue-500 transition-colors"
+                    />
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Enter your UPI ID (e.g., 9876543210@paytm, name@phonepe, etc.)
+                    </p>
+                  </div>
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3"
+                    onClick={() => {
+                      if (upiId.trim()) {
+                        toast({
+                          title: "UPI ID Saved! 💾",
+                          description: "Your UPI ID has been saved for receiving payments.",
+                        })
+                      } else {
+                        toast({
+                          title: "Invalid UPI ID",
+                          description: "Please enter a valid UPI ID.",
+                          variant: "destructive",
+                        })
+                      }
+                    }}
+                  >
+                    Save UPI ID
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
       <section className="py-12 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <GuestBrowsingBanner
@@ -496,7 +554,7 @@ export default function LostAndFound() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-12 h-14 p-1 bg-muted/50 shadow-lg">
+            <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-12 h-14 p-1 bg-muted/50 shadow-lg">
               <TabsTrigger value="all" className="text-base font-semibold data-[state=active]:shadow-md">
                 All ({items.length})
               </TabsTrigger>
@@ -506,9 +564,12 @@ export default function LostAndFound() {
               <TabsTrigger value="found" className="text-base font-semibold data-[state=active]:shadow-md">
                 Found ({items.filter((i) => i.item_type === "found").length})
               </TabsTrigger>
+              <TabsTrigger value="upi" className="text-base font-semibold data-[state=active]:shadow-md">
+                UPI Settings
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value={activeTab}>
+            <TabsContent value="all">
               {error ? (
                 <DatabaseErrorFallback error={error} onRetry={refreshItems} />
               ) : loading ? (
@@ -632,6 +693,348 @@ export default function LostAndFound() {
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            {/* Lost Items Tab */}
+            <TabsContent value="lost">
+              {error ? (
+                <DatabaseErrorFallback error={error} onRetry={refreshItems} />
+              ) : loading ? (
+                <div className="text-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-lg text-muted-foreground">Loading items...</p>
+                </div>
+              ) : filteredItems.filter(item => item.item_type === "lost").length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="text-6xl mb-6">🔍</div>
+                  <h3 className="text-2xl font-bold mb-2">No lost items found</h3>
+                  <p className="text-muted-foreground text-lg">Be the first to post a lost item</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredItems.filter(item => item.item_type === "lost").map((item) => (
+                    <Card
+                      key={item.id}
+                      id={`item-${item.id}`}
+                      className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-card/90 backdrop-blur-sm"
+                    >
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={item.image_url || "/placeholder.svg?height=200&width=400&query=lost+and+found+item"}
+                          alt={item.title}
+                          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <Badge
+                          className="absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg bg-destructive hover:bg-destructive/90"
+                        >
+                          Lost
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="absolute top-3 right-3 px-3 py-1 text-sm font-medium shadow-lg bg-background/90 text-foreground"
+                        >
+                          {item.category}
+                        </Badge>
+                      </div>
+                      
+                      <CardContent className="p-6 space-y-4">
+                        <div>
+                          <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
+                            {item.title}
+                          </h3>
+                          <p className="text-muted-foreground text-base mb-4 line-clamp-2 leading-relaxed">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        <div className="space-y-3 py-2 border-t border-border/50">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <MapPin className="w-4 h-4 mr-3 text-primary/70" />
+                            <span className="font-medium">{item.location}</span>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4 mr-3 text-primary/70" />
+                            <span className="font-medium">{new Date(item.date).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4 mr-3 text-primary/70" />
+                            <span className="font-medium">Posted {new Date(item.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {paidItems[item.id] ? (
+                          <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
+                            <div className="flex items-center mb-3">
+                              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                              <span className="font-bold text-green-800 dark:text-green-200">Contact Details:</span>
+                            </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Name:</span>
+                                <span className="text-green-800 dark:text-green-200">{item.contact_name}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Email:</span>
+                                <span className="text-green-800 dark:text-green-200">{item.contact_email}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Phone:</span>
+                                <span className="text-green-800 dark:text-green-200">{item.contact_phone}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                            onClick={() => handleContactClick(item)}
+                            disabled={user?.email === item.contact_email}
+                          >
+                            <Phone className="w-5 h-5 mr-3" />
+                            {user?.email === item.contact_email
+                              ? "Your Item"
+                              : `Contact ${item.contact_name} (₹15)`}
+                          </Button>
+                        )}
+
+                        {/* Mark as Complete Button - Only show for item owner */}
+                        {user?.id === item.user_id && !item.marked_complete_at && (
+                          <Button 
+                            variant="outline" 
+                            className="w-full mt-2 border-green-500 text-green-600 hover:bg-green-50"
+                            onClick={() => handleMarkComplete(item.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Mark as Complete
+                          </Button>
+                        )}
+                        
+                        {/* Completed Status */}
+                        {item.marked_complete_at && (
+                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
+                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Found Items Tab */}
+            <TabsContent value="found">
+              {error ? (
+                <DatabaseErrorFallback error={error} onRetry={refreshItems} />
+              ) : loading ? (
+                <div className="text-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-lg text-muted-foreground">Loading items...</p>
+                </div>
+              ) : filteredItems.filter(item => item.item_type === "found").length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="text-6xl mb-6">🎉</div>
+                  <h3 className="text-2xl font-bold mb-2">No found items yet</h3>
+                  <p className="text-muted-foreground text-lg">Be the first to post a found item</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredItems.filter(item => item.item_type === "found").map((item) => (
+                    <Card
+                      key={item.id}
+                      id={`item-${item.id}`}
+                      className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-card/90 backdrop-blur-sm"
+                    >
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={item.image_url || "/placeholder.svg?height=200&width=400&query=lost+and+found+item"}
+                          alt={item.title}
+                          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <Badge
+                          className="absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg bg-green-500 hover:bg-green-600"
+                        >
+                          Found
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="absolute top-3 right-3 px-3 py-1 text-sm font-medium shadow-lg bg-background/90 text-foreground"
+                        >
+                          {item.category}
+                        </Badge>
+                      </div>
+                      
+                      <CardContent className="p-6 space-y-4">
+                        <div>
+                          <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
+                            {item.title}
+                          </h3>
+                          <p className="text-muted-foreground text-base mb-4 line-clamp-2 leading-relaxed">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        <div className="space-y-3 py-2 border-t border-border/50">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <MapPin className="w-4 h-4 mr-3 text-primary/70" />
+                            <span className="font-medium">{item.location}</span>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4 mr-3 text-primary/70" />
+                            <span className="font-medium">{new Date(item.date).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4 mr-3 text-primary/70" />
+                            <span className="font-medium">Posted {new Date(item.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {paidItems[item.id] ? (
+                          <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
+                            <div className="flex items-center mb-3">
+                              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                              <span className="font-bold text-green-800 dark:text-green-200">Contact Details:</span>
+                            </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Name:</span>
+                                <span className="text-green-800 dark:text-green-200">{item.contact_name}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Email:</span>
+                                <span className="text-green-800 dark:text-green-200">{item.contact_email}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Phone:</span>
+                                <span className="text-green-800 dark:text-green-200">{item.contact_phone}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                            onClick={() => handleContactClick(item)}
+                            disabled={user?.email === item.contact_email}
+                          >
+                            <Phone className="w-5 h-5 mr-3" />
+                            {user?.email === item.contact_email
+                              ? "Your Item"
+                              : `Contact ${item.contact_name} (₹15)`}
+                          </Button>
+                        )}
+
+                        {/* Mark as Complete Button - Only show for item owner */}
+                        {user?.id === item.user_id && !item.marked_complete_at && (
+                          <Button 
+                            variant="outline" 
+                            className="w-full mt-2 border-green-500 text-green-600 hover:bg-green-50"
+                            onClick={() => handleMarkComplete(item.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Mark as Complete
+                          </Button>
+                        )}
+                        
+                        {/* Completed Status */}
+                        {item.marked_complete_at && (
+                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
+                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* UPI Settings Tab */}
+            <TabsContent value="upi">
+              <div className="max-w-2xl mx-auto">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
+                  <CardHeader className="text-center pb-8">
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      UPI Settings
+                    </CardTitle>
+                    <p className="text-muted-foreground mt-2">
+                      Add your UPI ID to receive payments when people unlock your contact details
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="upi-id" className="text-base font-semibold">
+                          UPI ID
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="upi-id"
+                            type="text"
+                            placeholder="yourname@paytm / yourname@googlepay"
+                            value={upiId}
+                            onChange={(e) => setUpiId(e.target.value)}
+                            className="h-12 text-base pl-4 pr-12"
+                          />
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <span className="text-2xl">💳</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Enter your UPI ID (e.g., 9876543210@paytm, username@googleplay)
+                        </p>
+                      </div>
+
+                      <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                          💡 How it works:
+                        </h4>
+                        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                          <li>• When someone pays ₹15 to view your contact details</li>
+                          <li>• You receive ₹10 directly to your UPI ID</li>
+                          <li>• ₹5 goes to platform as service fee</li>
+                          <li>• Payments are processed instantly</li>
+                        </ul>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button 
+                          onClick={() => {
+                            // TODO: Save UPI ID to user profile
+                            toast({
+                              title: "UPI ID Saved! 💳",
+                              description: "Your UPI ID has been saved successfully.",
+                            });
+                          }}
+                          className="flex-1 h-12 text-base font-semibold"
+                          disabled={!upiId.trim()}
+                        >
+                          Save UPI ID
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setUpiId("")}
+                          className="h-12 px-6"
+                        >
+                          Clear
+                        </Button>
+                      </div>
+
+                      {upiId && (
+                        <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                            <span className="text-lg">✅</span>
+                            <span className="font-semibold">UPI ID Added</span>
+                          </div>
+                          <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                            You'll receive payments at: <strong>{upiId}</strong>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

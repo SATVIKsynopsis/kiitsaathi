@@ -222,7 +222,7 @@ app.post('/verify-payment', async (req, res) => {
       } else {
         // 2. Get contact details for the item
         const { data: itemData, error: itemError } = await supabase
-          .from('lost_found')
+          .from('lost_and_found_items')
           .select('contact_name, contact_email, contact_phone, title')
           .eq('title', subservice_name)
           .single();
