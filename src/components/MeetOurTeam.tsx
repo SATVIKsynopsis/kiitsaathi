@@ -6,31 +6,347 @@ interface TeamMember {
   id: number;
   name: string;
   role: string;
-  image: string;
+  images: {
+    center: string;
+    north: string;
+    northeast: string;
+    east: string;
+    southeast: string;
+    south: string;
+    southwest: string;
+    west: string;
+    northwest: string;
+  };
   linkedin?: string;
   instagram?: string;
   github?: string;
 }
 
-// Placeholder team data - replace images with real team photos
+// Team data with 9 directional face images for cursor tracking
 const teamMembers: TeamMember[] = [
-  { id: 1, name: 'Aarav Sharma', role: 'Founder & CEO', image: '/team/member-1.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 2, name: 'Priya Patel', role: 'Co-Founder & CTO', image: '/team/member-2.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 3, name: 'Arjun Reddy', role: 'Product Manager', image: '/team/member-3.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 4, name: 'Ananya Singh', role: 'Lead Developer', image: '/team/member-4.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 5, name: 'Rohan Gupta', role: 'UI/UX Designer', image: '/team/member-5.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 6, name: 'Sneha Iyer', role: 'Marketing Lead', image: '/team/member-6.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 7, name: 'Vikram Malhotra', role: 'Content Strategist', image: '/team/member-7.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 8, name: 'Kavya Nair', role: 'Backend Developer', image: '/team/member-8.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 9, name: 'Aditya Joshi', role: 'Frontend Developer', image: '/team/member-9.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 10, name: 'Ishita Desai', role: 'Data Analyst', image: '/team/member-10.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 11, name: 'Karan Mehta', role: 'Business Development', image: '/team/member-11.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 12, name: 'Diya Kapoor', role: 'Operations Manager', image: '/team/member-12.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 13, name: 'Sahil Verma', role: 'Community Manager', image: '/team/member-13.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 14, name: 'Riya Agarwal', role: 'QA Engineer', image: '/team/member-14.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 15, name: 'Nikhil Rao', role: 'DevOps Engineer', image: '/team/member-15.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 16, name: 'Pooja Khanna', role: 'Growth Hacker', image: '/team/member-16.png', linkedin: '#', instagram: '#', github: '#' },
-  { id: 17, name: 'Dr. Rajesh Kumar', role: 'Technical Advisor', image: '/team/member-17.png', linkedin: '#', instagram: '#', github: '#' },
+  { 
+    id: 1, 
+    name: 'Aarav Sharma', 
+    role: 'Founder & CEO', 
+    images: {
+      center: '/team/member-1-center.png',
+      north: '/team/member-1-north.png',
+      northeast: '/team/member-1-northeast.png',
+      east: '/team/member-1-east.png',
+      southeast: '/team/member-1-southeast.png',
+      south: '/team/member-1-south.png',
+      southwest: '/team/member-1-southwest.png',
+      west: '/team/member-1-west.png',
+      northwest: '/team/member-1-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 2, 
+    name: 'Priya Patel', 
+    role: 'Co-Founder & CTO', 
+    images: {
+      center: '/team/member-2-center.png',
+      north: '/team/member-2-north.png',
+      northeast: '/team/member-2-northeast.png',
+      east: '/team/member-2-east.png',
+      southeast: '/team/member-2-southeast.png',
+      south: '/team/member-2-south.png',
+      southwest: '/team/member-2-southwest.png',
+      west: '/team/member-2-west.png',
+      northwest: '/team/member-2-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 3, 
+    name: 'Arjun Reddy', 
+    role: 'Product Manager', 
+    images: {
+      center: '/team/member-3-center.png',
+      north: '/team/member-3-north.png',
+      northeast: '/team/member-3-northeast.png',
+      east: '/team/member-3-east.png',
+      southeast: '/team/member-3-southeast.png',
+      south: '/team/member-3-south.png',
+      southwest: '/team/member-3-southwest.png',
+      west: '/team/member-3-west.png',
+      northwest: '/team/member-3-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 4, 
+    name: 'Ananya Singh', 
+    role: 'Lead Developer', 
+    images: {
+      center: '/team/member-4-center.png',
+      north: '/team/member-4-north.png',
+      northeast: '/team/member-4-northeast.png',
+      east: '/team/member-4-east.png',
+      southeast: '/team/member-4-southeast.png',
+      south: '/team/member-4-south.png',
+      southwest: '/team/member-4-southwest.png',
+      west: '/team/member-4-west.png',
+      northwest: '/team/member-4-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 5, 
+    name: 'Rohan Gupta', 
+    role: 'UI/UX Designer', 
+    images: {
+      center: '/team/member-5-center.png',
+      north: '/team/member-5-north.png',
+      northeast: '/team/member-5-northeast.png',
+      east: '/team/member-5-east.png',
+      southeast: '/team/member-5-southeast.png',
+      south: '/team/member-5-south.png',
+      southwest: '/team/member-5-southwest.png',
+      west: '/team/member-5-west.png',
+      northwest: '/team/member-5-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 6, 
+    name: 'Sneha Iyer', 
+    role: 'Marketing Lead', 
+    images: {
+      center: '/team/member-6-center.png',
+      north: '/team/member-6-north.png',
+      northeast: '/team/member-6-northeast.png',
+      east: '/team/member-6-east.png',
+      southeast: '/team/member-6-southeast.png',
+      south: '/team/member-6-south.png',
+      southwest: '/team/member-6-southwest.png',
+      west: '/team/member-6-west.png',
+      northwest: '/team/member-6-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 7, 
+    name: 'Vikram Malhotra', 
+    role: 'Content Strategist', 
+    images: {
+      center: '/team/member-7-center.png',
+      north: '/team/member-7-north.png',
+      northeast: '/team/member-7-northeast.png',
+      east: '/team/member-7-east.png',
+      southeast: '/team/member-7-southeast.png',
+      south: '/team/member-7-south.png',
+      southwest: '/team/member-7-southwest.png',
+      west: '/team/member-7-west.png',
+      northwest: '/team/member-7-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 8, 
+    name: 'Kavya Nair', 
+    role: 'Backend Developer', 
+    images: {
+      center: '/team/member-8-center.png',
+      north: '/team/member-8-north.png',
+      northeast: '/team/member-8-northeast.png',
+      east: '/team/member-8-east.png',
+      southeast: '/team/member-8-southeast.png',
+      south: '/team/member-8-south.png',
+      southwest: '/team/member-8-southwest.png',
+      west: '/team/member-8-west.png',
+      northwest: '/team/member-8-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 9, 
+    name: 'Aditya Joshi', 
+    role: 'Frontend Developer', 
+    images: {
+      center: '/team/member-9-center.png',
+      north: '/team/member-9-north.png',
+      northeast: '/team/member-9-northeast.png',
+      east: '/team/member-9-east.png',
+      southeast: '/team/member-9-southeast.png',
+      south: '/team/member-9-south.png',
+      southwest: '/team/member-9-southwest.png',
+      west: '/team/member-9-west.png',
+      northwest: '/team/member-9-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 10, 
+    name: 'Ishita Desai', 
+    role: 'Data Analyst', 
+    images: {
+      center: '/team/member-10-center.png',
+      north: '/team/member-10-north.png',
+      northeast: '/team/member-10-northeast.png',
+      east: '/team/member-10-east.png',
+      southeast: '/team/member-10-southeast.png',
+      south: '/team/member-10-south.png',
+      southwest: '/team/member-10-southwest.png',
+      west: '/team/member-10-west.png',
+      northwest: '/team/member-10-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 11, 
+    name: 'Karan Mehta', 
+    role: 'Business Development', 
+    images: {
+      center: '/team/member-11-center.png',
+      north: '/team/member-11-north.png',
+      northeast: '/team/member-11-northeast.png',
+      east: '/team/member-11-east.png',
+      southeast: '/team/member-11-southeast.png',
+      south: '/team/member-11-south.png',
+      southwest: '/team/member-11-southwest.png',
+      west: '/team/member-11-west.png',
+      northwest: '/team/member-11-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 12, 
+    name: 'Diya Kapoor', 
+    role: 'Operations Manager', 
+    images: {
+      center: '/team/member-12-center.png',
+      north: '/team/member-12-north.png',
+      northeast: '/team/member-12-northeast.png',
+      east: '/team/member-12-east.png',
+      southeast: '/team/member-12-southeast.png',
+      south: '/team/member-12-south.png',
+      southwest: '/team/member-12-southwest.png',
+      west: '/team/member-12-west.png',
+      northwest: '/team/member-12-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 13, 
+    name: 'Sahil Verma', 
+    role: 'Community Manager', 
+    images: {
+      center: '/team/member-13-center.png',
+      north: '/team/member-13-north.png',
+      northeast: '/team/member-13-northeast.png',
+      east: '/team/member-13-east.png',
+      southeast: '/team/member-13-southeast.png',
+      south: '/team/member-13-south.png',
+      southwest: '/team/member-13-southwest.png',
+      west: '/team/member-13-west.png',
+      northwest: '/team/member-13-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 14, 
+    name: 'Riya Agarwal', 
+    role: 'QA Engineer', 
+    images: {
+      center: '/team/member-14-center.png',
+      north: '/team/member-14-north.png',
+      northeast: '/team/member-14-northeast.png',
+      east: '/team/member-14-east.png',
+      southeast: '/team/member-14-southeast.png',
+      south: '/team/member-14-south.png',
+      southwest: '/team/member-14-southwest.png',
+      west: '/team/member-14-west.png',
+      northwest: '/team/member-14-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 15, 
+    name: 'Nikhil Rao', 
+    role: 'DevOps Engineer', 
+    images: {
+      center: '/team/member-15-center.png',
+      north: '/team/member-15-north.png',
+      northeast: '/team/member-15-northeast.png',
+      east: '/team/member-15-east.png',
+      southeast: '/team/member-15-southeast.png',
+      south: '/team/member-15-south.png',
+      southwest: '/team/member-15-southwest.png',
+      west: '/team/member-15-west.png',
+      northwest: '/team/member-15-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 16, 
+    name: 'Pooja Khanna', 
+    role: 'Growth Hacker', 
+    images: {
+      center: '/team/member-16-center.png',
+      north: '/team/member-16-north.png',
+      northeast: '/team/member-16-northeast.png',
+      east: '/team/member-16-east.png',
+      southeast: '/team/member-16-southeast.png',
+      south: '/team/member-16-south.png',
+      southwest: '/team/member-16-southwest.png',
+      west: '/team/member-16-west.png',
+      northwest: '/team/member-16-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
+  { 
+    id: 17, 
+    name: 'Dr. Rajesh Kumar', 
+    role: 'Technical Advisor', 
+    images: {
+      center: '/team/member-17-center.png',
+      north: '/team/member-17-north.png',
+      northeast: '/team/member-17-northeast.png',
+      east: '/team/member-17-east.png',
+      southeast: '/team/member-17-southeast.png',
+      south: '/team/member-17-south.png',
+      southwest: '/team/member-17-southwest.png',
+      west: '/team/member-17-west.png',
+      northwest: '/team/member-17-northwest.png',
+    },
+    linkedin: '#', 
+    instagram: '#', 
+    github: '#' 
+  },
 ];
 
 const TeamCard: React.FC<{ member: TeamMember; mousePosition: { x: number; y: number } }> = ({ 
@@ -75,26 +391,25 @@ const TeamCard: React.FC<{ member: TeamMember; mousePosition: { x: number; y: nu
     setFaceDirection(direction);
   }, [mousePosition, isFlipped]);
 
-  // Transform value based on face direction for subtle eye-like movement
-  const getFaceTransform = () => {
-    const moveAmount = 3;
+  // Get the appropriate face image based on cursor direction
+  const getFaceImage = () => {
     switch (faceDirection) {
-      case 'north': return `translateY(-${moveAmount}px)`;
-      case 'northeast': return `translate(${moveAmount}px, -${moveAmount}px)`;
-      case 'east': return `translateX(${moveAmount}px)`;
-      case 'southeast': return `translate(${moveAmount}px, ${moveAmount}px)`;
-      case 'south': return `translateY(${moveAmount}px)`;
-      case 'southwest': return `translate(-${moveAmount}px, ${moveAmount}px)`;
-      case 'west': return `translateX(-${moveAmount}px)`;
-      case 'northwest': return `translate(-${moveAmount}px, -${moveAmount}px)`;
-      default: return 'translate(0, 0)';
+      case 'north': return member.images.north;
+      case 'northeast': return member.images.northeast;
+      case 'east': return member.images.east;
+      case 'southeast': return member.images.southeast;
+      case 'south': return member.images.south;
+      case 'southwest': return member.images.southwest;
+      case 'west': return member.images.west;
+      case 'northwest': return member.images.northwest;
+      default: return member.images.center;
     }
   };
 
   return (
     <motion.div
       ref={cardRef}
-      className="relative h-80 cursor-pointer perspective-1000"
+      className="relative h-72 cursor-pointer perspective-1000"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
       whileHover={{ scale: 1.05 }}
@@ -113,19 +428,19 @@ const TeamCard: React.FC<{ member: TeamMember; mousePosition: { x: number; y: nu
           className="absolute inset-0 backface-hidden rounded-2xl overflow-hidden bg-card border border-border shadow-lg"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className="flex flex-col items-center justify-center h-full p-6">
-            <motion.div
-              className="w-40 h-40 rounded-full overflow-hidden mb-4 bg-muted"
-              style={{ transform: getFaceTransform() }}
-              transition={{ duration: 0.2 }}
-            >
-              <img
-                src={member.image}
+          <div className="flex flex-col items-center justify-center h-full p-4">
+            <div className="w-36 h-36 rounded-full overflow-hidden mb-3 bg-muted">
+              <motion.img
+                key={faceDirection}
+                src={getFaceImage()}
                 alt={member.name}
                 className="w-full h-full object-cover"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15 }}
               />
-            </motion.div>
-            <h3 className="text-xl font-semibold text-foreground text-center">
+            </div>
+            <h3 className="text-lg font-semibold text-foreground text-center">
               {member.name}
             </h3>
           </div>
@@ -139,18 +454,18 @@ const TeamCard: React.FC<{ member: TeamMember; mousePosition: { x: number; y: nu
             transform: 'rotateY(180deg)',
           }}
         >
-          <div className="flex flex-col items-center justify-center h-full p-6">
-            <div className="w-40 h-40 rounded-full overflow-hidden mb-4 bg-primary/20">
+          <div className="flex flex-col items-center justify-center h-full p-4">
+            <div className="w-36 h-36 rounded-full overflow-hidden mb-3 bg-primary/20">
               <img
-                src={member.image}
+                src={member.images.center}
                 alt={member.name}
                 className="w-full h-full object-cover opacity-70"
               />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2 text-center">
+            <h3 className="text-lg font-semibold text-foreground mb-1 text-center">
               {member.name}
             </h3>
-            <p className="text-lg text-primary font-medium mb-4 text-center">
+            <p className="text-sm text-primary font-medium mb-3 text-center">
               {member.role}
             </p>
             <div className="flex gap-4">
