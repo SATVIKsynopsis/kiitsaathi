@@ -18,7 +18,7 @@ const supabase = createClient(
 function generateSecureToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return encode(array)
+  return encode(array.buffer)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, ''); 
@@ -74,11 +74,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       requestData = JSON.parse(body);
-    } catch (parseError) {
+    } catch (parseError: any) {
       return new Response(
         JSON.stringify({ 
           error: 'Invalid JSON in request body',
-          details: parseError.message 
+          details: parseError?.message || 'Unknown parsing error' 
         }),
         { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );

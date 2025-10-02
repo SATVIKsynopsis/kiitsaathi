@@ -101,6 +101,14 @@ const services = [
     gradient: "from-usc-maroon to-campus-purple",
   },
   {
+    id: "resale-saathi",
+    icon: ShoppingBag,
+    title: "Resale Saathi",
+    description: "Buy, sell, and exchange items within the KIIT campus. Verified students only, safe transactions.",
+    price: "Free to List",
+    gradient: "from-campus-blue to-kiit-green",
+  },
+  {
     id: "senior-connect",
     icon: Users,
     title: "Senior Connect",
@@ -181,7 +189,8 @@ export const ServicesGrid = () => {
   const handleServiceClick = (service: typeof services[0]) => {
     const routeMap: Record<string, string> = {
       "Carton Packing & Hostel Transfers": "/carton-transfer",
-      "Printouts on Demand": "/printout-on-demand", 
+      "Printouts on Demand": "/printout-on-demand",
+      "Resale Saathi": "/resale",
       "Senior Connect": "/senior-connect",
       "Handwritten Assignments": "/handwritten-assignments",
       "KIIT Societies, Fests and Sports": "/kiit-societies",
@@ -215,25 +224,25 @@ export const ServicesGrid = () => {
          > 
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2  px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
+        <div className="text-center mb-12 px-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
             <Star className="w-4 h-4" />
-            7+ Campus Services
+            15+ Campus Services
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
             Everything You Need
             <span className="block">In One App</span>
           </h2>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             From academic support to daily essentials, we have built the complete ecosystem 
             to enrich your KIIT experience. <span className="font-semibold text-kiit-green">Because campus life is hectic enough already.</span>
           </p>
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16 px-4">
           {loading ? (
             <div className="col-span-full flex justify-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -287,7 +296,7 @@ export const ServicesGrid = () => {
               return (
                 <div 
                   key={index}
-                  className="service-card  group text-kiit-green-dark"
+                  className="service-card bg-white group text-kiit-green-dark"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Service Header */}
@@ -297,32 +306,31 @@ export const ServicesGrid = () => {
                     </div>
                   </div>
 
-                  {/* Service Content */}
-                  <div className="space-y-2">
-                    <h3 className="text-xl hover:text-black font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
-                      {service.title}
-                    </h3>
-                    
-                    <p className="text-muted-foreground leading-relaxed text-sm">
-                      {service.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between pt-2">
-                      <span className={`font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r ${service.gradient} text-white`}>
-                        {service.price}
-                      </span>
-                      
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="opacity-0 group-hover:opacity-100 transition-all duration-300"
-                        onClick={() => handleServiceClick(service)}
-                      >
-                        Try Now
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </div>
-                  </div>
+                   <div className="space-y-2 px-2">
+                     <h3 className="text-lg sm:text-xl hover:text-black font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
+                       {service.title}
+                     </h3>
+                     
+                     <p className="text-muted-foreground leading-relaxed text-sm">
+                       {service.description}
+                     </p>
+                     
+                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2">
+                       <span className={`font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r ${service.gradient} text-white`}>
+                         {service.price}
+                       </span>
+                       
+                       <Button 
+                         variant="ghost" 
+                         size="sm" 
+                         className="opacity-0 group-hover:opacity-100 transition-all duration-300 w-full sm:w-auto"
+                         onClick={() => handleServiceClick(service)}
+                       >
+                         Try Now
+                         <ArrowRight className="w-4 h-4 ml-1" />
+                       </Button>
+                     </div>
+                   </div>
                 </div>
               );
             })

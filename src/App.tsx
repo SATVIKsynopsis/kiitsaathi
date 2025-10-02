@@ -37,13 +37,28 @@ import FoodOrderCustomer from "./pages/FoodOrderCustomer";
 import FoodOrderHelper from "./pages/FoodOrderHelper";
 import CampusMap from "./pages/CampusMap";
 import CampusDetailPage from "./components/campus-map/CampusDetailPage";
+import Campus25 from "./pages/Campus25";
 import SGPACalculator from "./pages/SGPACalculator";
+import AdminDashboard from "./pages/AdminDashboard";
+import { AdminGuard } from "@/components/AdminGuard";
 import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import { useEffect } from "react";
+import { lazy } from "react";
 
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
+
+import BakeryDashboard from "./pages/BakeryDashboard";
+import Resale from "./pages/Resale";
+import ResaleBrowse from "./pages/ResaleBrowse";
+import ResaleNewListing from "./pages/ResaleNewListing";
+import ResaleListingDetail from "./pages/ResaleListingDetail";
+import ResaleChat from "./pages/ResaleChat";
+import ResaleCheckout from "./pages/ResaleCheckout";
+import ResaleTransactions from "./pages/ResaleTransactions";
+import ResaleFavourites from "./pages/ResaleFavourites";
+import ResaleMyListings from "./pages/ResaleMyListings";
 
 const queryClient = new QueryClient();
 
@@ -88,10 +103,30 @@ const App = () => {
                 <Route path="/chatbot" element={<ChatBotPage />} />
                 <Route path="/campus-map" element={<CampusMap />} />
                 <Route path="/campus-map/:campusId" element={<CampusDetailPage />} />
+                <Route path="/campus-map/campus-25" element={<Campus25 />} />
                 <Route path="/sgpa-calculator" element={<SGPACalculator />} />
+                <Route path="/admin-dashboard" element={
+                  <AdminGuard>
+                    <AdminDashboard />
+                  </AdminGuard>
+                } />
                 <Route path="/resume-saathi" element={<ResumeSaathi />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/bakery-dashboard" element={<BakeryDashboard />} />
+                
+                {/* Resale Saathi Routes */}
+                <Route path="/resale" element={<Resale />} />
+                <Route path="/resale/browse" element={<ResaleBrowse />} />
+                <Route path="/resale/new" element={<ResaleNewListing />} />
+                <Route path="/resale/:id" element={<ResaleListingDetail />} />
+                <Route path="/resale/categories/:category" element={<ResaleBrowse />} />
+                <Route path="/resale/chat/:conversationId" element={<ResaleChat />} />
+                <Route path="/resale/checkout/:id" element={<ResaleCheckout />} />
+                <Route path="/resale/transactions" element={<ResaleTransactions />} />
+                <Route path="/resale/favourites" element={<ResaleFavourites />} />
+                <Route path="/resale/my-listings" element={<ResaleMyListings />} />
+                
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

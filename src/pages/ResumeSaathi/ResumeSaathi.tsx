@@ -9,6 +9,8 @@ import { PdfGenerator } from "./PdfGenerator";
 import { Loader3D } from "./Loader3D";
 import { SuggestionsPanel } from "./SuggestionsPanel";
 import { ResumeHistoryList } from "./ResumeHistoryList";
+import { TestResumeGenerator } from "@/components/TestResumeGenerator";
+import { DeleteAllDataButton } from "@/components/DeleteAllDataButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -237,8 +239,63 @@ const ResumeSaathi = () => {
       
       setDailyDownloads(prev => prev + 1);
       useToastHook({ title: "Resume downloaded successfully!" });
+      
+      // Prompt for data deletion after download
+      setTimeout(() => {
+        const shouldDelete = window.confirm(
+          "🔒 Privacy Protection: Would you like to delete all your personal data from our servers now that you've downloaded your resume? This action cannot be undone."
+        );
+        if (shouldDelete) {
+          handleDeleteAllData();
+        }
+      }, 1000);
     } catch (error) {
       console.error('Error updating download count:', error);
+    }
+  };
+
+  const handleDeleteAllData = async () => {
+    if (!user) return;
+    
+    const confirmDelete = window.confirm(
+      "⚠️ FINAL CONFIRMATION: This will permanently delete ALL your resume data, including:\n\n• All saved resumes\n• Download history\n• Personal information\n\nThis action CANNOT be undone. Are you absolutely sure?"
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const { data, error } = await supabase.rpc('delete_all_resume_data', {
+        target_user_id: user.id
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        useToastHook({
+          title: "✅ Data Deleted Successfully",
+          description: "All your personal resume data has been permanently removed from our servers."
+        });
+        
+        // Reset local state
+        setResumeData(null);
+        setViewMode('form');
+        setEditingResumeId(null);
+        setDailyDownloads(0);
+        
+        // Clear form
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        throw new Error("Unable to delete data");
+      }
+    } catch (error: any) {
+      console.error('Error deleting data:', error);
+      useToastHook({
+        title: "Error",
+        description: "Failed to delete data. Please try again or contact support.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -270,7 +327,7 @@ const ResumeSaathi = () => {
             </Badge>
             <Badge variant="secondary" className="text-sm">
               <Star className="w-4 h-4 mr-1" />
-              3 Templates
+              5 Templates
             </Badge>
             <Badge variant="secondary" className="text-sm">
               Resumes remaining today: {5 - dailyDownloads}
@@ -278,30 +335,39 @@ const ResumeSaathi = () => {
           </div>
         </div>
 
-        <div className="flex justify-center gap-4 mb-8">
-          <Button
-            variant={viewMode === 'form' ? "default" : "outline"}
-            onClick={() => setViewMode('form')}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create New
-          </Button>
-          <Button
-            variant={viewMode === 'history' ? "default" : "outline"}
-            onClick={() => setViewMode('history')}
-          >
-            <History className="w-4 h-4 mr-2" />
-            My Resumes
-          </Button>
-        </div>
+          <div className="flex justify-center gap-4 mb-8">
+            <Button
+              variant={viewMode === 'form' ? "default" : "outline"}
+              onClick={() => setViewMode('form')}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New
+            </Button>
+            <Button
+              variant={viewMode === 'history' ? "default" : "outline"}
+              onClick={() => setViewMode('history')}
+            >
+              <History className="w-4 h-4 mr-2" />
+              My Resumes
+            </Button>
+            <DeleteAllDataButton onDataDeleted={() => {
+              setResumeData(null);
+              setViewMode('form');
+              setEditingResumeId(null);
+              setDailyDownloads(0);
+            }} />
+          </div>
 
         {viewMode === 'form' && (
-          <ResumeForm
-            onSubmit={handleFormSubmit}
-            initialData={resumeData}
-            editingId={editingResumeId}
-            externalError={formError}
-          />
+          <div className="space-y-6">
+            <TestResumeGenerator onTestResume={handleFormSubmit} />
+            <ResumeForm
+              onSubmit={handleFormSubmit}
+              initialData={resumeData}
+              editingId={editingResumeId}
+              externalError={formError}
+            />
+          </div>
         )}
 
         {viewMode === 'loading' && <Loader3D />}
@@ -330,6 +396,13 @@ const ResumeSaathi = () => {
                   onClick={() => setViewMode('form')}
                 >
                   Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAllData}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  🗑️ Delete All Data
                 </Button>
               </div>
             </div>

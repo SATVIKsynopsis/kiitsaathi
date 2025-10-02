@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { 
@@ -8,7 +8,8 @@ import {
   Sparkles,
   ArrowLeft,
   Star,
-  Quote
+  Quote,
+  MessageCircle
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -16,10 +17,102 @@ import { useNavigate } from "react-router-dom";
 import SeniorCard from "@/components/SeniorCard";
 import MentorshipFeatures from "@/components/MentorshipFeatures";
 import SkillSessions from "@/components/SkillSessions";
+import { DemoNameSelector } from "@/components/DemoNameSelector";
+import { ChatInterface } from "@/components/ChatInterface";
+import { useSeniorConnect } from "@/hooks/useSeniorConnect";
+import { useAuth } from "@/hooks/useAuth";
 import { seniors } from "@/data/seniors";
 
 const SeniorConnect = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const {
+    isLoading,
+    availableDemoNames,
+    currentSession,
+    messages,
+    startChatSession,
+    sendMessage,
+    endChatSession
+  } = useSeniorConnect();
+  
+  const [currentView, setCurrentView] = useState<'landing' | 'nameSelection' | 'chat'>('landing');
+  const [selectedDemoName, setSelectedDemoName] = useState<string>('');
+
+  const handleStartChat = () => {
+    if (!user) {
+      navigate('/auth?redirect=/senior-connect');
+      return;
+    }
+    setCurrentView('nameSelection');
+  };
+
+  const handleNameSelected = (name: string) => {
+    setSelectedDemoName(name);
+    setCurrentView('chat');
+    // In a real app, you'd select a mentor/senior to chat with
+    // For now, we'll simulate starting a session
+  };
+
+  const handleEndChat = async () => {
+    if (currentSession) {
+      await endChatSession(currentSession.id);
+    }
+    setCurrentView('landing');
+    setSelectedDemoName('');
+  };
+
+  const handleSendMessage = async (message: string) => {
+    if (currentSession) {
+      return await sendMessage(currentSession.id, message);
+    }
+    return false;
+  };
+
+  // Show chat interface
+  if (currentView === 'chat' && currentSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-kiit-green-soft/30 to-campus-blue/5 p-4">
+        <Navbar />
+        <div className="container mx-auto pt-20">
+          <ChatInterface
+            session={currentSession}
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            onEndSession={handleEndChat}
+            isLoading={isLoading}
+            demoName={selectedDemoName}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Show demo name selection
+  if (currentView === 'nameSelection') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white via-kiit-green-soft/30 to-campus-blue/5 p-4">
+        <Navbar />
+        <div className="container mx-auto pt-20">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentView('landing')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          </div>
+          <DemoNameSelector
+            demoNames={availableDemoNames}
+            onSelect={handleNameSelected}
+            isLoading={isLoading}
+          />
+        </div>
+      </div>
+    );
+  }
 
   // Floating doodles for background decoration
   const FloatingDoodle = ({ children, className = "" }) => (
@@ -104,7 +197,10 @@ const SeniorConnect = () => {
               </h2>
               
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Connect with caring seniors who understand your journey. Get real advice, emotional support, and guidance — because every conversation can change your college experience.
+                Connect with caring seniors through secure online chats. Get real advice, emotional support, and guidance — all while protecting your privacy with demo names.
+                <span className="font-semibold text-purple-600 block mt-2">
+                  🔒 Only online connections • No personal info shared • AI-monitored for safety
+                </span>
               </p>
 
               {/* Illustration Placeholder - Hand-drawn style */}
@@ -151,12 +247,15 @@ const SeniorConnect = () => {
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
                 <Button 
-                  onClick={() => document.getElementById("mentors-section")?.scrollIntoView({ behavior: "smooth" })}
+                  onClick={handleStartChat}
                   className="bg-gradient-to-r from-kiit-green to-campus-blue hover:from-kiit-green-dark hover:to-campus-blue text-white px-8 py-4 text-lg rounded-full transition-all duration-300 hover:scale-105 shadow-lg"
                 >
-                  Meet Your Mentors
-                  <Heart className="ml-2 w-5 h-5" />
+                  <MessageCircle className="mr-2 w-5 h-5" />
+                  Start Online Chat
                 </Button>
+                <p className="text-sm text-muted-foreground mt-3">
+                  🌐 Online chats only - Safe, private, and secure
+                </p>
               </motion.div>
             </motion.div>
           </div>

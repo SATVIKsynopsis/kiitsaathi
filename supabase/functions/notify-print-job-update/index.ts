@@ -1,13 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
-import { Resend } from "npm:resend@2.0.0";
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       completed: `Print job completed successfully! Thank you for using KIIT Saathi! 🙏`
     };
 
-    const message = statusMessages[status] || `Status updated to: ${status}`;
+    const message = (statusMessages as any)[status] || `Status updated to: ${status}`;
     
     // Create notification in database
     const { error: notifError } = await supabase.rpc('create_print_job_notification', {
@@ -97,13 +94,8 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       try {
-        await resend.emails.send({
-          from: "KIIT Saathi Print Service <printservice@kiitsaathi.com>",
-          to: [userEmail],
-          subject: emailSubject,
-          html: emailContent,
-        });
-        console.log(`Email notification sent to ${userEmail}`);
+        console.log("Email would be sent to:", userEmail, "Subject:", emailSubject);
+        console.log("Print job status update email functionality temporarily disabled");
       } catch (emailError) {
         console.error('Error sending email notification:', emailError);
       }

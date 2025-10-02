@@ -1,0 +1,660 @@
+{
+  "meta": {
+    "name": "Campus 25",
+    "mainGate": { "xPct": 0.06, "yPct": 0.92, "label": "You are here (Campus 25 Main Gate)" }
+  },
+  "floors": {
+    "ground": {
+      "label": "Ground Floor",
+      "svgViewBox": "0 0 1200 800",
+      "rooms": [
+        {
+          "id": "A001",
+          "label": "A001",
+          "path": "M 80 750 L 80 700 L 180 700 L 180 750 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.88 },
+          "side": "left",
+          "description": "Room A001"
+        },
+        {
+          "id": "A002",
+          "label": "A002",
+          "path": "M 180 750 L 180 700 L 280 700 L 280 750 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.88 },
+          "side": "left",
+          "description": "Room A002"
+        },
+        {
+          "id": "A003",
+          "label": "A003",
+          "path": "M 80 700 L 80 650 L 180 650 L 180 700 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.81 },
+          "side": "left",
+          "description": "Room A003"
+        },
+        {
+          "id": "A004",
+          "label": "A004",
+          "path": "M 180 700 L 180 650 L 280 650 L 280 700 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.81 },
+          "side": "left",
+          "description": "Room A004"
+        },
+        {
+          "id": "A005",
+          "label": "A005",
+          "path": "M 80 650 L 80 600 L 180 600 L 180 650 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.74 },
+          "side": "left",
+          "description": "Room A005"
+        },
+        {
+          "id": "A006",
+          "label": "A006",
+          "path": "M 180 650 L 180 600 L 280 600 L 280 650 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.74 },
+          "side": "left",
+          "description": "Room A006"
+        },
+        {
+          "id": "A007",
+          "label": "A007",
+          "path": "M 80 600 L 80 550 L 180 550 L 180 600 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.67 },
+          "side": "left",
+          "description": "Room A007"
+        },
+        {
+          "id": "A008",
+          "label": "A008",
+          "path": "M 180 600 L 180 550 L 280 550 L 280 600 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.67 },
+          "side": "left",
+          "description": "Room A008"
+        },
+        {
+          "id": "A009",
+          "label": "A009",
+          "path": "M 80 550 L 80 500 L 180 500 L 180 550 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.60 },
+          "side": "left",
+          "description": "Room A009"
+        },
+        {
+          "id": "A010",
+          "label": "A010",
+          "path": "M 180 550 L 180 500 L 280 500 L 280 550 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.60 },
+          "side": "left",
+          "description": "Room A010"
+        },
+        {
+          "id": "A011",
+          "label": "A011",
+          "path": "M 80 500 L 80 450 L 180 450 L 180 500 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.53 },
+          "side": "left",
+          "description": "Room A011"
+        },
+        {
+          "id": "A012",
+          "label": "A012",
+          "path": "M 180 500 L 180 450 L 280 450 L 280 500 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.53 },
+          "side": "left",
+          "description": "Room A012"
+        },
+        {
+          "id": "A013",
+          "label": "A013",
+          "path": "M 300 200 L 300 150 L 380 150 L 380 200 Z",
+          "centroid": { "xPct": 0.28, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A013"
+        },
+        {
+          "id": "A014",
+          "label": "A014",
+          "path": "M 300 250 L 300 200 L 380 200 L 380 250 Z",
+          "centroid": { "xPct": 0.28, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A014"
+        },
+        {
+          "id": "A015",
+          "label": "A015",
+          "path": "M 380 200 L 380 150 L 460 150 L 460 200 Z",
+          "centroid": { "xPct": 0.35, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A015"
+        },
+        {
+          "id": "A016",
+          "label": "A016",
+          "path": "M 380 250 L 380 200 L 460 200 L 460 250 Z",
+          "centroid": { "xPct": 0.35, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A016"
+        },
+        {
+          "id": "A017",
+          "label": "A017",
+          "path": "M 460 200 L 460 150 L 540 150 L 540 200 Z",
+          "centroid": { "xPct": 0.42, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A017"
+        },
+        {
+          "id": "A018",
+          "label": "A018",
+          "path": "M 460 250 L 460 200 L 540 200 L 540 250 Z",
+          "centroid": { "xPct": 0.42, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A018"
+        },
+        {
+          "id": "A019",
+          "label": "A019",
+          "path": "M 540 200 L 540 150 L 620 150 L 620 200 Z",
+          "centroid": { "xPct": 0.48, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A019"
+        },
+        {
+          "id": "A020",
+          "label": "A020",
+          "path": "M 540 250 L 540 200 L 620 200 L 620 250 Z",
+          "centroid": { "xPct": 0.48, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A020"
+        },
+        {
+          "id": "A021",
+          "label": "A021",
+          "path": "M 620 200 L 620 150 L 700 150 L 700 200 Z",
+          "centroid": { "xPct": 0.55, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A021"
+        },
+        {
+          "id": "A022",
+          "label": "A022",
+          "path": "M 620 250 L 620 200 L 700 200 L 700 250 Z",
+          "centroid": { "xPct": 0.55, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A022"
+        },
+        {
+          "id": "A023",
+          "label": "A023",
+          "path": "M 700 200 L 700 150 L 780 150 L 780 200 Z",
+          "centroid": { "xPct": 0.62, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A023"
+        },
+        {
+          "id": "A024",
+          "label": "A024",
+          "path": "M 700 250 L 700 200 L 780 200 L 780 250 Z",
+          "centroid": { "xPct": 0.62, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A024"
+        },
+        {
+          "id": "A025",
+          "label": "A025",
+          "path": "M 780 200 L 780 150 L 860 150 L 860 200 Z",
+          "centroid": { "xPct": 0.68, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A025"
+        },
+        {
+          "id": "A026",
+          "label": "A026",
+          "path": "M 780 250 L 780 200 L 860 200 L 860 250 Z",
+          "centroid": { "xPct": 0.68, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A026"
+        },
+        {
+          "id": "A001",
+          "label": "A001",
+          "path": "M 920 750 L 920 700 L 1020 700 L 1020 750 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.88 },
+          "side": "right",
+          "description": "Room A001"
+        },
+        {
+          "id": "B002",
+          "label": "B002",
+          "path": "M 1020 750 L 1020 700 L 1120 700 L 1120 750 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.88 },
+          "side": "right",
+          "description": "Room B002"
+        },
+        {
+          "id": "B003",
+          "label": "B003",
+          "path": "M 920 700 L 920 650 L 1020 650 L 1020 700 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.81 },
+          "side": "right",
+          "description": "Room B003"
+        },
+        {
+          "id": "B004",
+          "label": "B004",
+          "path": "M 1020 700 L 1020 650 L 1120 650 L 1120 700 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.81 },
+          "side": "right",
+          "description": "Room B004"
+        },
+        {
+          "id": "B005",
+          "label": "B005",
+          "path": "M 920 650 L 920 600 L 1020 600 L 1020 650 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.74 },
+          "side": "right",
+          "description": "Room B005"
+        },
+        {
+          "id": "B006",
+          "label": "B006",
+          "path": "M 1020 650 L 1020 600 L 1120 600 L 1120 650 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.74 },
+          "side": "right",
+          "description": "Room B006"
+        },
+        {
+          "id": "B007",
+          "label": "B007",
+          "path": "M 920 600 L 920 550 L 1020 550 L 1020 600 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.67 },
+          "side": "right",
+          "description": "Room B007"
+        },
+        {
+          "id": "B008",
+          "label": "B008",
+          "path": "M 1020 600 L 1020 550 L 1120 550 L 1120 600 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.67 },
+          "side": "right",
+          "description": "Room B008"
+        },
+        {
+          "id": "B009",
+          "label": "B009",
+          "path": "M 920 550 L 920 500 L 1020 500 L 1020 550 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.60 },
+          "side": "right",
+          "description": "Room B009"
+        },
+        {
+          "id": "B010",
+          "label": "B010",
+          "path": "M 1020 550 L 1020 500 L 1120 500 L 1120 550 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.60 },
+          "side": "right",
+          "description": "Room B010"
+        },
+        {
+          "id": "B011",
+          "label": "B011",
+          "path": "M 920 500 L 920 450 L 1020 450 L 1020 500 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.53 },
+          "side": "right",
+          "description": "Room B011"
+        },
+        {
+          "id": "B012",
+          "label": "B012",
+          "path": "M 1020 500 L 1020 450 L 1120 450 L 1120 500 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.53 },
+          "side": "right",
+          "description": "Room B012"
+        }
+      ],
+      "pois": [
+        {
+          "id": "gate",
+          "label": "Main Gate",
+          "xPct": 0.06,
+          "yPct": 0.92,
+          "description": "Campus 25 Main Gate - You are here"
+        },
+        {
+          "id": "center",
+          "label": "KIIT Saathi Center",
+          "xPct": 0.50,
+          "yPct": 0.50,
+          "description": "Central area with KIIT Saathi logo"
+        }
+      ]
+    },
+    "first": {
+      "label": "First Floor",
+      "svgViewBox": "0 0 1200 800",
+      "rooms": [
+        {
+          "id": "A101",
+          "label": "A101",
+          "path": "M 80 750 L 80 700 L 180 700 L 180 750 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.88 },
+          "side": "left",
+          "description": "Room A101"
+        },
+        {
+          "id": "A102",
+          "label": "A102",
+          "path": "M 180 750 L 180 700 L 280 700 L 280 750 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.88 },
+          "side": "left",
+          "description": "Room A102"
+        },
+        {
+          "id": "A103",
+          "label": "A103",
+          "path": "M 80 700 L 80 650 L 180 650 L 180 700 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.81 },
+          "side": "left",
+          "description": "Room A103"
+        },
+        {
+          "id": "A104",
+          "label": "A104",
+          "path": "M 180 700 L 180 650 L 280 650 L 280 700 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.81 },
+          "side": "left",
+          "description": "Room A104"
+        },
+        {
+          "id": "A105",
+          "label": "A105",
+          "path": "M 80 650 L 80 600 L 180 600 L 180 650 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.74 },
+          "side": "left",
+          "description": "Room A105"
+        },
+        {
+          "id": "A106",
+          "label": "A106",
+          "path": "M 180 650 L 180 600 L 280 600 L 280 650 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.74 },
+          "side": "left",
+          "description": "Room A106"
+        },
+        {
+          "id": "A107",
+          "label": "A107",
+          "path": "M 80 600 L 80 550 L 180 550 L 180 600 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.67 },
+          "side": "left",
+          "description": "Room A107"
+        },
+        {
+          "id": "A108",
+          "label": "A108",
+          "path": "M 180 600 L 180 550 L 280 550 L 280 600 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.67 },
+          "side": "left",
+          "description": "Room A108"
+        },
+        {
+          "id": "A109",
+          "label": "A109",
+          "path": "M 80 550 L 80 500 L 180 500 L 180 550 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.60 },
+          "side": "left",
+          "description": "Room A109"
+        },
+        {
+          "id": "A110",
+          "label": "A110",
+          "path": "M 180 550 L 180 500 L 280 500 L 280 550 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.60 },
+          "side": "left",
+          "description": "Room A110"
+        },
+        {
+          "id": "A111",
+          "label": "A111",
+          "path": "M 80 500 L 80 450 L 180 450 L 180 500 Z",
+          "centroid": { "xPct": 0.11, "yPct": 0.53 },
+          "side": "left",
+          "description": "Room A111"
+        },
+        {
+          "id": "A112",
+          "label": "A112",
+          "path": "M 180 500 L 180 450 L 280 450 L 280 500 Z",
+          "centroid": { "xPct": 0.19, "yPct": 0.53 },
+          "side": "left",
+          "description": "Room A112"
+        },
+        {
+          "id": "A113",
+          "label": "A113",
+          "path": "M 300 200 L 300 150 L 380 150 L 380 200 Z",
+          "centroid": { "xPct": 0.28, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A113"
+        },
+        {
+          "id": "A114",
+          "label": "A114",
+          "path": "M 300 250 L 300 200 L 380 200 L 380 250 Z",
+          "centroid": { "xPct": 0.28, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A114"
+        },
+        {
+          "id": "A115",
+          "label": "A115",
+          "path": "M 380 200 L 380 150 L 460 150 L 460 200 Z",
+          "centroid": { "xPct": 0.35, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A115"
+        },
+        {
+          "id": "A116",
+          "label": "A116",
+          "path": "M 380 250 L 380 200 L 460 200 L 460 250 Z",
+          "centroid": { "xPct": 0.35, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A116"
+        },
+        {
+          "id": "A117",
+          "label": "A117",
+          "path": "M 460 200 L 460 150 L 540 150 L 540 200 Z",
+          "centroid": { "xPct": 0.42, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A117"
+        },
+        {
+          "id": "A118",
+          "label": "A118",
+          "path": "M 460 250 L 460 200 L 540 200 L 540 250 Z",
+          "centroid": { "xPct": 0.42, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A118"
+        },
+        {
+          "id": "A119",
+          "label": "A119",
+          "path": "M 540 200 L 540 150 L 620 150 L 620 200 Z",
+          "centroid": { "xPct": 0.48, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A119"
+        },
+        {
+          "id": "A120",
+          "label": "A120",
+          "path": "M 540 250 L 540 200 L 620 200 L 620 250 Z",
+          "centroid": { "xPct": 0.48, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A120"
+        },
+        {
+          "id": "A121",
+          "label": "A121",
+          "path": "M 620 200 L 620 150 L 700 150 L 700 200 Z",
+          "centroid": { "xPct": 0.55, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A121"
+        },
+        {
+          "id": "A122",
+          "label": "A122",
+          "path": "M 620 250 L 620 200 L 700 200 L 700 250 Z",
+          "centroid": { "xPct": 0.55, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A122"
+        },
+        {
+          "id": "A123",
+          "label": "A123",
+          "path": "M 700 200 L 700 150 L 780 150 L 780 200 Z",
+          "centroid": { "xPct": 0.62, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A123"
+        },
+        {
+          "id": "A124",
+          "label": "A124",
+          "path": "M 700 250 L 700 200 L 780 200 L 780 250 Z",
+          "centroid": { "xPct": 0.62, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A124"
+        },
+        {
+          "id": "A125",
+          "label": "A125",
+          "path": "M 780 200 L 780 150 L 860 150 L 860 200 Z",
+          "centroid": { "xPct": 0.68, "yPct": 0.22 },
+          "side": "top",
+          "description": "Room A125"
+        },
+        {
+          "id": "A126",
+          "label": "A126",
+          "path": "M 780 250 L 780 200 L 860 200 L 860 250 Z",
+          "centroid": { "xPct": 0.68, "yPct": 0.28 },
+          "side": "top",
+          "description": "Room A126"
+        },
+        {
+          "id": "B101",
+          "label": "B101",
+          "path": "M 920 750 L 920 700 L 1020 700 L 1020 750 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.88 },
+          "side": "right",
+          "description": "Room B101"
+        },
+        {
+          "id": "B102",
+          "label": "B102",
+          "path": "M 1020 750 L 1020 700 L 1120 700 L 1120 750 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.88 },
+          "side": "right",
+          "description": "Room B102"
+        },
+        {
+          "id": "B103",
+          "label": "B103",
+          "path": "M 920 700 L 920 650 L 1020 650 L 1020 700 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.81 },
+          "side": "right",
+          "description": "Room B103"
+        },
+        {
+          "id": "B104",
+          "label": "B104",
+          "path": "M 1020 700 L 1020 650 L 1120 650 L 1120 700 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.81 },
+          "side": "right",
+          "description": "Room B104"
+        },
+        {
+          "id": "B105",
+          "label": "B105",
+          "path": "M 920 650 L 920 600 L 1020 600 L 1020 650 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.74 },
+          "side": "right",
+          "description": "Room B105"
+        },
+        {
+          "id": "B106",
+          "label": "B106",
+          "path": "M 1020 650 L 1020 600 L 1120 600 L 1120 650 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.74 },
+          "side": "right",
+          "description": "Room B106"
+        },
+        {
+          "id": "B107",
+          "label": "B107",
+          "path": "M 920 600 L 920 550 L 1020 550 L 1020 600 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.67 },
+          "side": "right",
+          "description": "Room B107"
+        },
+        {
+          "id": "B108",
+          "label": "B108",
+          "path": "M 1020 600 L 1020 550 L 1120 550 L 1120 600 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.67 },
+          "side": "right",
+          "description": "Room B108"
+        },
+        {
+          "id": "B109",
+          "label": "B109",
+          "path": "M 920 550 L 920 500 L 1020 500 L 1020 550 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.60 },
+          "side": "right",
+          "description": "Room B109"
+        },
+        {
+          "id": "B110",
+          "label": "B110",
+          "path": "M 1020 550 L 1020 500 L 1120 500 L 1120 550 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.60 },
+          "side": "right",
+          "description": "Room B110"
+        },
+        {
+          "id": "B111",
+          "label": "B111",
+          "path": "M 920 500 L 920 450 L 1020 450 L 1020 500 Z",
+          "centroid": { "xPct": 0.81, "yPct": 0.53 },
+          "side": "right",
+          "description": "Room B111"
+        },
+        {
+          "id": "B112",
+          "label": "B112",
+          "path": "M 1020 500 L 1020 450 L 1120 450 L 1120 500 Z",
+          "centroid": { "xPct": 0.89, "yPct": 0.53 },
+          "side": "right",
+          "description": "Room B112"
+        }
+      ],
+      "pois": [
+        {
+          "id": "gate",
+          "label": "Main Gate",
+          "xPct": 0.06,
+          "yPct": 0.92,
+          "description": "Campus 25 Main Gate - You are here"
+        },
+        {
+          "id": "center",
+          "label": "KIIT Saathi Center",
+          "xPct": 0.50,
+          "yPct": 0.50,
+          "description": "Central area with KIIT Saathi logo"
+        }
+      ]
+    }
+  }
+}

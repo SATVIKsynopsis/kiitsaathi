@@ -76,3 +76,21 @@ verify_jwt = true
 
 [functions.validate-kiit-email]
 verify_jwt = true
+
+[functions.create-resale-order]
+verify_jwt = true
+
+[functions.verify-resale-payment]
+verify_jwt = true
+
+[functions.confirm-resale-delivery]
+verify_jwt = true
+
+[functions.moderate-resale-listing]
+verify_jwt = false
+
+[functions.auth-monitor]
+verify_jwt = false
+
+[functions.verify-email-callback]
+verify_jwt = true

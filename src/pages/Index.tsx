@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { NotificationBell } from "@/components/NotificationBell";
 import { AdminCommandExecutor } from "@/components/AdminCommandExecutor";
+import { MeetOurTeam } from "@/components/MeetOurTeam";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -78,7 +79,7 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       <Navbar />
-      <div className="fixed top-20 right-14 z-[10000] ">
+      <div className="fixed top-20 right-4 sm:right-8 lg:right-14 z-[10000] ">
         <NotificationBell />
       </div>
       <Hero />
@@ -91,96 +92,101 @@ const Index = () => {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-4  ">
+        <section id="how-it-works" className="py-8 sm:py-12 lg:py-16">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
+            <h2 className="text-3xl sm:text-4xl font-poppins font-bold text-gradient mb-6">
               How KIIT Saathi Works
             </h2>
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
               Your campus life made easier in just a few simple steps
             </p>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <div className="text-center px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-xl sm:text-2xl font-bold">
                   1
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Choose Your Service</h3>
-                <p className="text-muted-foreground">Browse through our campus services and select what you need</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">Choose Your Service</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">Browse through our campus services and select what you need</p>
               </div>
 
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="text-center px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-xl sm:text-2xl font-bold">
                   2
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Connect & Request</h3>
-                <p className="text-muted-foreground">Get connected with verified students or service providers instantly</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">Connect & Request</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">Get connected with verified students or service providers instantly</p>
               </div>
 
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl font-bold">
+              <div className="text-center px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white text-xl sm:text-2xl font-bold">
                   3
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
-                <p className="text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">Get It Done</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">Enjoy hassle-free campus services with trusted fellow students</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* Testimonials Section */}
-        <section id="testimonials" className="py-4">
+        <section id="testimonials" className="py-8 sm:py-12 lg:py-16">
           <Testimonials />
         </section>
 
+        {/* Meet Our Team Section */}
+        <section id="team">
+          <MeetOurTeam />
+        </section>
+
         {/* FAQ Section */}
-        <section id="faq" className="py-4 bg-gradient-soft">
+        <section id="faq" className="py-8 sm:py-12 lg:py-16 bg-gradient-soft">
           <FAQ />
         </section>
       </div>
 
       {/* Contact Section */}
-      <section id="contact" className="py-4">
+      <section id="contact" className="py-8 sm:py-12 lg:py-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-poppins font-bold text-gradient mb-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-3xl sm:text-4xl font-poppins font-bold text-gradient mb-6">
               Get In Touch
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Have questions? We're here to help make your campus life better
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 max-w-6xl mx-auto">
             {/* Contact Info */}
-            <div className="space-y-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-white" />
+            <div className="space-y-6 sm:space-y-8 mb-8 lg:mb-0">
+              <div className="flex items-start sm:items-center gap-4 px-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Email Us</h3>
-                  <p className="text-muted-foreground">official@kiitsaathi.in</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Call Us</h3>
-                  <p className="text-muted-foreground">+91 9717008778</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-base sm:text-lg">Email Us</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground break-all">official@kiitsaathi.in</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-white" />
+              <div className="flex items-start sm:items-center gap-4 px-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Visit Us</h3>
-                  <p className="text-muted-foreground">KIIT University, Bhubaneswar, Odisha</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-base sm:text-lg">Call Us</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">+91 9717008778</p>
+                </div>
+              </div>
+
+              <div className="flex items-start sm:items-center gap-4 px-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-base sm:text-lg">Visit Us</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">KIIT University, Bhubaneswar, Odisha</p>
                 </div>
               </div>
             </div>

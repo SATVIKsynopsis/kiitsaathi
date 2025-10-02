@@ -26,8 +26,9 @@ export const AdminCommandExecutor = () => {
             console.log('- KIIT Saathi Celebrations');
             console.log('- KIIT Saathi Meetups');
             console.log('- Food and micro-essentials delivery');
-            console.log('🔄 Printout on Demand replaced with "More Services Coming Soon...." placeholder');
-            console.log('🔗 All internal service pages remain accessible via direct URLs');
+            console.log('- Resale Saathi');
+            console.log('🔄 Printout on Demand replaced with placeholder');
+            console.log('🔗 Services hidden but still accessible via direct URLs');
           } else {
             console.error('❌ Admin command failed:', result.error);
           }

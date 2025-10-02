@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, Home, LogOut, User } from "lucide-react";
+import { Menu, X, LogIn, Home, LogOut, User, Shield } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -12,6 +12,9 @@ export const Navbar = () => {
   const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+
+  // Check if current user is admin
+  const isAdmin = user?.email === 'adityash8997@gmail.com';
 
   const handleSignOut = async () => {
     try {
@@ -103,8 +106,8 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="  rounded-full fixed  w-full m-2 p-0 z-50 backdrop-blur-md bg-kiit-green  text-white border-b border-white/20 shadow-lg">
-      <div className="container mx-auto mr-4 F">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-kiit-green text-white border-b border-white/20 shadow-lg mx-2 mt-2 rounded-full">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div
@@ -116,7 +119,7 @@ export const Navbar = () => {
               alt="KIIT Saathi Mascot"
               className="w-10 h-10 animate-pulse rounded-full"
             />
-            <div className="font-poppins font-bold text-2xl lg:text-xl text-white-700 drop-shadow-lg">
+            <div className="font-poppins font-bold text-lg sm:text-xl lg:text-2xl text-white-700 drop-shadow-lg">
               KIIT Saathi
             </div>
           </div>
@@ -157,7 +160,15 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                
+                {isAdmin && (
+                  <Button
+                    onClick={() => navigate("/admin-dashboard")}
+                    className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold transition-all duration-300 gap-2 px-4 py-2 rounded-full shadow-lg hover:shadow-xl hover:scale-105"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin Dashboard
+                  </Button>
+                )}
                 <Button onClick={() => navigate("/order-history")} 
                   className="bg-black/10 hover:text-black transition-all duration-300 gap-2 px-3 rounded-full py-4">
                   <User className="w-6 h-6 " />
@@ -229,6 +240,20 @@ export const Navbar = () => {
             <div className="flex flex-col gap-3 pt-4 border-t border-white/20">
               {user ? (
                 <>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigate("/admin-dashboard");
+                        setIsOpen(false);
+                      }}
+                      className="justify-start hover:bg-red-500/10 hover:text-red-500 bg-gradient-to-r from-red-500/20 to-orange-500/20 text-red-500 border border-red-500/30"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"

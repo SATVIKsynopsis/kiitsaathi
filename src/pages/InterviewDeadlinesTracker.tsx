@@ -133,7 +133,12 @@ const { events, upcomingEvents, loading, error } = useEvents(); // USE THE HOOK
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.event_name || !formData.event_date) {
-      alert("Event name and date are required!");
+      toast.error("Event name and date are required!");
+      return;
+    }
+
+    if (!user?.email) {
+      toast.error("Please sign in to add events");
       return;
     }
 
@@ -142,42 +147,72 @@ const { events, upcomingEvents, loading, error } = useEvents(); // USE THE HOOK
       : [];
 
     try {
-      const { data, error } = await supabase.from("calendar_events").insert([
-        { 
-          ...formData, 
-          requirements: reqs,
-          validation: formData.validation
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.is_admin) {
+        // Admin users publish directly
+        const { data, error } = await supabase.from("calendar_events").insert([
+          { 
+            ...formData, 
+            requirements: reqs,
+            validation: true // Auto-validate admin events
+          }
+        ]).select();
+
+        if (error) {
+          console.error("Insert error:", error);
+          toast.error("Error adding event: " + error.message);
+        } else {
+          console.log("Event inserted:", data);
+          toast.success("Event published successfully!");
+          setAddEventOpen(false);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
         }
-      ]).select();
-
-      if (error) {
-        console.error("Insert error:", error);
-        alert("Error adding event: " + error.message);
       } else {
-        console.log("Event inserted:", data);
-        alert("Event added successfully!");
-        setAddEventOpen(false);
-        // Reset form
-        setFormData({
-          society_name: "",
-          event_name: "",
-          event_date: "",
-          start_time: "",
-          end_time: "",
-          venue: "",
-          organiser: "",
-          category: "",
-          description: "",
-          requirements: "",
-          validation: false,
-        });
+        // Regular users submit for approval
+        const { error } = await supabase
+          .from('interview_event_requests')
+          .insert({
+            ...formData,
+            requirements: reqs,
+            requester_email: user.email,
+            user_id: user.id,
+            status: 'pending'
+          });
 
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+        if (error) {
+          console.error("Request submit error:", error);
+          toast.error("Error submitting event request: " + error.message);
+        } else {
+          toast.success("Event submitted for review! You'll be notified once it's approved.");
+          setAddEventOpen(false);
+        }
       }
+
+      // Reset form
+      setFormData({
+        society_name: "",
+        event_name: "",
+        event_date: "",
+        start_time: "",
+        end_time: "",
+        venue: "",
+        organiser: "",
+        category: "",
+        description: "",
+        requirements: "",
+        validation: false,
+      });
+
     } catch (err) {
       console.error("Unexpected error:", err);
-      alert("Failed to add event");
+      toast.error("Failed to submit event");
     }
   };
 

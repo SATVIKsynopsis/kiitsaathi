@@ -199,6 +199,22 @@ export function usePrintJobManager() {
     try {
       console.log('Accepting job:', jobId, 'for user:', user.id);
       
+      // Check if helper already has 3 active jobs (additional client-side check)
+      const { data: helperJobs, error: checkError } = await supabase
+        .from('print_jobs')
+        .select('id')
+        .eq('helper_id', user.id)
+        .not('status', 'in', '(completed,cancelled)');
+
+      if (checkError) {
+        throw new Error(checkError.message);
+      }
+
+      if (helperJobs && helperJobs.length >= 3) {
+        toast.error('You cannot accept more than 3 jobs at a time. Please complete some existing jobs first.');
+        return false;
+      }
+      
       const { error } = await supabase
         .from('print_jobs')
         .update({ 
@@ -211,7 +227,12 @@ export function usePrintJobManager() {
 
       if (error) {
         console.error('Accept job error:', error);
-        throw new Error(error.message);
+        if (error.message.includes('cannot accept more than 3 active jobs')) {
+          toast.error('You cannot accept more than 3 jobs at a time. Please complete some existing jobs first.');
+        } else {
+          throw new Error(error.message);
+        }
+        return false;
       }
 
       toast.success('Job accepted! You can now download the file and start printing.');
@@ -441,6 +462,81 @@ export function usePrintJobManager() {
     }
   }, []);
 
+  const markJobCompleted = useCallback(async (jobId: string, userType: 'customer' | 'helper'): Promise<boolean> => {
+    if (!user) {
+      toast.error('You must be logged in to mark jobs as completed');
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('Marking job completed:', jobId, 'by:', userType);
+      
+      const field = userType === 'customer' ? 'customer_completed' : 'helper_completed';
+      
+      const { error } = await supabase
+        .from('print_jobs')
+        .update({ [field]: true })
+        .eq('id', jobId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Check if both parties have marked as completed
+      const { data: job, error: fetchError } = await supabase
+        .from('print_jobs')
+        .select('customer_completed, helper_completed, file_storage_path')
+        .eq('id', jobId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(fetchError.message);
+      }
+
+      if (job.customer_completed && job.helper_completed) {
+        // Both completed - finalize the job and delete file
+        const { error: finalError } = await supabase
+          .from('print_jobs')
+          .update({ 
+            status: 'completed',
+            file_deleted_at: new Date().toISOString()
+          })
+          .eq('id', jobId);
+
+        if (finalError) {
+          throw new Error(finalError.message);
+        }
+
+        // Delete the file from storage
+        if (job.file_storage_path) {
+          const { error: deleteError } = await supabase.storage
+            .from('print-job-files')
+            .remove([job.file_storage_path]);
+
+          if (deleteError) {
+            console.warn('Failed to delete file from storage:', deleteError);
+          }
+        }
+
+        toast.success('🎉 Job completed! File has been permanently deleted for privacy.');
+      } else {
+        const message = userType === 'customer' 
+          ? 'Marked as completed! Waiting for helper confirmation.'
+          : 'Marked as completed! Waiting for customer confirmation.';
+        toast.success(message);
+      }
+
+      return true;
+    } catch (error: any) {
+      console.error('Error marking job completed:', error);
+      toast.error(`Failed to mark as completed: ${error.message}`);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
   return {
     createPrintJob,
     acceptJob,
@@ -449,6 +545,7 @@ export function usePrintJobManager() {
     sendToShopkeeper,
     notifyStatusUpdate,
     fetchJobs,
+    markJobCompleted,
     isLoading
   };
 }

@@ -86,10 +86,21 @@ const SplitSaathi = () => {
       return;
     }
 
-    if (!groupForm.name.trim() || groupForm.members.filter(m => m.name.trim()).length === 0) {
+    if (!groupForm.name.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please provide group name and at least one member.",
+        description: "Please provide a group name.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate that at least one member has BOTH name and email/phone
+    const validMembers = groupForm.members.filter(m => m.name.trim() && m.email_phone.trim());
+    if (validMembers.length === 0) {
+      toast({
+        title: "Missing Members",
+        description: "Please add at least one member with both name and contact info (email/phone).",
         variant: "destructive"
       });
       return;
@@ -110,8 +121,8 @@ const SplitSaathi = () => {
 
       if (groupError) throw groupError;
 
-      // Add members
-      const validMembers = groupForm.members.filter(m => m.name.trim() && m.email_phone.trim());
+      // Add members (already validated above)
+      console.log('👥 Adding members to group:', validMembers);
       const { error: membersError } = await supabase
         .from('group_members')
         .insert(
@@ -122,11 +133,14 @@ const SplitSaathi = () => {
           }))
         );
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error('❌ Error adding members:', membersError);
+        throw membersError;
+      }
 
       toast({
         title: "Group Created! 🎉",
-        description: `${groupForm.name} is ready for expense tracking.`
+        description: `${groupForm.name} is ready with ${validMembers.length} member${validMembers.length !== 1 ? 's' : ''}.`
       });
 
       // Reset form

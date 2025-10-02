@@ -38,7 +38,8 @@ import {
   DollarSign,
   Target,
   TrendingUp,
-  Clock
+  Clock,
+  RefreshCw
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -289,14 +290,18 @@ export default function BookBuyback() {
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <Tabs defaultValue="sell" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8 max-w-md mx-auto">
+            <TabsList className="grid w-full grid-cols-4 mb-8 max-w-lg mx-auto">
               <TabsTrigger value="sell" className="flex items-center gap-2">
                 <Package className="w-4 h-4" />
-                Sell Your Books
+                Sell Books
+              </TabsTrigger>
+              <TabsTrigger value="exchange" className="flex items-center gap-2">
+                <RefreshCw className="w-4 h-4" />
+                Exchange Books
               </TabsTrigger>
               <TabsTrigger value="buy" className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
-                Buy Pre-Loved Books
+                Buy Books
               </TabsTrigger>
             </TabsList>
 

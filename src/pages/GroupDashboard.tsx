@@ -150,13 +150,29 @@ const GroupDashboard = () => {
       setGroup(groupData);
 
       // Load members
+      console.log('🔍 Fetching members for group:', groupId);
       const { data: membersData, error: membersError } = await supabase
         .from('group_members')
         .select('*')
         .eq('group_id', groupId);
       
-      if (membersError) throw membersError;
-      setMembers(membersData);
+      console.log('📊 Members fetch result:', { 
+        membersData, 
+        membersError, 
+        count: membersData?.length,
+        userId: user?.id
+      });
+      
+      if (membersError) {
+        console.error('❌ Members fetch error:', membersError);
+        throw membersError;
+      }
+      
+      if (!membersData || membersData.length === 0) {
+        console.warn('⚠️ No members found for group:', groupId);
+      }
+      
+      setMembers(membersData || []);
 
       // Load expenses with member details
       const { data: expensesData, error: expensesError } = await supabase
@@ -398,9 +414,35 @@ const GroupDashboard = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-4 mb-8">
+            {members.length === 0 && (
+              <Card className="w-full border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 mb-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                    ⚠️ No Members Found
+                  </CardTitle>
+                  <CardDescription className="text-amber-700 dark:text-amber-300">
+                    This group doesn't have any members yet. You need to add members before you can track expenses.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    onClick={() => setActiveView('settings')}
+                    variant="default"
+                    className="bg-amber-600 hover:bg-amber-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Add Members Now
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            
             <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+                <Button 
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  disabled={members.length === 0}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Expense
                 </Button>
@@ -455,18 +497,39 @@ const GroupDashboard = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="paidBy">Paid by *</Label>
-                    <Select value={expenseForm.paid_by_member_id} onValueChange={(value) => setExpenseForm(prev => ({ ...prev, paid_by_member_id: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select who paid" />
+                    {members.length === 0 && (
+                      <div className="text-sm text-amber-600 mb-2 p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 dark:border-amber-800">
+                        ⚠️ No members found. Please add members to the group first.
+                      </div>
+                    )}
+                    <Select 
+                      value={expenseForm.paid_by_member_id} 
+                      onValueChange={(value) => {
+                        console.log('💳 Selected paid_by member:', value);
+                        setExpenseForm(prev => ({ ...prev, paid_by_member_id: value }));
+                      }}
+                      disabled={members.length === 0}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder={members.length === 0 ? "No members available" : "Select who paid"} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {members.map((member) => (
-                          <SelectItem key={member.id} value={member.id}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="bg-background border border-border z-50">
+                        {members.length > 0 ? (
+                          members.map((member) => (
+                            <SelectItem key={member.id} value={member.id} className="cursor-pointer hover:bg-accent">
+                              {member.name} ({member.email_phone})
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="p-2 text-sm text-muted-foreground">No members in this group</div>
+                        )}
                       </SelectContent>
                     </Select>
+                    {members.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {members.length} member{members.length !== 1 ? 's' : ''} available
+                      </p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">

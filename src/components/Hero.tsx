@@ -2,20 +2,25 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Heart, Box, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import kiitMascot from "@/assets/kiit-mascot.png";
-import KiitCampus3 from "@/assets/KIIT-University-Camus-3-Library.jpg"
+import KiitCampus3 from "@/assets/KIIT-University-Camus-3-Library.jpg";
 import heroCampus from "@/assets/KIIT_img.webp";
 import KiitCampus17 from "@/assets/cam17.jpg";
 import KiiTSchoolofArch from "@/assets/KIIT-School-of-Architecture-Planning-.jpg";
-import KiitAbout from "@/assets/About-kiit.jpg"
+import KiitAbout from "@/assets/About-kiit.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import { useRef, useEffect, useState, useMemo } from "react";
-
 export const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const [ripples, setRipples] = useState<Array<{ id: number, x: number, y: number }>>([]);
+  const {
+    user
+  } = useAuth();
+  const [ripples, setRipples] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+  }>>([]);
   const heroRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -23,9 +28,10 @@ export const Hero = () => {
   const [cellSize, setCellSize] = useState(40); // 40 desktop, 30 mobile
   const [cols, setCols] = useState(0);
   const [rows, setRows] = useState(0);
-
   const gridCells = useMemo(() => {
-    return Array.from({ length: cols * rows }, (_, i) => i);
+    return Array.from({
+      length: cols * rows
+    }, (_, i) => i);
   }, [cols, rows]);
 
   // Compute grid layout based on hero size
@@ -38,7 +44,6 @@ export const Hero = () => {
       setCols(Math.ceil(rect.width / size));
       setRows(Math.ceil(rect.height / size));
     };
-
     computeLayout();
     let t: number | undefined;
     const onResize = () => {
@@ -57,12 +62,10 @@ export const Hero = () => {
     const heroElement = heroRef.current;
     const gridElement = gridRef.current;
     if (!heroElement || !gridElement) return;
-
     let rippleId = 0;
     let rafPending = false;
     let lastX = 0;
     let lastY = 0;
-
     const highlightCell = () => {
       rafPending = false;
       const rect = heroElement.getBoundingClientRect();
@@ -84,7 +87,6 @@ export const Hero = () => {
         el.style.borderColor = 'transparent';
       }, 220);
     };
-
     const handleMove = (e: MouseEvent) => {
       lastX = e.clientX;
       lastY = e.clientY;
@@ -93,13 +95,15 @@ export const Hero = () => {
         requestAnimationFrame(highlightCell);
       }
     };
-
     const handleClick = (e: MouseEvent) => {
       const rect = heroElement.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
-      const newRipple = { id: rippleId++, x, y };
+      const newRipple = {
+        id: rippleId++,
+        x,
+        y
+      };
       setRipples(prev => [...prev, newRipple]);
 
       // Remove ripple after animation
@@ -107,16 +111,13 @@ export const Hero = () => {
         setRipples(current => current.filter(r => r.id !== newRipple.id));
       }, 1200);
     };
-
     heroElement.addEventListener('mousemove', handleMove);
     heroElement.addEventListener('click', handleClick);
-
     return () => {
       heroElement.removeEventListener('mousemove', handleMove);
       heroElement.removeEventListener('click', handleClick);
     };
   }, [cellSize, cols, rows]);
-
   const scrollToSection = (href: string) => {
     if (location.pathname !== "/") {
       navigate("/");
@@ -125,7 +126,7 @@ export const Hero = () => {
         if (element) {
           element.scrollIntoView({
             behavior: "smooth",
-            block: "start",
+            block: "start"
           });
         }
       }, 100);
@@ -134,27 +135,23 @@ export const Hero = () => {
       if (element) {
         element.scrollIntoView({
           behavior: "smooth",
-          block: "start",
+          block: "start"
         });
       }
     }
   };
-
   const sliderRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const dots = document.querySelectorAll('#dot-indicators span');
   const totalSlides = dots.length;
-
   const goToSlide = (index: number) => {
     if (!sliderRef.current) return;
     const slideWidth = sliderRef.current.clientWidth;
     sliderRef.current.style.transform = `translateX(-${index * slideWidth}px)`;
-
     const dots = document.querySelectorAll('#dot-indicators span');
     dots.forEach(dot => dot.classList.remove('bg-black'));
     if (dots[index]) dots[index].classList.add('bg-black');
   };
-
   useEffect(() => {
     goToSlide(currentSlide); // show initial slide
     const interval = setInterval(() => {
@@ -164,84 +161,50 @@ export const Hero = () => {
         return next;
       });
     }, 3000);
-
     return () => clearInterval(interval);
   }, []);
-
-
-  return (
-    <section
-      ref={heroRef}
-      id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 70%, #15803d 100%)'
-      }}
-    >
+  return <section ref={heroRef} id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{
+    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 70%, #15803d 100%)'
+  }}>
       {/* Animated Matrix Grid Background */}
       <div className="absolute inset-0">
         {/* Static grid lines */}
-        <div
-          className="absolute inset-0 opacity-100"
-          style={{
-            backgroundImage: `
+        <div className="absolute inset-0 opacity-100" style={{
+        backgroundImage: `
               linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
               linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
             `,
-            backgroundSize: `${cellSize}px ${cellSize}px`,
-            backgroundPosition: '0 0, 0 0'
-          }}
-        />
+        backgroundSize: `${cellSize}px ${cellSize}px`,
+        backgroundPosition: '0 0, 0 0'
+      }} />
 
         {/* Interactive grid cells */}
-        <div
-          ref={gridRef}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
-            gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
-          }}
-        >
-          {gridCells.map((i) => (
-            <div
-              key={i}
-              className="transition-all duration-200 ease-out border border-transparent"
-              style={{
-                width: `${cellSize}px`,
-                height: `${cellSize}px`,
-              }}
-            />
-          ))}
+        <div ref={gridRef} className="absolute inset-0 pointer-events-none" style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+        gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
+      }}>
+          {gridCells.map(i => <div key={i} className="transition-all duration-200 ease-out border border-transparent" style={{
+          width: `${cellSize}px`,
+          height: `${cellSize}px`
+        }} />)}
         </div>
       </div>
 
       {/* Click Ripple Effects */}
-      {ripples.map(ripple => (
-        <div
-          key={ripple.id}
-          className="absolute pointer-events-none"
-          style={{
-            left: ripple.x - 100,
-            top: ripple.y - 100,
-            width: 200,
-            height: 200,
-          }}
-        >
-          <div
-            className="w-full h-full rounded-full border-2 border-kiit-green/60 animate-ping"
-            style={{
-              animation: 'ripple 1.2s ease-out forwards'
-            }}
-          />
-          <div
-            className="absolute inset-4 rounded-full border border-white/40 animate-ping"
-            style={{
-              animation: 'ripple 1.2s ease-out 0.2s forwards'
-            }}
-          />
-        </div>
-      ))}
+      {ripples.map(ripple => <div key={ripple.id} className="absolute pointer-events-none" style={{
+      left: ripple.x - 100,
+      top: ripple.y - 100,
+      width: 200,
+      height: 200
+    }}>
+          <div className="w-full h-full rounded-full border-2 border-kiit-green/60 animate-ping" style={{
+        animation: 'ripple 1.2s ease-out forwards'
+      }} />
+          <div className="absolute inset-4 rounded-full border border-white/40 animate-ping" style={{
+        animation: 'ripple 1.2s ease-out 0.2s forwards'
+      }} />
+        </div>)}
 
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
@@ -262,64 +225,52 @@ export const Hero = () => {
 
             {/* Main Heading */}
             <div className="space-y-4 my-4">
-              <h1 className="text-5xl lg:text-5xl font-poppins font-bold text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-poppins font-bold text-white leading-tight">
                 One app that
                 <span className="block text-white">solves all</span>
                 your campus needs
               </h1>
 
-              <p className="text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
+              <p className="text-lg sm:text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
                 From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
               </p>
 
               {/* CTA Buttons */}
-              {!user ? (
-                <div className="flex  flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button
-                    size="lg"
-                    className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                    onClick={() => navigate('/auth')}
-                  >
+              {!user ? <div className="flex  flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Button size="lg" className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" onClick={() => navigate('/auth')}>
                     Get Started Free
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button
-                    onClick={() => scrollToSection("#services")}
-                    size="lg"
-                    className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
+                </div> : <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Button onClick={() => scrollToSection("#services")} size="lg" className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                     Go to Services
                   </Button>
-                </div>
-              )}
+                </div>}
             </div>
 
             {/* Quick Stats */}
-            <div className="flex flex-wrap gap-8 justify-center lg:justify-start pt-8">
+            <div className="flex flex-wrap gap-4 sm:gap-8 justify-center lg:justify-start pt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">More than 7</div>
-                <div className="text-white/70 font-medium">Campus Services</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">More than 15</div>
+                <div className="text-sm sm:text-base text-white/70 font-medium">Campus Services</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">24/7</div>
-                <div className="text-white/70 font-medium">AI Assistant</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">24/7</div>
+                <div className="text-sm sm:text-base text-white/70 font-medium">AI Assistant</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">100%</div>
-                <div className="text-white/70 font-medium">KIIT Focused</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">100%</div>
+                <div className="text-sm sm:text-base text-white/70 font-medium">KIIT Focused</div>
               </div>
             </div>
           </div>
 
           {/* Right Content - Mascot and Campus */}
-          <div className="relative mt-8">
+          <div className="relative mt-8 lg:mt-0">
             {/* Campus Background */}
             <div className="relative">
               <div className="flex flex-col items-center">
-                <div className="w-[600px] h-[360px] overflow-hidden relative rounded-3xl">
+                <div className="w-full max-w-[600px] h-[240px] sm:h-[300px] lg:h-[360px] overflow-hidden relative rounded-3xl">
                   <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
                     <img src={heroCampus} className="w-full flex-shrink-0" alt="Slide 3" />
                     <img src={KiiTSchoolofArch} className="w-full flex-shrink-0" alt="Slide 1" />
@@ -344,6 +295,5 @@ export const Hero = () => {
         </div>
       </div>
 
-    </section>
-  );
+    </section>;
 };

@@ -27,7 +27,18 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/');
+        // Verify email is confirmed before allowing navigation
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_email_verified')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.is_email_verified) {
+          navigate('/');
+        } else {
+          setNotice('Please verify your email before accessing KIIT Saathi. Check your inbox for the verification link.');
+        }
       }
     };
     checkUser();
@@ -38,6 +49,8 @@ export default function Auth() {
       setNotice('The confirmation link is invalid or expired. You can request a new email below.');
     } else if (reason === 'session_missing') {
       setNotice('Email confirmed, but we could not start your session. Please sign in or resend confirmation.');
+    } else if (reason === 'email_not_verified') {
+      setNotice('⚠️ Please verify your email before accessing services. Check your inbox for the verification link.');
     }
 
     // Listen for auth state changes
@@ -52,12 +65,37 @@ export default function Auth() {
             toast.error('🚫 Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.');
             return;
           }
-          toast.success('Successfully signed in!');
-          navigate('/');
+
+          // Check if email is verified
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_email_verified')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile?.is_email_verified) {
+            toast.success('Successfully signed in!');
+            // Call verify-email-callback to ensure verification is marked
+            await supabase.functions.invoke('verify-email-callback', {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            navigate('/');
+          } else {
+            setNotice('⚠️ Please verify your email before accessing services. Check your inbox for the verification link.');
+            toast.warning('Please verify your email to access all features');
+          }
         } else if (event === 'PASSWORD_RECOVERY') {
           toast.success('Check your email for password recovery instructions.');
         } else if (event === 'USER_UPDATED') {
+          // Mark email as verified
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            await supabase.functions.invoke('verify-email-callback', {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+          }
           toast.success('Email confirmed successfully!');
+          navigate('/');
         }
       }
     );
