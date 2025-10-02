@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { NotificationBell } from "@/components/NotificationBell";
 import { AdminCommandExecutor } from "@/components/AdminCommandExecutor";
+import { MeetOurTeam } from "@/components/MeetOurTeam";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -131,6 +132,11 @@ const Index = () => {
         {/* Testimonials Section */}
         <section id="testimonials" className="py-8 sm:py-12 lg:py-16">
           <Testimonials />
+        </section>
+
+        {/* Meet Our Team Section */}
+        <section id="team">
+          <MeetOurTeam />
         </section>
 
         {/* FAQ Section */}
