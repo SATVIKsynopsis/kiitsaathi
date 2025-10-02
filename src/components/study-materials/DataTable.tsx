@@ -11,7 +11,7 @@ interface StudyMaterialItem {
   semester: string;
   branch?: string;
   year?: string;
-  type?: 'note' | 'pyq' | 'ppt';
+  type?: 'note' | 'pyq' | 'ppt' | 'ebook';
   views: number;
   uploadedBy: string;
   uploadDate?: string;
@@ -22,7 +22,7 @@ interface DataTableProps {
   materials: StudyMaterialItem[];
   onViewPDF?: (id: number) => void;
   loading?: boolean;
-  materialType?: "notes" | "pyqs" | "ppts";
+  materialType?: "notes" | "pyqs" | "ppts" | "ebooks";
   onDownload?: (material: StudyMaterialItem) => void;
 }
 
@@ -51,6 +51,8 @@ export const DataTable: React.FC<DataTableProps> = ({
         return <Presentation className="w-4 h-4 text-orange-600" />;
       case "pyqs":
         return <Eye className="w-4 h-4 text-blue-600" />;
+      case "ebooks":
+        return <Eye className="w-4 h-4 text-indigo-600" />;
       default:
         return <Eye className="w-4 h-4 text-green-600" />;
     }
@@ -62,6 +64,8 @@ export const DataTable: React.FC<DataTableProps> = ({
         return "PPT";
       case "pyqs":
         return "PYQ";
+      case "ebooks":
+        return "E-Book";
       default:
         return "Note";
     }

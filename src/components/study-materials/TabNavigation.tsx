@@ -1,4 +1,4 @@
-import { BookOpen, FileQuestion, Youtube, Users, Presentation } from "lucide-react";
+import { BookOpen, FileQuestion, Youtube, Users, Presentation, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TabNavigationProps {
@@ -11,6 +11,7 @@ export function TabNavigation({ activeSection, setActiveSection }: TabNavigation
     { id: "notes", label: "Notes", icon: BookOpen, color: "from-blue-500 to-blue-600" },
     { id: "pyqs", label: "PYQs", icon: FileQuestion, color: "from-green-500 to-green-600" },
     { id: "ppts", label: "PPTs", icon: Presentation, color: "from-orange-500 to-orange-600" },
+    { id: "ebooks", label: "E-Books", icon: Book, color: "from-indigo-500 to-indigo-600" },
     { id: "playlists", label: "Playlists", icon: Youtube, color: "from-red-500 to-red-600" },
     { id: "groups", label: "Groups", icon: Users, color: "from-purple-500 to-purple-600" },
   ];

@@ -34,7 +34,7 @@ interface StudyMaterialItem {
   semester: string;
   branch?: string;
   year?: string;
-  type?: 'note' | 'pyq' | 'ppt';
+  type?: 'note' | 'pyq' | 'ppt' | 'ebook';
   views: number;
   uploadedBy: string;
   uploadDate?: string;
@@ -221,6 +221,8 @@ export default function StudyMaterial() {
         query = supabase.from("pyqs").select("*").order("created_at", { ascending: false });
       } else if (activeSection === "ppts") {
         query = supabase.from("ppts").select("*").order("created_at", { ascending: false });
+      } else if (activeSection === "ebooks") {
+        query = supabase.from("ebooks").select("*").order("created_at", { ascending: false });
       }
 
       if (!query) {
@@ -286,6 +288,8 @@ export default function StudyMaterial() {
         await supabase.from("pyqs").update({ views: material.views + 1 }).eq("id", material.id);
       } else if (activeSection === "ppts") {
         await supabase.from("ppts").update({ views: material.views + 1 }).eq("id", material.id);
+      } else if (activeSection === "ebooks") {
+        await supabase.from("ebooks").update({ views: material.views + 1 }).eq("id", material.id);
       }
 
       // Download file
@@ -314,7 +318,9 @@ export default function StudyMaterial() {
         ? "notes"
         : activeSection === "pyqs"
           ? "pyqs"
-          : "ppts";
+          : activeSection === "ebooks"
+            ? "ebooks"
+            : "ppts";
 
       const { error } = await supabase
         .from(table)
@@ -408,7 +414,7 @@ export default function StudyMaterial() {
         )}
 
         {/* Content */}
-        {(activeSection === "notes" || activeSection === "pyqs" || activeSection === "ppts") && (
+        {(activeSection === "notes" || activeSection === "pyqs" || activeSection === "ppts" || activeSection === "ebooks") && (
           <>
             {/* Filter Bar */}
             <FilterBar
@@ -440,7 +446,7 @@ export default function StudyMaterial() {
                   materials={filterMaterials(materials)}
                   onViewPDF={handleView}
                   loading={loading}
-                  materialType={activeSection as "notes" | "pyqs" | "ppts"}
+                  materialType={activeSection as "notes" | "pyqs" | "ppts" | "ebooks"}
                   onDownload={handleDownload}
                 />
               </div>

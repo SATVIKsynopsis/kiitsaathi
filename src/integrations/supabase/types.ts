@@ -1127,6 +1127,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ebooks: {
+        Row: {
+          branch: string | null
+          created_at: string | null
+          id: number
+          pdf_url: string
+          semester: string
+          subject: string
+          title: string
+          updated_at: string | null
+          upload_date: string | null
+          uploaded_by: string
+          views: number | null
+          year: string | null
+        }
+        Insert: {
+          branch?: string | null
+          created_at?: string | null
+          id?: number
+          pdf_url: string
+          semester: string
+          subject: string
+          title: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by: string
+          views?: number | null
+          year?: string | null
+        }
+        Update: {
+          branch?: string | null
+          created_at?: string | null
+          id?: number
+          pdf_url?: string
+          semester?: string
+          subject?: string
+          title?: string
+          updated_at?: string | null
+          upload_date?: string | null
+          uploaded_by?: string
+          views?: number | null
+          year?: string | null
+        }
+        Relationships: []
+      }
       expense_splits: {
         Row: {
           amount: number
