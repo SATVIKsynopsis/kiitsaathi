@@ -251,7 +251,7 @@ export const Hero = () => {
             {/* Quick Stats */}
             <div className="flex flex-wrap gap-4 sm:gap-8 justify-center lg:justify-start pt-8">
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">More than 15</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">More than 8</div>
                 <div className="text-sm sm:text-base text-white/70 font-medium">Campus Services</div>
               </div>
               <div className="text-center">
