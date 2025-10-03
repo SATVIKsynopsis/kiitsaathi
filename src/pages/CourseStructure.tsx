@@ -1,11 +1,14 @@
 import { useState, useMemo } from "react";
-import { Search, BookOpen, GraduationCap } from "lucide-react";
+import { Search, BookOpen, GraduationCap, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { courseStructure, branches } from "@/data/courseStructure";
+import { contactPersons, facultyMembers } from "@/data/facultyData";
+import { FacultyCard } from "@/components/FacultyCard";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -14,6 +17,12 @@ const CourseStructure = () => {
   const [selectedBranch, setSelectedBranch] = useState(branches[0]);
   const [selectedSemester, setSelectedSemester] = useState("all");
   const [sortBy, setSortBy] = useState("default");
+  
+  // Faculty tab states
+  const [expandedCardId, setExpandedCardId] = useState<string>('');
+  const [facultySearchQuery, setFacultySearchQuery] = useState('');
+  const [selectedDesignation, setSelectedDesignation] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'contact' | 'faculty'>('all');
 
   // Filter and sort courses
   const filteredSemesters = useMemo(() => {
@@ -104,7 +113,11 @@ const CourseStructure = () => {
                 <BookOpen className="w-4 h-4 mr-2" />
                 Course Details
               </TabsTrigger>
-              <TabsTrigger value="faculty" disabled className="opacity-50 cursor-not-allowed" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>
+              <TabsTrigger 
+                value="faculty" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#006400] data-[state=active]:to-[#228B22] data-[state=active]:text-white"
+                style={{ fontFamily: 'Inter, Poppins, sans-serif' }}
+              >
                 <GraduationCap className="w-4 h-4 mr-2" />
                 Faculty Details
               </TabsTrigger>
@@ -282,18 +295,167 @@ const CourseStructure = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="faculty">
-              <Card className="bg-white border-gray-200 shadow-md rounded-xl">
-                <CardContent className="p-12 text-center">
-                  <GraduationCap className="w-16 h-16 mx-auto mb-4" style={{ color: '#0066FF' }} />
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#1A1A1A', fontFamily: 'Inter, Poppins, sans-serif' }}>
-                    Coming Soon
-                  </h3>
-                  <p style={{ color: '#555555', fontFamily: 'Inter, Poppins, sans-serif' }}>
-                    Faculty details will be added later.
-                  </p>
-                </CardContent>
-              </Card>
+            <TabsContent value="faculty" className="space-y-8 animate-fade-in">
+              {/* Search and Filters */}
+              <div className="sticky top-16 z-10 mb-8">
+                <Card className="bg-white border-gray-200 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Search */}
+                      <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#006400' }} />
+                        <Input
+                          placeholder="Search by name or designation..."
+                          value={facultySearchQuery}
+                          onChange={(e) => setFacultySearchQuery(e.target.value)}
+                          className="pl-12 rounded-full border-gray-300 bg-[#F5F7FA] focus:border-[#006400] focus:ring-[#006400]"
+                          style={{ fontFamily: 'Inter, Poppins, sans-serif', color: '#1A1A1A' }}
+                        />
+                      </div>
+
+                      {/* Category Filter */}
+                      <Select value={selectedCategory} onValueChange={(value: any) => setSelectedCategory(value)}>
+                        <SelectTrigger className="bg-[#F5F7FA] border-gray-300 focus:border-[#228B22] focus:ring-[#228B22]" style={{ fontFamily: 'Inter, Poppins, sans-serif', color: '#1A1A1A' }}>
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-gray-200">
+                          <SelectItem value="all" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>All Categories</SelectItem>
+                          <SelectItem value="contact" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>Contact Persons</SelectItem>
+                          <SelectItem value="faculty" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>Faculty Members</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {/* Designation Filter */}
+                      <Select value={selectedDesignation} onValueChange={setSelectedDesignation}>
+                        <SelectTrigger className="bg-[#F5F7FA] border-gray-300 focus:border-[#1E90FF] focus:ring-[#1E90FF]" style={{ fontFamily: 'Inter, Poppins, sans-serif', color: '#1A1A1A' }}>
+                          <SelectValue placeholder="All Designations" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-gray-200">
+                          <SelectItem value="all" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>All Designations</SelectItem>
+                          {Array.from(new Set([...contactPersons, ...facultyMembers].map(f => f.designation)))
+                            .sort()
+                            .map(designation => (
+                              <SelectItem key={designation} value={designation} style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>
+                                {designation}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Contact Persons Section */}
+              {(selectedCategory === 'all' || selectedCategory === 'contact') && (() => {
+                const filtered = contactPersons.filter(faculty => {
+                  const matchesSearch = facultySearchQuery === '' || 
+                    faculty.name.toLowerCase().includes(facultySearchQuery.toLowerCase()) ||
+                    faculty.designation.toLowerCase().includes(facultySearchQuery.toLowerCase());
+                  const matchesDesignation = selectedDesignation === 'all' || faculty.designation === selectedDesignation;
+                  return matchesSearch && matchesDesignation;
+                });
+
+                if (filtered.length === 0) return null;
+
+                return (
+                  <div className="animate-fade-in">
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold" style={{ 
+                        background: 'linear-gradient(135deg, #006400 0%, #228B22 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontFamily: 'Inter, Poppins, sans-serif'
+                      }}>
+                        Contact Persons
+                      </h2>
+                      <p className="mt-2" style={{ color: '#555555', fontFamily: 'Inter, Poppins, sans-serif' }}>
+                        {filtered.length} contact{filtered.length !== 1 ? 's' : ''} available
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {filtered.map(faculty => (
+                        <FacultyCard
+                          key={faculty.id}
+                          faculty={faculty}
+                          isExpanded={expandedCardId === faculty.id}
+                          onToggle={(id) => setExpandedCardId(expandedCardId === id ? '' : id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Faculty Members Section */}
+              {(selectedCategory === 'all' || selectedCategory === 'faculty') && (() => {
+                const filtered = facultyMembers.filter(faculty => {
+                  const matchesSearch = facultySearchQuery === '' || 
+                    faculty.name.toLowerCase().includes(facultySearchQuery.toLowerCase()) ||
+                    faculty.designation.toLowerCase().includes(facultySearchQuery.toLowerCase());
+                  const matchesDesignation = selectedDesignation === 'all' || faculty.designation === selectedDesignation;
+                  return matchesSearch && matchesDesignation;
+                });
+
+                if (filtered.length === 0) return null;
+
+                return (
+                  <div className="animate-fade-in">
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold" style={{ 
+                        background: 'linear-gradient(135deg, #006400 0%, #228B22 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontFamily: 'Inter, Poppins, sans-serif'
+                      }}>
+                        Faculty Members
+                      </h2>
+                      <p className="mt-2" style={{ color: '#555555', fontFamily: 'Inter, Poppins, sans-serif' }}>
+                        {filtered.length} facult{filtered.length !== 1 ? 'y members' : 'y member'} available
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {filtered.map(faculty => (
+                        <FacultyCard
+                          key={faculty.id}
+                          faculty={faculty}
+                          isExpanded={expandedCardId === faculty.id}
+                          onToggle={(id) => setExpandedCardId(expandedCardId === id ? '' : id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* No Results */}
+              {(() => {
+                const allFiltered = [...contactPersons, ...facultyMembers].filter(faculty => {
+                  const matchesSearch = facultySearchQuery === '' || 
+                    faculty.name.toLowerCase().includes(facultySearchQuery.toLowerCase()) ||
+                    faculty.designation.toLowerCase().includes(facultySearchQuery.toLowerCase());
+                  const matchesDesignation = selectedDesignation === 'all' || faculty.designation === selectedDesignation;
+                  const matchesCategory = selectedCategory === 'all' || faculty.category === selectedCategory;
+                  return matchesSearch && matchesDesignation && matchesCategory;
+                });
+
+                if (allFiltered.length === 0) {
+                  return (
+                    <Card className="bg-white border-gray-200 shadow-md rounded-xl">
+                      <CardContent className="p-12 text-center">
+                        <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#006400' }} />
+                        <h3 className="text-2xl font-semibold mb-2" style={{ color: '#1A1A1A', fontFamily: 'Inter, Poppins, sans-serif' }}>
+                          No Faculty Found
+                        </h3>
+                        <p style={{ color: '#555555', fontFamily: 'Inter, Poppins, sans-serif' }}>
+                          Try adjusting your search or filter criteria.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+                return null;
+              })()}
             </TabsContent>
           </Tabs>
         </div>

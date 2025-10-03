@@ -28,13 +28,13 @@ const SplitSaathi = () => {
     name: "",
     description: "",
     currency: "₹",
-    members: [{ name: "", email_phone: "" }]
+    members: [{ name: "" }]
   });
 
   const addMember = () => {
     setGroupForm(prev => ({
       ...prev,
-      members: [...prev.members, { name: "", email_phone: "" }]
+      members: [...prev.members, { name: "" }]
     }));
   };
 
@@ -95,12 +95,12 @@ const SplitSaathi = () => {
       return;
     }
     
-    // Validate that at least one member has BOTH name and email/phone
-    const validMembers = groupForm.members.filter(m => m.name.trim() && m.email_phone.trim());
+    // Validate that at least one member has a name
+    const validMembers = groupForm.members.filter(m => m.name.trim());
     if (validMembers.length === 0) {
       toast({
         title: "Missing Members",
-        description: "Please add at least one member with both name and contact info (email/phone).",
+        description: "Please add at least one member with a name.",
         variant: "destructive"
       });
       return;
@@ -129,7 +129,7 @@ const SplitSaathi = () => {
           validMembers.map(member => ({
             group_id: group.id,
             name: member.name,
-            email_phone: member.email_phone
+            email_phone: '' // Optional field, can be empty
           }))
         );
 
@@ -148,7 +148,7 @@ const SplitSaathi = () => {
         name: "",
         description: "",
         currency: "₹",
-        members: [{ name: "", email_phone: "" }]
+        members: [{ name: "" }]
       });
       setIsCreatingGroup(false);
       
@@ -350,20 +350,14 @@ const SplitSaathi = () => {
                 
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Add Members</Label>
+                  <p className="text-sm text-muted-foreground">Enter member names to track expenses</p>
                   {groupForm.members.map((member, index) => (
                     <div key={index} className="flex gap-2 items-end">
                       <div className="flex-1">
                         <Input
-                          placeholder="Member name"
+                          placeholder="Member name *"
                           value={member.name}
                           onChange={(e) => updateMember(index, 'name', e.target.value)}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Input
-                          placeholder="Email/Phone"
-                          value={member.email_phone}
-                          onChange={(e) => updateMember(index, 'email_phone', e.target.value)}
                         />
                       </div>
                       {groupForm.members.length > 1 && (
