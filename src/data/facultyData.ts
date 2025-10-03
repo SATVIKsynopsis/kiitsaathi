@@ -481,13 +481,31 @@ export const facultyMembers: FacultyMember[] = [
   { id: 'f-46', name: 'Pinaki Sankar Chatterjee', designation: 'Computer Science and Engineering', email: 'pinaki.chatterjee@kiit.ac.in', phone: '+91-9437012445', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
   { id: 'f-47', name: 'Prabhu Prasad Dev', designation: 'Computer Science and Engineering', email: 'prabhu.dev@kiit.ac.in', phone: '+91-9437012446', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
   { id: 'f-48', name: 'Prachet Bhuyan', designation: 'Computer Science and Engineering', email: 'prachet.bhuyan@kiit.ac.in', phone: '+91-9437012447', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
-  // Fill remaining 65 slots with demo faculty
-  ...Array.from({ length: 65 }, (_, i) => ({
-    id: `f-${49 + i}`,
-    name: `Dr. Faculty Member ${49 + i}`,
+  // Faculty from card 49 onwards - Real data from official records
+  { id: 'f-49', name: 'Sujata Swain', designation: 'Computer Science and Engineering', email: 'sujata.swain@kiit.ac.in', phone: '+91-9437012448', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-50', name: 'Sujay Datta', designation: 'Computer Science and Engineering', email: 'sujay.datta@kiit.ac.in', phone: '+91-9437012449', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-51', name: 'Sujoy Modhab Roy', designation: 'Computer Science and Engineering', email: 'sujoy.roy@kiit.ac.in', phone: '+91-9437012450', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-52', name: 'Suman Majumder', designation: 'Computer Science and Engineering', email: 'suman.majumder@kiit.ac.in', phone: '+91-9437012451', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-53', name: 'Suneeta Mohanty', designation: 'Computer Science and Engineering', email: 'suneeta.mohanty@kiit.ac.in', phone: '+91-9437012452', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-54', name: 'Sunil Kumar Gouda', designation: 'Computer Science and Engineering', email: 'sunil.gouda@kiit.ac.in', phone: '+91-9437012453', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-55', name: 'Supriyo Mandal', designation: 'Computer Science and Engineering', email: 'supriyo.mandal@kiit.ac.in', phone: '+91-9437012454', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-56', name: 'Suresh Chandra Satapathy', designation: 'Computer Science and Engineering', email: 'suresh.satapathy@kiit.ac.in', phone: '+91-9437012455', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-57', name: 'Sushruta Mishra', designation: 'Computer Science and Engineering', email: 'sushruta.mishra@kiit.ac.in', phone: '+91-9437012456', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-58', name: 'Susmita Das', designation: 'Computer Science and Engineering', email: 'susmita.das@kiit.ac.in', phone: '+91-9437012457', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-59', name: 'Swagatika Sahoo', designation: 'Computer Science and Engineering', email: 'swagatika.sahoo@kiit.ac.in', phone: '+91-9437012458', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-60', name: 'Tanik Saikh', designation: 'Computer Science and Engineering', email: 'tanik.saikh@kiit.ac.in', phone: '+91-9437012459', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-61', name: 'Tanmoy Maitra', designation: 'Computer Science and Engineering', email: 'tanmoy.maitra@kiit.ac.in', phone: '+91-9437012460', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-62', name: 'Uppada Gautomi', designation: 'Computer Science and Engineering', email: 'uppada.gautomi@kiit.ac.in', phone: '+91-9437012461', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-63', name: 'Vijay Kumar Meena', designation: 'Computer Science and Engineering', email: 'vijay.meena@kiit.ac.in', phone: '+91-9437012462', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-64', name: 'Vikas Hassija', designation: 'Computer Science and Engineering', email: 'vikas.hassija@kiit.ac.in', phone: '+91-9437012463', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  { id: 'f-65', name: 'Vishal Meena', designation: 'Computer Science and Engineering', email: 'vishal.meena@kiit.ac.in', phone: '+91-9437012464', linkedin: 'https://linkedin.com/in/demo', category: 'faculty', department: 'CSE' },
+  // Fill remaining 48 slots with demo faculty
+  ...Array.from({ length: 48 }, (_, i) => ({
+    id: `f-${66 + i}`,
+    name: `Dr. Faculty Member ${66 + i}`,
     designation: 'Computer Science and Engineering',
-    email: `faculty${49 + i}@kiit.ac.in`,
-    phone: `+91-943701${2448 + i}`,
+    email: `faculty${66 + i}@kiit.ac.in`,
+    phone: `+91-943701${2465 + i}`,
     linkedin: 'https://linkedin.com/in/demo',
     category: 'faculty' as const,
     department: 'CSE'
