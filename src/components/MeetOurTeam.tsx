@@ -197,7 +197,7 @@ const teamMembers: TeamMember[] = [
   },
   { 
     id: 10, 
-    name: 'Aditi Srivastav', 
+    name: 'Aditi Srivastava', 
     role: 'Graphic Designer', 
     images: {
       center: '/team/member-10-center.png',
