@@ -99,6 +99,19 @@ const KiitSocieties = () => {
       logoPlaceholder: "usc"
     },
     {
+      name: "K-1000 ",
+      section: "k1000",
+      brief: "K-1000 is KIIT’s official Research & Development program, empowering 1000 students to pursue cutting-edge research, innovation, and real-world problem-solving across technical and non-technical domains.",
+      category: "Research & Development",
+      members: "1000",
+      gradient: "from-black via-gray-900 to-emerald-700",
+      website: "http://k-1000.vercel.app/",
+      instagram: "https://www.instagram.com/k1000_kiit",
+      upcomingEvent: { title: "K-1000 Research Expo", date: "Coming Soon" },
+      logoPlaceholder: "k1000"
+    }
+    ,
+    {
       name: "IEEE CTSoC KIIT",
       section: "ctsoc",
       brief: "The IEEE Consumer Technology Society KIIT chapter promotes innovation in consumer electronics, IoT, AR/VR, and smart devices through research and student projects.",
@@ -663,7 +676,7 @@ const KiitSocieties = () => {
 
             <div className="relative mb-12">
               <div className="w-64 h-64 mx-auto bg-gradient-to-br from-kiit-green-light to-purple-200 rounded-full flex items-center justify-center mb-8">
-                <div className="text-6xl"><Social className='w-16 h-16'/></div>
+                <div className="text-6xl"><Social className='w-16 h-16' /></div>
               </div>
             </div>
           </div>

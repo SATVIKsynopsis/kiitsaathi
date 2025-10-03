@@ -44,7 +44,9 @@ import konnect from "./konnect.jpeg"
 import ncc from "./ncc.jpg"
 import nss from "./nss.png"
 import yrc from "./yrc.jpeg"
+import k1000 from "./k1000.jpg"
 export const Societies = {
+    k1000,
     ncc,
     nss,
     yrc,
