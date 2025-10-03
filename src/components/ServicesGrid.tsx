@@ -19,7 +19,8 @@ import {
   Star,
   ArrowRight,
   Calculator,
-  FileText
+  FileText,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -66,6 +67,14 @@ const services = [
     description: "One calendar. All societies. Never miss an interview again.",
     price: "Free",
     gradient: "from-campus-purple to-usc-maroon",
+  },
+  {
+    id: "course-faculty-details",
+    icon: GraduationCap,
+    title: "Course & Faculty Details",
+    description: "Complete course structure and faculty information for all semesters.",
+    price: "Free",
+    gradient: "from-indigo-500 to-purple-500",
   },
   {
     id: "resume-saathi",
@@ -203,6 +212,7 @@ export const ServicesGrid = () => {
       "KIIT Saathi Meetups": "/meetups",
       "KIIT Saathi (AI Assistant)": "/chatbot",
       "SGPA & CGPA Calculator": "/sgpa-calculator",
+      "Course & Faculty Details": "/course-structure",
       "Food and micro-essentials delivery": "/food-order-customer",
       "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
       "Campus Map": "/campus-map"

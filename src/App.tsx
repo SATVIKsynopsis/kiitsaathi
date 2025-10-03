@@ -31,6 +31,7 @@ import OrderHistory from "./pages/OrderHistory";
 import KiitSocieties from "./pages/KiitSocieties";
 import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
 import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
+import CourseStructure from "./pages/CourseStructure";
 import FestAnnouncements from "./pages/FestAnnouncements";
 import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
@@ -93,6 +94,7 @@ const App = () => {
                 <Route path="/kiit-societies" element={<KiitSocieties />} />
                 <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
                 <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
+                <Route path="/course-structure" element={<CourseStructure />} />
                 <Route path="/fest-announcements" element={<FestAnnouncements />} />
                 <Route path="/sports-events-hub" element={<SportsEventsHub />} />
                 <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
