@@ -138,7 +138,7 @@ export default function Auth() {
     
     if (!email.endsWith('@kiit.ac.in')) {
       return showFriendly 
-        ? '🚫 Access Denied! Please use your official KIIT ID (example: 24155598@kiit.ac.in).'
+        ? '🚫 Access Denied! Please use your official KIIT ID (example: 2000000@kiit.ac.in).'
         : 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.';
     }
     return null;
