@@ -32,6 +32,7 @@ import KiitSocieties from "./pages/KiitSocieties";
 import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
 import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
 import CourseStructure from "./pages/CourseStructure";
+import TimetableSaathi from "./pages/TimetableSaathi";
 import FestAnnouncements from "./pages/FestAnnouncements";
 import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
@@ -81,6 +82,7 @@ const App = () => {
                 <Route path="/senior-connect" element={<SeniorConnect />} />
                 <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
                 <Route path="/lost-and-found" element={<LostAndFound />} />
+                <Route path="/timetable-saathi" element={<TimetableSaathi />} />
                 <Route path="/split-saathi" element={<SplitSaathi />} />
                 <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
                 <Route path="/study-material" element={<StudyMaterial />} />
