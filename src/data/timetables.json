@@ -1,0 +1,70 @@
+{
+  "schema": {
+    "year": "Academic year",
+    "semester": "Semester number",
+    "section": "Section/Group identifier",
+    "day": "Day of week",
+    "start_time": "Start time (24hr format)",
+    "end_time": "End time (24hr format)",
+    "course_code": "Course code/abbreviation",
+    "course_name": "Full course name",
+    "location": "Room/Location",
+    "notes": "Additional notes/Lab info",
+    "effective_from": "Effective date"
+  },
+  "semesters": {
+    "1": {
+      "effective_from": "29/07/2025",
+      "scheme": "A",
+      "courses": {
+        "DE&LA": "Differential Equation & Linear Algebra",
+        "PHY": "Physics",
+        "EVS": "Environmental Science",
+        "ScLS": "Science of Living Systems",
+        "Phy Lab": "Physics Lab",
+        "ED & Graphics": "Engineering Drawing & Graphics",
+        "PL(T) & Programming Lab": "Tutorial & Programming Lab"
+      },
+      "sections": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12"]
+    },
+    "2": {
+      "effective_from": "07/08/2025",
+      "scheme": "B",
+      "courses": {
+        "DE&LA": "Differential Equation & Linear Algebra",
+        "CHEM": "Chemistry",
+        "ENG": "English",
+        "BETc": "Basic Electronics",
+        "BEE": "Basic Electrical Engineering",
+        "Chem Lab": "Chemistry Lab",
+        "Workshop": "Workshop Practice",
+        "SY": "Sports and Yoga",
+        "Comm Lab": "Communication Lab"
+      },
+      "sections": ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10"]
+    },
+    "3": {
+      "effective_from": "28/07/2025",
+      "courses": {
+        "DS": "Data Structures",
+        "DSD": "Digital System Design",
+        "AFL": "Automata and Formal Languages",
+        "PS": "Probability and Statistics",
+        "STW": "Software Engineering",
+        "IND4": "Indian Knowledge System"
+      },
+      "sections": ["CSE-1", "CSE-2", "CSE-3", "CSE-4", "CSE-5", "CSE-6", "CSE-7", "CSE-8", "CSE-9", "CSE-10"]
+    },
+    "5": {
+      "courses": {
+        "HPC": "High Performance Computing",
+        "DOS": "Distributed Operating Systems",
+        "LLM": "Large Language Models",
+        "CI": "Computational Intelligence",
+        "DMDW": "Data Mining & Data Warehousing",
+        "IP": "Image Processing"
+      },
+      "sections": ["HPC_CS-1", "DOS_CS-1", "LLM_CS-1", "CI_CS-1", "DMDW_CS-1"]
+    }
+  }
+}
