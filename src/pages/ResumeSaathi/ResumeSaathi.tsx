@@ -9,6 +9,7 @@ import { PdfGenerator } from "./PdfGenerator";
 import { Loader3D } from "./Loader3D";
 import { SuggestionsPanel } from "./SuggestionsPanel";
 import { ResumeHistoryList } from "./ResumeHistoryList";
+import { ResumeAnalyzer } from "./ResumeAnalyzer";
 import { TestResumeGenerator } from "@/components/TestResumeGenerator";
 import { DeleteAllDataButton } from "@/components/DeleteAllDataButton";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
-import { FileText, Download, History, Plus, Star, Zap } from "lucide-react";
+import { FileText, Download, History, Plus, Star, Zap, Search } from "lucide-react";
 
 export interface ResumeData {
   personalInfo: {
@@ -59,7 +60,7 @@ export interface ResumeData {
   interests: string[];
 }
 
-type ViewMode = 'form' | 'loading' | 'preview' | 'history';
+type ViewMode = 'form' | 'loading' | 'preview' | 'history' | 'analyzer';
 
 const ResumeSaathi = () => {
   const { user, session, loading: authLoading } = useAuth();
@@ -335,13 +336,21 @@ const ResumeSaathi = () => {
           </div>
         </div>
 
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex justify-center gap-4 mb-8 flex-wrap">
             <Button
               variant={viewMode === 'form' ? "default" : "outline"}
               onClick={() => setViewMode('form')}
             >
               <Plus className="w-4 h-4 mr-2" />
               Create New
+            </Button>
+            <Button
+              variant={viewMode === 'analyzer' ? "default" : "outline"}
+              onClick={() => setViewMode('analyzer')}
+              className={viewMode === 'analyzer' ? "bg-[hsl(var(--campus-blue))] hover:bg-[hsl(var(--campus-blue))]/90" : ""}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Analyze Resume
             </Button>
             <Button
               variant={viewMode === 'history' ? "default" : "outline"}
@@ -415,6 +424,8 @@ const ResumeSaathi = () => {
             </div>
           </div>
         )}
+
+        {viewMode === 'analyzer' && <ResumeAnalyzer />}
 
         {viewMode === 'history' && (
           <ResumeHistoryList
