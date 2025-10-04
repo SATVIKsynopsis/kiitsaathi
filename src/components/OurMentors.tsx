@@ -8,18 +8,18 @@ interface Mentor {
 
 const mentors: Mentor[] = [
   {
-    name: "Dr. Rajesh Kumar",
-    designation: "Chief Technology Advisor",
+    name: "Dr. Ajit Pasayat",
+    designation: "Associate Dean KSAC",
     photo: "/mentors/mentor-1.png",
   },
   {
-    name: "Prof. Priya Sharma",
-    designation: "Startup Mentor & Investor",
+    name: "Dr. Vikas Hassija",
+    designation: "Associate Professor,SCE",
     photo: "/mentors/mentor-2.png",
   },
   {
-    name: "Mr. Anil Verma",
-    designation: "Business Strategy Consultant",
+    name: "Mr. Satyananda Champati Rai",
+    designation: "Associate Professor,SCE",
     photo: "/mentors/mentor-3.png",
   },
 ];
