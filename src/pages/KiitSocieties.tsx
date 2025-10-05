@@ -642,19 +642,6 @@ const KiitSocieties = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-kiit-green-soft to-white">
-      {/* Back to Home Button */}
-      {/* <div className="z-40 bg-white/80 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-4 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-kiit-green hover:text-kiit-green-dark"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
-        </div>
-      </div> */}
 
       <Navbar />
 
@@ -865,7 +852,7 @@ const KiitSocieties = () => {
               <Button
                 variant="outline"
                 className="border-kiit-green text-kiit-green hover:bg-kiit-green hover:text-white px-8 py-3"
-                onClick={() => alert("Coming Soon! Event calendar is under development.")}
+                onClick={()=>{navigate('/interview-deadlines-tracker')}}
               >
                 View All Events
               </Button>

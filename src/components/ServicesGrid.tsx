@@ -1,13 +1,13 @@
-import { 
-  Package, 
-  Printer, 
-  Users, 
-  PenTool, 
-  Calendar, 
-  ShoppingBag, 
-  PartyPopper, 
-  Bot, 
-  BookOpen, 
+import {
+  Package,
+  Printer,
+  Users,
+  PenTool,
+  Calendar,
+  ShoppingBag,
+  PartyPopper,
+  Bot,
+  BookOpen,
   MessageCircle,
   Shield,
   Timer,
@@ -237,10 +237,8 @@ export const ServicesGrid = () => {
   };
 
   return (
-    // <section className=" min-h-screen items-center justify-center overflow-hidden"
-    //   >
     <section className="py-4 bg-gradient-to-br from-campus-blue/10 to-kiit-green/10"
-         > 
+    >
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12 px-4">
@@ -248,14 +246,14 @@ export const ServicesGrid = () => {
             <Star className="w-4 h-4" />
             15+ Campus Services
           </div>
-          
+
           <h2 className="text-3xl sm:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
             Everything You Need
             <span className="block">In One App</span>
           </h2>
-          
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-            From academic support to daily essentials, we have built the complete ecosystem 
+
+          <p className="text-black sm:text-lg lg:text-xl text-black max-w-3xl mx-auto leading-relaxed px-4">
+            From academic support to daily essentials, we have built the complete ecosystem
             to enrich your KIIT experience. <span className="font-semibold text-kiit-green">Because campus life is hectic enough already.</span>
           </p>
         </div>
@@ -276,7 +274,7 @@ export const ServicesGrid = () => {
                 // If there's replacement text, show placeholder
                 if (visibility.replaced_text) {
                   return (
-                    <div 
+                    <div
                       key={index}
                       className="service-card group opacity-85"
                       style={{ animationDelay: `${index * 100}ms` }}
@@ -293,11 +291,11 @@ export const ServicesGrid = () => {
                         <h3 className="text-xl font-poppins font-semibold text-muted-foreground">
                           {visibility.replaced_text}
                         </h3>
-                        
+
                         <p className="text-muted-foreground leading-relaxed text-sm opacity-75">
                           Exciting new services are being developed and will be available soon.
                         </p>
-                        
+
                         <div className="flex items-center justify-between pt-2">
                           <span className="font-semibold px-3 py-1 rounded-full text-sm bg-muted text-muted-foreground">
                             Coming Soon
@@ -313,7 +311,7 @@ export const ServicesGrid = () => {
 
               // Render normal service card
               return (
-                <div 
+                <div
                   key={index}
                   className="service-card bg-white group text-kiit-green-dark"
                   style={{ animationDelay: `${index * 100}ms` }}
@@ -325,31 +323,32 @@ export const ServicesGrid = () => {
                     </div>
                   </div>
 
-                   <div className="space-y-2 px-2">
-                     <h3 className="text-lg sm:text-xl hover:text-black font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
-                       {service.title}
-                     </h3>
-                     
-                     <p className="text-muted-foreground leading-relaxed text-sm">
-                       {service.description}
-                     </p>
-                     
-                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2">
-                       <span className={`font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r ${service.gradient} text-white`}>
-                         {service.price}
-                       </span>
-                       
-                       <Button 
-                         variant="ghost" 
-                         size="sm" 
-                         className="opacity-0 group-hover:opacity-100 transition-all duration-300 w-full sm:w-auto"
-                         onClick={() => handleServiceClick(service)}
-                       >
-                         Try Now
-                         <ArrowRight className="w-4 h-4 ml-1" />
-                       </Button>
-                     </div>
-                   </div>
+                  <div className="space-y-2 px-2  hover:bg-gray-200 hover:rounded-lg p-4">
+                    <h3 onClick={() => handleServiceClick(service)}
+                      className="text-lg sm:text-xl hover:text-black font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
+                      {service.title}
+                    </h3>
+
+                    <p className="text-gray-600 leading-relaxed text-sm">
+                      {service.description}
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2">
+                      <span className={`font-semibold px-3 py-1 rounded-full text-sm bg-gradient-to-r ${service.gradient} text-white`}>
+                        {service.price}
+                      </span>
+
+                      {/* <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-all duration-300 w-full sm:w-auto"
+                        onClick={() => handleServiceClick(service)}
+                      >
+                        Try Now
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button> */}
+                    </div>
+                  </div>
                 </div>
               );
             })

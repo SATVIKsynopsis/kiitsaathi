@@ -166,10 +166,10 @@ export const Hero = () => {
   return <section ref={heroRef} id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{
     background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 70%, #15803d 100%)'
   }}>
-      {/* Animated Matrix Grid Background */}
-      <div className="absolute inset-0">
-        {/* Static grid lines */}
-        <div className="absolute inset-0 opacity-100" style={{
+    {/* Animated Matrix Grid Background */}
+    <div className="absolute inset-0">
+      {/* Static grid lines */}
+      <div className="absolute inset-0 opacity-100" style={{
         backgroundImage: `
               linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
               linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
@@ -178,122 +178,123 @@ export const Hero = () => {
         backgroundPosition: '0 0, 0 0'
       }} />
 
-        {/* Interactive grid cells */}
-        <div ref={gridRef} className="absolute inset-0 pointer-events-none" style={{
+      {/* Interactive grid cells */}
+      <div ref={gridRef} className="absolute inset-0 pointer-events-none" style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
         gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
       }}>
-          {gridCells.map(i => <div key={i} className="transition-all duration-200 ease-out border border-transparent" style={{
+        {gridCells.map(i => <div key={i} className="transition-all duration-200 ease-out border border-transparent" style={{
           width: `${cellSize}px`,
           height: `${cellSize}px`
         }} />)}
-        </div>
       </div>
+    </div>
 
-      {/* Click Ripple Effects */}
-      {ripples.map(ripple => <div key={ripple.id} className="absolute pointer-events-none" style={{
+    {/* Click Ripple Effects */}
+    {ripples.map(ripple => <div key={ripple.id} className="absolute pointer-events-none" style={{
       left: ripple.x - 100,
       top: ripple.y - 100,
       width: 200,
       height: 200
     }}>
-          <div className="w-full h-full rounded-full border-2 border-kiit-green/60 animate-ping" style={{
+      <div className="w-full h-full rounded-full border-2 border-kiit-green/60 animate-ping" style={{
         animation: 'ripple 1.2s ease-out forwards'
       }} />
-          <div className="absolute inset-4 rounded-full border border-white/40 animate-ping" style={{
+      <div className="absolute inset-4 rounded-full border border-white/40 animate-ping" style={{
         animation: 'ripple 1.2s ease-out 0.2s forwards'
       }} />
-        </div>)}
+    </div>)}
 
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-20 h-20 bg-white rounded-full animate-float"></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-white/60 rounded-full animate-bounce-slow"></div>
-        <div className="absolute bottom-32 left-20 w-12 h-12 bg-white/40 rounded-full animate-float"></div>
-      </div>
+    {/* Animated background elements */}
+    <div className="absolute inset-0 opacity-10">
+      <div className="absolute top-20 left-10 w-20 h-20 bg-white rounded-full animate-float"></div>
+      <div className="absolute top-40 right-20 w-16 h-16 bg-white/60 rounded-full animate-bounce-slow"></div>
+      <div className="absolute bottom-32 left-20 w-12 h-12 bg-white/40 rounded-full animate-float"></div>
+    </div>
 
-      <div className="container mx-auto px-4 z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div className="text-center lg:text-left space-y-8">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-white">
-              <Heart className="w-4 h-4 text-campus-orange" />
-              Made with love for KIIT students
-            </div>
-
-            {/* Main Heading */}
-            <div className="space-y-4 my-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-poppins font-bold text-white leading-tight">
-                One app that
-                <span className="block text-white">solves all</span>
-                your campus needs
-              </h1>
-
-              <p className="text-lg sm:text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
-                From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
-              </p>
-
-              {/* CTA Buttons */}
-              {!user ? <div className="flex  flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button size="lg" className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" onClick={() => navigate('/auth')}>
-                    Get Started Free
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </div> : <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button onClick={() => scrollToSection("#services")} size="lg" className="gradient-primary text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    Go to Services
-                  </Button>
-                </div>}
-            </div>
-
-            {/* Quick Stats */}
-            <div className="flex flex-wrap gap-4 sm:gap-8 justify-center lg:justify-start pt-8">
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">10</div>
-                <div className="text-sm sm:text-base text-white/70 font-medium">Campus Services</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">24/7</div>
-                <div className="text-sm sm:text-base text-white/70 font-medium">AI Assistant</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">100%</div>
-                <div className="text-sm sm:text-base text-white/70 font-medium">KIIT Focused</div>
-              </div>
-            </div>
+    <div className="container mx-auto px-4 z-10">
+      <div className="grid lg:grid-cols-2 gap-12 items-center">
+        {/* Left Content */}
+        <div className="text-center lg:text-left space-y-8">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 glass-card px-4 py-2 text-sm font-medium text-white">
+            <Heart className="w-4 h-4 text-campus-orange" />
+            Made with love for KIIT students
           </div>
 
-          {/* Right Content - Mascot and Campus */}
-          <div className="relative mt-8 lg:mt-0">
-            {/* Campus Background */}
-            <div className="relative">
-              <div className="flex flex-col items-center">
-                <div className="w-full max-w-[600px] h-[240px] sm:h-[300px] lg:h-[360px] overflow-hidden relative rounded-3xl">
-                  <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
-                    <img src={heroCampus} className="w-full flex-shrink-0" alt="Slide 3" />
-                    <img src={KiiTSchoolofArch} className="w-full flex-shrink-0" alt="Slide 1" />
-                    <img src={KiitCampus3} className="w-full flex-shrink-0" alt="Slide 2" />
-                    <img src={KiitAbout} className="w-full flex-shrink-0" alt="Slide 4" />
-                    <img src={KiitCampus17} className="w-full flex-shrink-0" alt="Slide 5" />
-                  </div>
-                  <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
-                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-                    <span className="w-3 h-3 bg-black/20 rounded-full"></span>
-                  </div>
-                </div>
+          {/* Main Heading */}
+          <div className="space-y-4 my-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-poppins font-bold text-white leading-tight">
+              One app that
+              <span className="block text-white">solves all</span>
+              your campus needs
+            </h1>
 
+            <p className="text-lg sm:text-xl lg:text-2xl text-white/80 font-inter leading-relaxed">
+              From assignments to mentorship, hostel moves to campus activities - everything you need, in one platform!
+            </p>
+
+            {/* CTA Buttons */}
+            {!user ? <div className="flex  flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button size="lg" className="px-10 bg-foreground text-white font-bold hover:scale-105 transition-all duration-300 shadow-lg hover:bg-foreground/80 hover:shadow-xl" onClick={() => navigate('/auth')}>
+                Get Started Free
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div> : <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button onClick={() => scrollToSection("#services")} size="lg" className="px-10 bg-foreground text-white font-bold hover:bg-foreground/80 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                Go to Services
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+
+              </Button>
+            </div>}
+          </div>
+
+        </div>
+
+        {/* Right Content - Mascot and Campus */}
+        <div className="relative mt-8 lg:mt-0">
+          {/* Campus Background */}
+          <div className="relative">
+            <div className="flex flex-col items-center">
+              <div className="w-full max-w-[570px] h-[240px] sm:h-[300px] lg:h-[330px] overflow-hidden relative rounded-3xl">
+                <div className="flex transition-transform duration-500 ease-in-out" id="slider" ref={sliderRef}>
+                  <img src={heroCampus} className="w-full flex-shrink-0" alt="Slide 3" />
+                  <img src={KiiTSchoolofArch} className="w-full flex-shrink-0" alt="Slide 1" />
+                  <img src={KiitCampus3} className="w-full flex-shrink-0" alt="Slide 2" />
+                  <img src={KiitAbout} className="w-full flex-shrink-0" alt="Slide 4" />
+                  <img src={KiitCampus17} className="w-full flex-shrink-0" alt="Slide 5" />
+                </div>
+                <div className="flex items-center mt-5 space-x-2" id="dot-indicators">
+                  <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                  <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                  <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                  <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                  <span className="w-3 h-3 bg-black/20 rounded-full"></span>
+                </div>
               </div>
 
-
             </div>
+
           </div>
         </div>
       </div>
+      {/* Quick Stats */}
+      <div className="flex gap-4 sm:gap-8 justify-center lg:justify-between pt-12 px-10">
+        <div className="text-center">
+          <div className="text-2xl sm:text-3xl font-bold text-white">10</div>
+          <div className="text-sm sm:text-base text-white/70 font-medium">Campus Services</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl sm:text-3xl font-bold text-white">24/7</div>
+          <div className="text-sm sm:text-base text-white/70 font-medium">AI Assistant</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl sm:text-3xl font-bold text-white">100%</div>
+          <div className="text-sm sm:text-base text-white/70 font-medium">KIIT Focused</div>
+        </div>
+      </div>
+    </div>
 
-    </section>;
+  </section>;
 };
