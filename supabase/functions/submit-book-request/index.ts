@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
+import { Resend } from "npm:resend@2.0.0";
 
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -84,27 +86,46 @@ const handler = async (req: Request): Promise<Response> => {
         throw error;
       }
 
-      // Email functionality temporarily disabled - core functionality maintained
-      console.log("Admin notification would be sent about book selling request");
-      console.log("Confirmation email would be sent to:", requestData.email || user.email);
+      // Send notification email to admin
+      await resend.emails.send({
+        from: "KIIT Saathi <onboarding@resend.dev>",
+        to: ["kiitsaathi@gmail.com"],
+        subject: "New Book Selling Request! 📚",
+        html: `
+          <h2>New Book Selling Request</h2>
+          <p><strong>Student:</strong> ${requestData.fullName}</p>
+          <p><strong>Roll Number:</strong> ${requestData.rollNumber}</p>
+          <p><strong>Contact:</strong> ${requestData.contactNumber}</p>
+          <p><strong>Email:</strong> ${requestData.email || user.email}</p>
+          <p><strong>Books:</strong> ${requestData.bookTitles}</p>
+          <p><strong>Branch:</strong> ${requestData.branch}</p>
+          <p><strong>Year:</strong> ${requestData.yearOfStudy}</p>
+          <p><strong>Condition:</strong> ${requestData.bookCondition}</p>
+          <p><strong>Pickup Location:</strong> ${requestData.pickupLocation}</p>
+          <p>Please contact the student to arrange pickup and pricing.</p>
+        `,
+      });
 
-      console.log("Book selling request processed successfully");
+      // Send confirmation email to student
+      await resend.emails.send({
+        from: "KIIT Saathi <onboarding@resend.dev>",
+        to: [requestData.email || user.email!],
+        subject: "Book Selling Request Received - KIIT Saathi",
+        html: `
+          <h2>Thank you for your book selling request!</h2>
+          <p>Dear ${requestData.fullName},</p>
+          <p>We have received your request to sell books. Here are the details:</p>
+          <ul>
+            <li><strong>Books:</strong> ${requestData.bookTitles}</li>
+            <li><strong>Condition:</strong> ${requestData.bookCondition}</li>
+            <li><strong>Pickup Location:</strong> ${requestData.pickupLocation}</li>
+          </ul>
+          <p>Our team will review your submission and contact you within 24 hours with a quote and pickup details.</p>
+          <p>Best regards,<br>The KIIT Saathi Team</p>
+        `,
+      });
 
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Book selling request submitted successfully! We'll contact you soon.",
-          submissionId: data.id
-        }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        }
-      );
-    } else {
+    } else if (requestData.type === 'buy') {
       // Handle book purchase request
       const { data, error } = await supabase
         .from('book_purchase_requests')
@@ -113,10 +134,7 @@ const handler = async (req: Request): Promise<Response> => {
           full_name: requestData.fullName,
           roll_number: requestData.rollNumber,
           contact_number: requestData.contactNumber,
-          email: requestData.email || user.email,
-          book_set_needed: requestData.bookSetNeeded,
-          branch: requestData.branch,
-          year_of_study: requestData.yearOfStudy,
+          book_set_needed: requestData.bookSetNeeded
         }])
         .select()
         .single();
@@ -126,26 +144,40 @@ const handler = async (req: Request): Promise<Response> => {
         throw error;
       }
 
-      // Email functionality temporarily disabled - core functionality maintained  
-      console.log("Admin notification would be sent about book purchase request");
-
-      console.log("Book purchase request processed successfully");
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Book purchase request submitted successfully! We'll contact you with availability.",
-          requestId: data.id
-        }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        }
-      );
+      // Send notification email to admin
+      await resend.emails.send({
+        from: "KIIT Saathi <onboarding@resend.dev>",
+        to: ["kiitsaathi@gmail.com"],
+        subject: "New Book Purchase Request! 📖",
+        html: `
+          <h2>New Book Purchase Request</h2>
+          <p><strong>Student:</strong> ${requestData.fullName}</p>
+          <p><strong>Roll Number:</strong> ${requestData.rollNumber}</p>
+          <p><strong>Contact:</strong> ${requestData.contactNumber}</p>
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>Book Set Needed:</strong> ${requestData.bookSetNeeded}</p>
+          <p>Please check inventory and contact the student with availability and pricing.</p>
+        `,
+      });
     }
+
+    console.log("Book request processed successfully");
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: requestData.type === 'sell' 
+          ? "Book selling request submitted successfully! We'll contact you soon with a quote."
+          : "Book purchase request submitted successfully! We'll contact you with availability and pricing."
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      }
+    );
   } catch (error: any) {
     console.error("Error in submit-book-request function:", error);
     return new Response(

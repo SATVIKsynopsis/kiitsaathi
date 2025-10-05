@@ -36,32 +36,30 @@ export function FilterBar({
   years,
 }: FilterBarProps) {
   return (
-    <div className="glass-card p-6 mb-8 sticky top-4 z-10 bg-card/80 backdrop-blur-md border border-border/50 rounded-2xl shadow-xl">
-      <div className="space-y-6">
+    <div className="glass-card p-6 mb-6 sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="space-y-4">
         {/* Search Bar */}
-        <div className="relative group">
-          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-kiit-primary transition-colors">
-            <Search className="w-5 h-5" />
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             type="text"
             placeholder="Search by title, subject, or topic..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-14 text-base rounded-xl border-border/50 bg-background/50 focus:bg-background transition-all duration-300 focus:ring-2 focus:ring-kiit-primary/20 focus:border-kiit-primary/50"
+            className="pl-10 h-12 text-base"
           />
         </div>
 
-        {/* Enhanced Filter Dropdowns */}
+        {/* Filter Dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-            <SelectTrigger className="h-12 rounded-xl border-border/50 bg-background/50 hover:bg-background transition-all duration-300 focus:ring-2 focus:ring-kiit-primary/20 focus:border-kiit-primary/50">
+            <SelectTrigger className="h-12">
               <SelectValue placeholder="All Subjects" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-border/50">
-              <SelectItem value="all" className="rounded-lg">All Subjects</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
               {subjects.map((subject) => (
-                <SelectItem key={subject} value={subject} className="rounded-lg">
+                <SelectItem key={subject} value={subject}>
                   {subject}
                 </SelectItem>
               ))}
@@ -69,13 +67,13 @@ export function FilterBar({
           </Select>
 
           <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-            <SelectTrigger className="h-12 rounded-xl border-border/50 bg-background/50 hover:bg-background transition-all duration-300 focus:ring-2 focus:ring-kiit-primary/20 focus:border-kiit-primary/50">
+            <SelectTrigger className="h-12">
               <SelectValue placeholder="All Semesters" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-border/50">
-              <SelectItem value="all" className="rounded-lg">All Semesters</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">All Semesters</SelectItem>
               {semesters.map((semester) => (
-                <SelectItem key={semester} value={semester} className="rounded-lg">
+                <SelectItem key={semester} value={semester}>
                   {semester} 
                 </SelectItem>
               ))}
@@ -83,13 +81,13 @@ export function FilterBar({
           </Select>
 
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="h-12 rounded-xl border-border/50 bg-background/50 hover:bg-background transition-all duration-300 focus:ring-2 focus:ring-kiit-primary/20 focus:border-kiit-primary/50">
+            <SelectTrigger className="h-12">
               <SelectValue placeholder="All Years" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-border/50">
-              <SelectItem value="all" className="rounded-lg">All Years</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
               {years.map((year) => (
-                <SelectItem key={year} value={year} className="rounded-lg">
+                <SelectItem key={year} value={year}>
                   {year}
                 </SelectItem>
               ))}

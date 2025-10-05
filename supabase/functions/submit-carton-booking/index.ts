@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-// import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "npm:resend@2.0.0";
 
-// const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -79,8 +79,25 @@ const handler = async (req: Request): Promise<Response> => {
       throw dbError;
     }
 
-    // Email functionality temporarily disabled - core functionality maintained
-    console.log("Carton booking notification would be sent to admin about:", bookingData.fullName);
+    // Send notification email to admin
+    await resend.emails.send({
+      from: "KIIT Saathi <onboarding@resend.dev>",
+      to: ["kiitsaathi@gmail.com"],
+      subject: "New Carton Transfer Booking! 📦",
+      html: `
+        <h2>New Carton Transfer Booking</h2>
+        <p><strong>Customer:</strong> ${bookingData.fullName}</p>
+        <p><strong>Contact:</strong> ${bookingData.mobileNumber}</p>
+        <p><strong>Location:</strong> ${bookingData.hostelName}, Room ${bookingData.roomNumber}</p>
+        <p><strong>Pickup Slot:</strong> ${bookingData.pickupSlot}</p>
+        <p><strong>Number of Boxes:</strong> ${bookingData.numberOfBoxes}</p>
+        <p><strong>Tape Required:</strong> ${bookingData.needTape ? 'Yes' : 'No'}</p>
+        <p><strong>Payment Method:</strong> ${bookingData.paymentMethod}</p>
+        <p><strong>Total Price:</strong> ₹${bookingData.totalPrice}</p>
+        <p><strong>User Email:</strong> ${user.email}</p>
+        <p>Please coordinate with the customer for pickup.</p>
+      `,
+    });
 
     console.log("Carton booking processed successfully");
 
