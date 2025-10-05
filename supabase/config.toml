@@ -44,6 +44,9 @@ verify_jwt = false
 [functions.send-signup-confirmation]
 verify_jwt = false
 
+[functions.send-password-recovery]
+verify_jwt = false
+
 [functions.submit-assignment-request]
 verify_jwt = true
 
