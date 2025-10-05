@@ -21,8 +21,8 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://jzkzqpeorsehwvwcyjkf.supabase.co"]
+site_url = "https://ksaathi.vercel.app"
+additional_redirect_urls = ["https://ksaathi.vercel.app/auth/callback", "https://jzkzqpeorsehwvwcyjkf.supabase.co"]
 jwt_expiry = 3600
 enable_manual_linking = false
 
@@ -93,4 +93,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.verify-email-callback]
+verify_jwt = true
+
+[functions.admin-resend-confirmation]
 verify_jwt = true
