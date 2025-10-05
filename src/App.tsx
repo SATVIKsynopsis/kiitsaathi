@@ -26,6 +26,7 @@ import Meetups from "./pages/Meetups";
 import CampusTourBooking from "./pages/CampusTourBooking";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
+import ResetPassword from "./pages/ResetPassword";
 import ChatBotPage from "./pages/ChatBotPage";
 import OrderHistory from "./pages/OrderHistory";
 import KiitSocieties from "./pages/KiitSocieties";
@@ -104,6 +105,7 @@ const App = () => {
                 <Route path="/order-history" element={<OrderHistory />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/chatbot" element={<ChatBotPage />} />
                 <Route path="/campus-map" element={<CampusMap />} />
                 <Route path="/campus-map/:campusId" element={<CampusDetailPage />} />
