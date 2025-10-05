@@ -5,7 +5,8 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Check, CreditCard, IndianRupee, Shield, Users, Clock, X, Loader2, Zap } from "lucide-react";
 
-// Add custom CSS animations
+
+
 const styles = `
   @keyframes loading {
     0% { width: 0%; }
