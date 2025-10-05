@@ -4,43 +4,43 @@ import { Bot, ChevronDown, HelpCircle } from "lucide-react";
 const faqs = [
   {
     question: "Is this legal? Are you officially affiliated with KIIT?",
-    answer: "We are building a student-focused platform serving the KIIT community. While not officially affiliated with the university, we operate within all legal guidelines and focus on helping students with legitimate campus needs. We're students, for students! 👨‍🎓"
+    answer: "We are building a student-focused platform serving the KIIT community. While not officially affiliated with the university, we operate within all legal guidelines and focus on helping students with legitimate campus needs. We're students, for students!"
   },
   {
     question: "How much does it cost to use KIIT Saathi?",
-    answer: "Many services are completely free (like Senior Connect chat, Book Exchange, AI assistant, campus map, Split Saathi). Paid services have transparent pricing - printouts start at ₹2/page, assignments at ₹5/page, celebrations from ₹299. No hidden fees, ever! 💰"
+    answer: "Many services are completely free (like Senior Connect chat, Book Exchange, AI assistant, campus map, Split Saathi). Paid services have transparent pricing - printouts start at ₹2/page, assignments at ₹5/page, celebrations from ₹299. No hidden fees, ever!"
   },
   {
     question: "Who are you? Can I trust you with my services?",
-    answer: "We are building a student-focused platform with current KIIT students who faced the same problems you do! Our team includes seniors from various branches who understand student needs. All services prioritize privacy and security. 📚"
+    answer: "We are building a student-focused platform with current KIIT students who faced the same problems you do! Our team includes seniors from various branches who understand student needs. All services prioritize privacy and security."
   },
   {
     question: "How fast is delivery for services like printouts and assignments?",
-    answer: "Printouts: Usually within 2-3 hours during campus hours. Assignments: 24-48 hours depending on complexity. Celebrations: 2-4 hours notice for same-day setup. Book Exchange: Instant matching with other students! ⚡"
+    answer: "Printouts: Usually within 2-3 hours during campus hours. Assignments: 24-48 hours depending on complexity. Celebrations: 2-4 hours notice for same-day setup. Book Exchange: Instant matching with other students!"
   },
   {
     question: "What if something goes wrong with my order?",
-    answer: "We've got you covered! Every service comes with our student-friendly guarantee. Issues with quality? We'll fix it free. Late delivery? You get service credits. Not satisfied? We'll work it out together. Our support team is always here! 🛡️"
+    answer: "We've got you covered! Every service comes with our student-friendly guarantee. Issues with quality? We'll fix it free. Late delivery? You get service credits. Not satisfied? We'll work it out together. Our support team is always here!"
   },
   {
     question: "Is my data safe? What about privacy?",
-    answer: "Absolutely! We respect your privacy completely. Your personal data is encrypted and secure. For Resume Saathi, you can delete all data after downloading. Senior Connect uses demo names only. Book exchanges are anonymous until you choose to connect. 🔒"
+    answer: "Absolutely! We respect your privacy completely. Your personal data is encrypted and secure. For Resume Saathi, you can delete all data after downloading. Senior Connect uses demo names only. Book exchanges are anonymous until you choose to connect."
   },
   {
     question: "Do services work during exams and holidays?",
-    answer: "Yes! We know that's when you need us most. Emergency services like printouts are always available. Senior Connect, Book Exchange, and Split Saathi work 24/7. Celebrations and assignments have limited availability during major holidays. 📅"
+    answer: "Yes! We know that's when you need us most. Emergency services like printouts are always available. Senior Connect, Book Exchange, and Split Saathi work 24/7. Celebrations and assignments have limited availability during major holidays."
   },
   {
     question: "How does the free Book Exchange work?",
-    answer: "Simply list books you want to give away and books you need. Our system matches you with other students. Exchange directly - no money involved! It's completely free and helps reduce textbook costs for everyone. 📖"
+    answer: "Simply list books you want to give away and books you need. Our system matches you with other students. Exchange directly - no money involved! It's completely free and helps reduce textbook costs for everyone."
   },
   {
     question: "Is Senior Connect really anonymous and safe?",
-    answer: "Yes! You only use demo names like 'TechGuru' or 'MathWhiz'. Our AI monitors chats and blocks any phone numbers or personal info sharing. Everything stays anonymous until you choose otherwise. Perfect for getting academic help safely! 💬"
+    answer: "Yes! You only use demo names like 'TechGuru' or 'MathWhiz'. Our AI monitors chats and blocks any phone numbers or personal info sharing. Everything stays anonymous until you choose otherwise. Perfect for getting academic help safely!"
   },
   {
     question: "How does Split Saathi simplify group expenses?",
-    answer: "Add your group expenses and we calculate who owes what. Our 'Simplify Debts' feature shows the minimum transactions needed to settle everything. Export summaries to share with your group. Makes group trips and shared expenses super easy! 💸"
+    answer: "Add your group expenses and we calculate who owes what. Our 'Simplify Debts' feature shows the minimum transactions needed to settle everything. Export summaries to share with your group. Makes group trips and shared expenses super easy!"
   }
 ];
 
@@ -72,7 +72,7 @@ export const FAQ = () => {
           
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             Everything you need to know about using KIIT Saathi. 
-            <span className="font-semibold text-kiit-green"> Still have questions? Just ask our AI assistant!</span>
+            <span className="font-semibold text-kiit-green-dark shadow-box-dark"> Still have questions? Just ask our AI assistant!</span>
           </p>
         </div>
 
@@ -88,7 +88,7 @@ export const FAQ = () => {
                   {faq.question}
                 </h3>
                 <ChevronDown 
-                  className={`w-5 h-5 text-kiit-green transition-transform duration-300 flex-shrink-0 mt-1 sm:mt-0 ${
+                  className={`w-5 h-5 font-semibold text-kiit-green transition-transform duration-300 flex-shrink-0 mt-1 sm:mt-0 ${
                     openItems.includes(index) ? 'rotate-180' : ''
                   }`} 
                 />
@@ -96,7 +96,7 @@ export const FAQ = () => {
               
               {openItems.includes(index) && (
                 <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-white/20">
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-4">
+                  <p className="text-sm font-semibold sm:text-base text-muted-foreground leading-relaxed pt-4">
                     {faq.answer}
                   </p>
                 </div>

@@ -17,8 +17,8 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle className="text-gradient flex items-center gap-2">
-            <Shield className="w-5 h-5" />
+          <DialogTitle className="text-2xl text-gradient flex items-center gap-2">
+            <Shield className="w-7 h-7" />
             Privacy Policy - KIIT Saathi
           </DialogTitle>
           <DialogDescription>
@@ -31,12 +31,12 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-6 text-sm">
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3 flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-gradient mb-3 flex items-center gap-2">
                 <Database className="w-4 h-4" />
                 1. Data Collection
               </h3>
               <div className="space-y-3 text-muted-foreground">
-                <p><strong>Personal Information We Collect:</strong></p>
+                <p><strong className="text-semibold text-black">Personal Information We Collect:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>KIIT College email address (@kiit.ac.in) - required for authentication</li>
                   <li>Full name and basic profile information</li>
@@ -45,7 +45,7 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
                   <li>Payment information (processed securely through Razorpay)</li>
                 </ul>
                 
-                <p className="mt-3"><strong>Usage Analytics We Track:</strong></p>
+                <p className="mt-3"><strong className="text-semibold text-black">Usage Analytics We Track:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Page visits and service usage patterns</li>
                   <li>Feature interaction and performance metrics</li>
@@ -60,12 +60,12 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
             <section>
               <h3 className="text-lg font-semibold text-gradient mb-3">2. How We Use Your Data</h3>
               <div className="space-y-2 text-muted-foreground">
-                <p>• <strong>Service Provision:</strong> To provide and maintain our campus services</p>
-                <p>• <strong>Authentication:</strong> To verify your KIIT student status and secure access</p>
-                <p>• <strong>Communication:</strong> To send service updates, notifications, and support responses</p>
-                <p>• <strong>Improvement:</strong> To analyze usage patterns and enhance user experience</p>
-                <p>• <strong>Security:</strong> To detect fraud, abuse, and maintain platform integrity</p>
-                <p>• <strong>Legal Compliance:</strong> To meet legal obligations and protect user rights</p>
+                <p>• <strong className="text-semibold text-black">Service Provision:</strong> To provide and maintain our campus services</p>
+                <p>• <strong className="text-semibold text-black">Authentication:</strong> To verify your KIIT student status and secure access</p>
+                <p>• <strong className="text-semibold text-black">Communication:</strong> To send service updates, notifications, and support responses</p>
+                <p>• <strong className="text-semibold text-black">Improvement:</strong> To analyze usage patterns and enhance user experience</p>
+                <p>• <strong className="text-semibold text-black">Security:</strong> To detect fraud, abuse, and maintain platform integrity</p>
+                <p>• <strong className="text-semibold text-black">Legal Compliance:</strong> To meet legal obligations and protect user rights</p>
               </div>
             </section>
 
@@ -89,7 +89,7 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
               </div>
               
               <div className="space-y-2 text-muted-foreground">
-                <p><strong>Limited Data Sharing Scenarios:</strong></p>
+                <p><strong className="text-semibold text-black">Limited Data Sharing Scenarios:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>With your explicit consent for specific features</li>
                   <li>To comply with legal requirements or court orders</li>
@@ -104,11 +104,11 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
             <section>
               <h3 className="text-lg font-semibold text-gradient mb-3">4. Data Storage and Security</h3>
               <div className="space-y-2 text-muted-foreground">
-                <p>• <strong>Encryption:</strong> All data is encrypted in transit and at rest using industry-standard protocols</p>
-                <p>• <strong>Storage:</strong> Data is stored on secure cloud servers with regular backups</p>
-                <p>• <strong>Access Control:</strong> Multi-factor authentication and role-based access for team members</p>
-                <p>• <strong>Monitoring:</strong> Continuous security monitoring and threat detection</p>
-                <p>• <strong>Retention:</strong> Data is retained only as long as necessary for service provision</p>
+                <p>• <strong className="text-semibold text-black">Encryption:</strong> All data is encrypted in transit and at rest using industry-standard protocols</p>
+                <p>• <strong className="text-semibold text-black">Storage:</strong> Data is stored on secure cloud servers with regular backups</p>
+                <p>• <strong className="text-semibold text-black">Access Control:</strong> Multi-factor authentication and role-based access for team members</p>
+                <p>• <strong className="text-semibold text-black">Monitoring:</strong> Continuous security monitoring and threat detection</p>
+                <p>• <strong className="text-semibold text-black">Retention:</strong> Data is retained only as long as necessary for service provision</p>
               </div>
             </section>
 
@@ -120,7 +120,7 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
                 5. Your Rights and Choices
               </h3>
               <div className="space-y-3 text-muted-foreground">
-                <p><strong>You have the right to:</strong></p>
+                <p><strong className="text-semibold text-black">You have the right to:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Access and review your personal data</li>
                   <li>Request correction of inaccurate information</li>
@@ -132,7 +132,7 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
                 
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mt-4">
                   <p className="text-blue-800 dark:text-blue-200">
-                    <strong>To exercise these rights:</strong> Contact us at official@kiitsaathi.in with your request. 
+                    <strong className="text-semibold text-black">To exercise these rights:</strong> Contact us at official@kiitsaathi.in with your request. 
                     We will respond within 30 days and may require identity verification.
                   </p>
                 </div>
@@ -144,10 +144,10 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
             <section>
               <h3 className="text-lg font-semibold text-gradient mb-3">6. Cookies and Tracking</h3>
               <div className="space-y-2 text-muted-foreground">
-                <p>• <strong>Essential Cookies:</strong> Required for authentication and core functionality</p>
-                <p>• <strong>Analytics Cookies:</strong> Help us understand usage patterns (anonymized)</p>
-                <p>• <strong>Preference Cookies:</strong> Remember your settings and preferences</p>
-                <p>• <strong>Third-party Services:</strong> Razorpay for payments, Google OAuth for authentication</p>
+                <p>• <strong className="text-semibold text-black">Essential Cookies:</strong> Required for authentication and core functionality</p>
+                <p>• <strong className="text-semibold text-black">Analytics Cookies:</strong> Help us understand usage patterns (anonymized)</p>
+                <p>• <strong className="text-semibold text-black">Preference Cookies:</strong> Remember your settings and preferences</p>
+                <p>• <strong className="text-semibold text-black">Third-party Services:</strong> Razorpay for payments, Google OAuth for authentication</p>
               </div>
             </section>
 
@@ -167,7 +167,7 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
 
             <section>
               <h3 className="text-lg font-semibold text-gradient mb-3">8. Contact Us</h3>
-              <div className="space-y-2 text-muted-foreground">
+              <div className="space-y-2 text-black">
                 <p>For privacy-related questions, concerns, or requests:</p>
                 <p>• Email: official@kiitsaathi.in</p>
                 <p>• Phone: +91 9717008778</p>
@@ -176,7 +176,7 @@ export function PrivacyPolicy({ open, onOpenChange, onAccept, isFirstTime = fals
             </section>
 
             <div className="text-xs text-muted-foreground mt-6 p-4 bg-muted/50 rounded-lg">
-              <p><strong>Last Updated:</strong> {new Date().toLocaleDateString()}</p>
+              <p><strong className="text-semibold text-black">Last Updated:</strong> {new Date().toLocaleDateString()}</p>
               <p>By using KIIT Saathi, you acknowledge that you have read, understood, and agree to this Privacy Policy.</p>
             </div>
           </div>

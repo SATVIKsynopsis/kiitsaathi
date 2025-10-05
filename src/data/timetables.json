@@ -1,0 +1,151 @@
+{
+  "_schema": {
+    "description": "KIIT Timetable Data for Academic Year 2025-2026",
+    "fields": {
+      "year": "Academic year (string)",
+      "semester": "Semester number (1, 2, 3, 5)",
+      "effective_from": "Date when timetable becomes effective (DD/MM/YYYY)",
+      "scheme": "Scheme identifier (A, B, or null)",
+      "courses": "Course code to full name mapping (object)",
+      "sections": "List of section identifiers (array)",
+      "schedule": "Weekly schedule entries (array of objects)",
+      "schedule_entry": {
+        "section": "Section identifier",
+        "day": "Day of week (MON, TUE, WED, THU, FRI)",
+        "entries": "Time slot entries for the day (array)",
+        "entry": {
+          "start_time": "Start time (24hr format HH:MM)",
+          "end_time": "End time (24hr format HH:MM)",
+          "course_code": "Course code/abbreviation",
+          "location": "Room/Location",
+          "type": "Class type (L=Lecture, Lab, Tutorial, etc.)"
+        }
+      }
+    }
+  },
+  "semesters": {
+    "1": {
+      "year": "2025-2026",
+      "effective_from": "29/07/2025",
+      "scheme": "A",
+      "courses": {
+        "DE&LA": "Differential Equation & Linear Algebra",
+        "PHY": "Physics",
+        "EVS": "Environmental Science",
+        "ScLS": "Science of Living Systems",
+        "Phy Lab": "Physics Lab",
+        "ED & Graphics": "Engineering Drawing & Graphics",
+        "PL(T) & Programming Lab": "Tutorial & Programming Lab",
+        "Nano": "Nano science",
+        "SM": "Smart Materials",
+        "MD": "Molecular Diagnostics",
+        "SPH": "Science of Public Health",
+        "OT": "Optimization Techniques",
+        "QT": "Introduction to Quantum Technology",
+        "BCE": "Basic Civil Engineering",
+        "BME": "Basic Mechanical Engineering",
+        "BioM": "Biomedical Engineering",
+        "BI": "Basic Instrumentation",
+        "EML": "Elements of Machine Learning"
+      },
+      "sections": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14", "A15", "A16", "A17", "A18", "A19", "A20", "A21", "A22", "A23", "A24", "A25", "A26", "A27", "A28", "A29", "A30"],
+      "notes": {
+        "lab_locations": {
+          "PL(T) & Programming Lab": "Campus-15A [LAB-101&102] and Campus-15B [WL-101,102&103]",
+          "ED & Graphics": "Drawing Hall, Campus-3 Block-C",
+          "Phy Lab": "Lab complex, School of Applied Sciences, Campus-3"
+        },
+        "theory_locations": "Campus-17 (401-407, 501-505), Campus-15A (ALH-201-207), Campus-15B (B201-B206, B301-B306, B401-B406)"
+      }
+    },
+    "2": {
+      "year": "2025-2026",
+      "effective_from": "07/08/2025",
+      "scheme": "B",
+      "courses": {
+        "DE&LA": "Differential Equation & Linear Algebra",
+        "CHEM": "Chemistry",
+        "ENG": "English",
+        "BETc": "Basic Electronics",
+        "BEE": "Basic Electrical Engineering",
+        "Chem Lab": "Chemistry Lab",
+        "Workshop": "Workshop Practice",
+        "SY": "Sports and Yoga",
+        "Comm Lab": "Communication Lab",
+        "Engg Lab": "Engineering Lab",
+        "SST": "Society, Science and Technology",
+        "CIE": "Creativity, Innovation and Entrepreneurship",
+        "EM": "Essentials of Management",
+        "CEP": "Community/Environment-based Group Project"
+      },
+      "sections": ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12", "B13", "B14", "B15", "B16", "B17", "B18", "B19", "B20", "B21", "B22", "B23", "B24", "B25", "B26", "B27", "B28", "B29", "B30", "B31"],
+      "notes": {
+        "lab_locations": {
+          "BEE Lab": "Basic Electrical Engineering Lab Block-E Campus-3",
+          "BETc Lab": "Basic Electronics Lab Block-A Campus-3",
+          "Chem Lab": "Lab complex, School of Applied Sciences, Campus-3",
+          "Workshop": "School of Mechanical Engineering, Campus-8",
+          "Comm Lab": "Respective Classroom",
+          "SY": "Biju Pattnaik Multipurpose Indoor Stadium, Campus-13"
+        },
+        "theory_locations": "Campus-3 (C-7 to C-23, D-1 to D-6, E105, E205), Campus-8 (101-105)",
+        "engg_lab_pre_mid": "BETc Lab for B1,B3,B5...B27,B29; BEE Lab for B2,B4...B28,B30",
+        "engg_lab_post_mid": "BETc Lab for B2,B4...B28,B30; BEE Lab for B1,B3,B5...B27,B29"
+      }
+    },
+    "3": {
+      "year": "2025-2026",
+      "effective_from": "28/07/2025",
+      "courses": {
+        "DS": "Data Structures",
+        "DSD": "Digital System Design",
+        "AFL": "Automata and Formal Languages",
+        "PS": "Probability and Statistics",
+        "STW": "Software Engineering",
+        "IND4": "Indian Knowledge System"
+      },
+      "sections": ["CSE-1", "CSE-2", "CSE-3", "CSE-4", "CSE-5", "CSE-6", "CSE-7", "CSE-8", "CSE-9", "CSE-10", "CSE-11", "CSE-12", "CSE-13", "CSE-14", "CSE-15", "CSE-16", "CSE-17", "CSE-18", "CSE-19", "CSE-20", "CSE-21", "CSE-22", "CSE-23", "CSE-24", "CSE-25", "CSE-26", "CSE-27", "CSE-28", "CSE-29", "CSE-30", "CSE-31", "CSE-32", "CSE-33"]
+    },
+    "5": {
+      "year": "2025-2026",
+      "courses": {
+        "HPC": "High Performance Computing",
+        "DOS": "Distributed Operating Systems",
+        "LLM": "Large Language Models",
+        "CI": "Computational Intelligence",
+        "DMDW": "Data Mining & Data Warehousing",
+        "IP": "Image Processing",
+        "AI": "Artificial Intelligence",
+        "BD": "Big Data",
+        "DSA": "Data Structures & Algorithms",
+        "IOT": "Internet of Things",
+        "ML": "Machine Learning"
+      },
+      "sections": [
+        "HPC_CS-1", "HPC_CS-2", "HPC_CS-3", "HPC_CS-4", "HPC_CS-5", "HPC_CS-6", "HPC_CS-7", "HPC_CS-8", "HPC_CS-9", "HPC_CS-10",
+        "HPC_CS-11", "HPC_CS-12", "HPC_CS-13", "HPC_CS-14", "HPC_CS-15", "HPC_CS-16", "HPC_CS-17", "HPC_CS-18", "HPC_CS-19", "HPC_CS-20",
+        "DOS_CS-1", "DOS_CS-2", "DOS_CS-3", "DOS_CS-4", "DOS_CS-5", "DOS_CS-6", "DOS_CS-7", "DOS_CS-8", "DOS_CS-9", "DOS_CS-10",
+        "DOS_CS-11", "DOS_CS-12", "DOS_CS-13", "DOS_CS-14", "DOS_CS-15", "DOS_CS-16", "DOS_CS-17", "DOS_CS-18", "DOS_CS-19", "DOS_CS-20",
+        "DOS_CS-21", "DOS_CS-22", "DOS_CS-23", "DOS_CS-24", "DOS_CS-25", "DOS_CS-26",
+        "LLM_CS-1", "LLM_CS-2",
+        "CI_CS-1", "CI_CS-2", "CI_CS-3", "CI_CS-4", "CI_CS-5", "CI_CS-6", "CI_CS-7", "CI_CS-8", "CI_CS-9", "CI_CS-10",
+        "DMDW_CS-1", "DMDW_CS-2", "DMDW_CS-3", "DMDW_CS-4", "DMDW_CS-5", "DMDW_CS-6", "DMDW_CS-7", "DMDW_CS-8", "DMDW_CS-9", "DMDW_CS-10",
+        "DMDW_CS-11", "DMDW_CS-12", "DMDW_CS-13", "DMDW_CS-14", "DMDW_CS-15", "DMDW_CS-16", "DMDW_CS-17", "DMDW_CS-18", "DMDW_CS-19", "DMDW_CS-20",
+        "DMDW_CS-21", "DMDW_CS-22", "DMDW_CS-23", "DMDW_CS-24", "DMDW_CS-25", "DMDW_CS-26", "DMDW_CS-27", "DMDW_CS-28", "DMDW_CS-29", "DMDW_CS-30",
+        "DMDW_CS-31", "DMDW_CS-32", "DMDW_CS-33", "DMDW_CS-34", "DMDW_CS-35",
+        "IP_CS-1", "IP_CS-2", "IP_CS-3",
+        "AI_IT-1", "AI_IT-2", "AI_IT-3", "AI_IT-4", "AI_IT-5",
+        "BD_IT-1", "BD_IT-2", "BD_IT-3", "BD_IT-4", "BD_IT-5",
+        "DSA_CE-1", "DSA_CE-2", "DSA_CE-3",
+        "CI_CE-1",
+        "IOT_CE-1", "IOT_CE-2",
+        "AI_SE-1", "AI_SE-2", "AI_SE-3",
+        "ML_SE-1", "ML_SE-2", "ML_SE-3"
+      ],
+      "notes": {
+        "de_electives": "Students select one Domain Elective (DE) from HPC, DOS, LLM, CI, DMDW, IP, AI, BD, DSA, IOT, ML",
+        "location": "Most classes in Campus-25 (C25) buildings"
+      }
+    }
+  }
+}

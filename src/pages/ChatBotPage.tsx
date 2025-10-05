@@ -77,7 +77,7 @@ const ChatBotPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 to-muted">
       <Navbar />
       
       {/* Hero Section */}
@@ -114,7 +114,7 @@ const ChatBotPage = () => {
       <section className="py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <Card className="text-center">
+            <Card className="text-center rounded-xl">
               <CardHeader>
                 <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
                 <CardTitle className="text-lg">24/7 Available</CardTitle>
@@ -122,7 +122,7 @@ const ChatBotPage = () => {
               </CardHeader>
             </Card>
             
-            <Card className="text-center">
+            <Card className="text-center rounded-xl ">
               <CardHeader>
                 <Zap className="w-8 h-8 text-primary mx-auto mb-2" />
                 <CardTitle className="text-lg">Instant Responses</CardTitle>
@@ -130,7 +130,7 @@ const ChatBotPage = () => {
               </CardHeader>
             </Card>
             
-            <Card className="text-center">
+            <Card className="text-center rounded-xl">
               <CardHeader>
                 <BookOpen className="w-8 h-8 text-primary mx-auto mb-2" />
                 <CardTitle className="text-lg">Campus Expert</CardTitle>
@@ -138,7 +138,7 @@ const ChatBotPage = () => {
               </CardHeader>
             </Card>
             
-            <Card className="text-center">
+            <Card className="text-center rounded-xl">
               <CardHeader>
                 <MessageCircle className="w-8 h-8 text-primary mx-auto mb-2" />
                 <CardTitle className="text-lg">Friendly Chat</CardTitle>

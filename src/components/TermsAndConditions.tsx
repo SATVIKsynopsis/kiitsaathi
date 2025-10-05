@@ -17,8 +17,8 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle className="text-gradient flex items-center gap-2">
-            <CheckCircle className="w-5 h-5" />
+          <DialogTitle className="text-gradient flex items-center gap-2 text-2xl font-bold">
+            <CheckCircle className="w-7 h-7" />
             Terms and Conditions - KIIT Saathi
           </DialogTitle>
           <DialogDescription>
@@ -29,7 +29,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-6 text-sm">
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">1. Service Overview</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">1. Service Overview</h3>
               <p className="text-muted-foreground mb-3">
                 KIIT Saathi is an unofficial student initiative platform providing various services to KIIT University students including:
               </p>
@@ -49,7 +49,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">2. User Eligibility & Authentication</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">2. User Eligibility & Authentication</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>• Only students with valid KIIT College email IDs (@kiit.ac.in) are allowed to access our services.</p>
                 <p>• Users must provide accurate and up-to-date information during registration.</p>
@@ -61,7 +61,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">3. Service Availability & Limitations</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">3. Service Availability & Limitations</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>• Services are provided on an "as-is" basis without warranties of any kind.</p>
                 <p>• We strive for 99% uptime but cannot guarantee uninterrupted service availability.</p>
@@ -73,7 +73,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">4. User Responsibilities</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">4. User Responsibilities</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>• Users are responsible for maintaining the confidentiality of their account information.</p>
                 <p>• Prohibited activities include: spam, harassment, copyright infringement, or illegal content.</p>
@@ -85,7 +85,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">5. Payment & Refunds</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">5. Payment & Refunds</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>• All payments are processed securely through Razorpay payment gateway.</p>
                 <p>• Refund eligibility and processing follow Razorpay's standard refund policy.</p>
@@ -97,7 +97,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">6. Static Features Disclaimer</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">6. Static Features Disclaimer</h3>
               <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5" />
@@ -114,7 +114,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">7. Limitation of Liability</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">7. Limitation of Liability</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>• KIIT Saathi is not liable for any direct, indirect, or consequential damages arising from service use.</p>
                 <p>• We are not responsible for decisions made based on information provided through our platform.</p>
@@ -126,7 +126,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">8. Modifications & Updates</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">8. Modifications & Updates</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>• These terms may be updated periodically with advance notice to users.</p>
                 <p>• Continued use of services after term updates constitutes acceptance of new terms.</p>
@@ -137,7 +137,7 @@ export function TermsAndConditions({ open, onOpenChange, onAccept, serviceName }
             <Separator />
 
             <section>
-              <h3 className="text-lg font-semibold text-gradient mb-3">9. Contact Information</h3>
+              <h3 className="text-xl font-bold text-gradient mb-3">9. Contact Information</h3>
               <div className="space-y-2 text-muted-foreground">
                 <p>For questions, concerns, or support:</p>
                 <p>• Email: official@kiitsaathi.in</p>
