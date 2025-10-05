@@ -61,29 +61,29 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/carton-transfer" element={<CartonTransfer />} />
-          <Route path="/senior-connect" element={<SeniorConnect />} />
-          <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
-          <Route path="/lost-and-found" element={<LostAndFound />} />
-          <Route path="/split-saathi" element={<SplitSaathi />} />
-          <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
-          <Route path="/study-material" element={<StudyMaterial />} />
-          <Route path="/book-buyback" element={<BookBuyback />} />
-          <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
-          <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
-          <Route path="/celebrations" element={<Celebrations />} />
-          <Route path="/printout-on-demand" element={<PrintoutOnDemand />} />
-          <Route path="/meetups" element={<Meetups />} />
-          <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
-          <Route path="/kiit-societies" element={<KiitSocieties />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/chatbot" element={<ChatBotPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route path="/" element={<Index />} />
+            <Route path="/carton-transfer" element={<CartonTransfer />} />
+            <Route path="/senior-connect" element={<SeniorConnect />} />
+            <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
+            <Route path="/lost-and-found" element={<LostAndFound />} />
+            <Route path="/split-saathi" element={<SplitSaathi />} />
+            <Route path="/split-saathi/group/:groupId" element={<GroupDashboard />} />
+            <Route path="/study-material" element={<StudyMaterial />} />
+            <Route path="/book-buyback" element={<BookBuyback />} />
+            <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
+            <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
+            <Route path="/celebrations" element={<Celebrations />} />
+            <Route path="/printout-on-demand" element={<PrintoutOnDemand />} />
+            <Route path="/meetups" element={<Meetups />} />
+            <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
+            <Route path="/kiit-societies" element={<KiitSocieties />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/chatbot" element={<ChatBotPage />} />
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
