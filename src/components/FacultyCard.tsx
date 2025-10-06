@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, Linkedin, X } from 'lucide-react';
+import { Mail, Phone, Linkedin, X, Camera } from 'lucide-react';
 import { FacultyMember } from '@/data/facultyData';
+import { useFacultyPhotos } from '@/hooks/useFacultyPhotos';
 
 interface FacultyCardProps {
   faculty: FacultyMember;
@@ -15,6 +16,27 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
   const [showEmail, setShowEmail] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
   const [showLinkedIn, setShowLinkedIn] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string>('');
+  const [showUploadOverlay, setShowUploadOverlay] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isAdmin, uploading, getPhotoUrl, uploadPhoto } = useFacultyPhotos();
+
+  // Load photo on mount
+  useState(() => {
+    const url = getPhotoUrl(faculty.id);
+    setPhotoUrl(url);
+  });
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const newUrl = await uploadPhoto(faculty.id, file);
+    if (newUrl) {
+      setPhotoUrl(newUrl + '?t=' + Date.now()); // Cache bust
+    }
+    setShowUploadOverlay(false);
+  };
 
   const handleActionClick = (action: 'email' | 'phone' | 'linkedin') => {
     if (!isExpanded) {
@@ -38,12 +60,51 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
       <CardContent className="p-6">
         {/* Profile Image */}
         <div className="flex justify-center mb-4">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#006400] to-[#228B22] flex items-center justify-center ring-4 ring-[#F5F5F5] dark:ring-gray-700 transition-transform group-hover:scale-105">
-            <div className="w-20 h-20 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
+          <div 
+            className="relative w-24 h-24 rounded-full group/photo cursor-pointer"
+            onMouseEnter={() => isAdmin && setShowUploadOverlay(true)}
+            onMouseLeave={() => !uploading && setShowUploadOverlay(false)}
+            onClick={() => isAdmin && fileInputRef.current?.click()}
+          >
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#006400] to-[#228B22] flex items-center justify-center ring-4 ring-[#F5F5F5] dark:ring-gray-700 transition-transform group-hover:scale-105 overflow-hidden">
+              {photoUrl ? (
+                <img 
+                  src={photoUrl} 
+                  alt={faculty.name}
+                  className="w-full h-full object-cover rounded-full"
+                  onError={() => setPhotoUrl('')}
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
             </div>
+            
+            {/* Upload Overlay - Admin Only */}
+            {isAdmin && showUploadOverlay && (
+              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-opacity animate-fade-in">
+                <div className="text-center">
+                  <Camera className="w-8 h-8 text-white mx-auto mb-1" />
+                  <span className="text-xs text-white font-medium">
+                    {uploading ? 'Uploading...' : 'Change Photo'}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Hidden File Input */}
+            {isAdmin && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            )}
           </div>
         </div>
 
