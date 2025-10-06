@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { courseStructure, branches } from "@/data/courseStructure";
-import { useFacultyManagement } from "@/hooks/useFacultyManagement";
+import { contactPersons, facultyMembers } from "@/data/facultyData";
 import { FacultyCard } from "@/components/FacultyCard";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -17,11 +17,6 @@ const CourseStructure = () => {
   const [selectedBranch, setSelectedBranch] = useState(branches[0]);
   const [selectedSemester, setSelectedSemester] = useState("all");
   const [sortBy, setSortBy] = useState("default");
-  
-  // Fetch faculty data from database
-  const { faculty: allFacultyData, loading: facultyLoading } = useFacultyManagement();
-  const contactPersons = allFacultyData.filter(f => f.category === 'contact');
-  const facultyMembers = allFacultyData.filter(f => f.category === 'faculty');
   
   // Faculty tab states
   const [expandedCardId, setExpandedCardId] = useState<string>('');
