@@ -83,8 +83,6 @@ export default function LostAndFound() {
     open: false,
   })
   const [paidItems, setPaidItems] = useState<{ [id: string]: boolean }>({})
-  const [upiId, setUpiId] = useState<string>("")
-  const [showUpiForm, setShowUpiForm] = useState<boolean>(false)
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -440,61 +438,7 @@ export default function LostAndFound() {
         </div>
       </section>
 
-      {/* UPI Settings Section */}
-      {true && (
-        <section className="py-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-          <div className="container mx-auto px-4">
-            <Card className="max-w-2xl mx-auto p-6 shadow-lg border-2 border-blue-200 dark:border-blue-800">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-2">
-                  💳 UPI Payment Settings
-                </CardTitle>
-                <p className="text-muted-foreground mt-2">
-                  Add your UPI ID to receive payments when others unlock your contact details
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="upi-id" className="text-base font-semibold mb-2 block">
-                      Your UPI ID
-                    </Label>
-                    <Input
-                      id="upi-id"
-                      placeholder="example@paytm / yourname@upi"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                      className="h-12 text-base shadow-sm border-2 focus:border-blue-500 transition-colors"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Enter your UPI ID (e.g., 9876543210@paytm, name@phonepe, etc.)
-                    </p>
-                  </div>
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3"
-                    onClick={() => {
-                      if (upiId.trim()) {
-                        toast({
-                          title: "UPI ID Saved! 💾",
-                          description: "Your UPI ID has been saved for receiving payments.",
-                        })
-                      } else {
-                        toast({
-                          title: "Invalid UPI ID",
-                          description: "Please enter a valid UPI ID.",
-                          variant: "destructive",
-                        })
-                      }
-                    }}
-                  >
-                    Save UPI ID
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-      )}
+
 
       <section className="py-12 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
@@ -554,7 +498,7 @@ export default function LostAndFound() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-12 h-14 p-1 bg-muted/50 shadow-lg">
+            <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-12 h-14 p-1 bg-muted/50 shadow-lg">
               <TabsTrigger value="all" className="text-base font-semibold data-[state=active]:shadow-md">
                 All ({items.length})
               </TabsTrigger>
@@ -563,9 +507,6 @@ export default function LostAndFound() {
               </TabsTrigger>
               <TabsTrigger value="found" className="text-base font-semibold data-[state=active]:shadow-md">
                 Found ({items.filter((i) => i.item_type === "found").length})
-              </TabsTrigger>
-              <TabsTrigger value="upi" className="text-base font-semibold data-[state=active]:shadow-md">
-                UPI Settings
               </TabsTrigger>
             </TabsList>
             
@@ -949,93 +890,7 @@ export default function LostAndFound() {
               )}
             </TabsContent>
 
-            {/* UPI Settings Tab */}
-            <TabsContent value="upi">
-              <div className="max-w-2xl mx-auto">
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
-                  <CardHeader className="text-center pb-8">
-                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      UPI Settings
-                    </CardTitle>
-                    <p className="text-muted-foreground mt-2">
-                      Add your UPI ID to receive payments when people unlock your contact details
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="upi-id" className="text-base font-semibold">
-                          UPI ID
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id="upi-id"
-                            type="text"
-                            placeholder="yourname@paytm / yourname@googlepay"
-                            value={upiId}
-                            onChange={(e) => setUpiId(e.target.value)}
-                            className="h-12 text-base pl-4 pr-12"
-                          />
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <span className="text-2xl">💳</span>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Enter your UPI ID (e.g., 9876543210@paytm, username@googleplay)
-                        </p>
-                      </div>
 
-                      <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                          💡 How it works:
-                        </h4>
-                        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                          <li>• When someone pays ₹15 to view your contact details</li>
-                          <li>• You receive ₹10 directly to your UPI ID</li>
-                          <li>• ₹5 goes to platform as service fee</li>
-                          <li>• Payments are processed instantly</li>
-                        </ul>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button 
-                          onClick={() => {
-                            // TODO: Save UPI ID to user profile
-                            toast({
-                              title: "UPI ID Saved! 💳",
-                              description: "Your UPI ID has been saved successfully.",
-                            });
-                          }}
-                          className="flex-1 h-12 text-base font-semibold"
-                          disabled={!upiId.trim()}
-                        >
-                          Save UPI ID
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setUpiId("")}
-                          className="h-12 px-6"
-                        >
-                          Clear
-                        </Button>
-                      </div>
-
-                      {upiId && (
-                        <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                          <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
-                            <span className="text-lg">✅</span>
-                            <span className="font-semibold">UPI ID Added</span>
-                          </div>
-                          <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                            You'll receive payments at: <strong>{upiId}</strong>
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
           </Tabs>
         </div>
       </section>
