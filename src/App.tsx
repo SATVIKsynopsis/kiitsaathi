@@ -48,7 +48,6 @@ import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import { useEffect } from "react";
 import { lazy } from "react";
-
 console.log('App.tsx: PrintoutOnDemand imported:', PrintoutOnDemand);
 
 import BakeryDashboard from "./pages/BakeryDashboard";
@@ -65,6 +64,35 @@ import ResaleMyListings from "./pages/ResaleMyListings";
 const queryClient = new QueryClient();
 
 const App = () => {
+  useEffect(() => {
+    const disableRightClick = (e) => e.preventDefault();
+    document.addEventListener('contextmenu', disableRightClick);
+
+    const disableShortcuts = (e) => {
+      if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S' || e.key === 'c' || e.key === 'C' || e.key === 'x' || e.key === 'X' || e.key === 'v' || e.key === 'V' || e.key === 'a' || e.key === 'A' || e.key === 'p' || e.key === 'P' || e.key === 'F12')) {
+        e.preventDefault();
+        alert("This action is disabled to protect content.");
+      }
+    }
+    document.addEventListener('keydown', disableShortcuts);
+
+    const checkDevTools = () => {
+      const start = performance.now();
+      debugger; // intentional pause for timing difference
+      const end = performance.now();
+      if (end - start > 100) {
+        alert("Developer Tools detected! Please close it to continue.");
+        window.location.reload();
+      }
+    };
+    const interval = setInterval(checkDevTools, 2000);
+    return () => {
+      document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener("keydown", disableShortcuts);
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -118,7 +146,7 @@ const App = () => {
                 <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="/bakery-dashboard" element={<BakeryDashboard />} />
-                
+
                 {/* Resale Saathi Routes */}
                 <Route path="/resale" element={<Resale />} />
                 <Route path="/resale/browse" element={<ResaleBrowse />} />
@@ -130,7 +158,7 @@ const App = () => {
                 <Route path="/resale/transactions" element={<ResaleTransactions />} />
                 <Route path="/resale/favourites" element={<ResaleFavourites />} />
                 <Route path="/resale/my-listings" element={<ResaleMyListings />} />
-                
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
