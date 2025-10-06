@@ -257,6 +257,35 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.info('Please enter your email address first');
+      return;
+    }
+
+    const emailValidationError = validateKiitEmail(email);
+    if (emailValidationError) {
+      toast.error(emailValidationError);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Password reset email sent! Check your inbox.');
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+      toast.error(err.message || 'Failed to send password reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-kiit-green-soft via-background to-campus-blue/20">
       <Navbar />
@@ -328,7 +357,17 @@ export default function Auth() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="signin-password">Password</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="signin-password">Password</Label>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="px-0 text-xs text-kiit-green hover:text-kiit-green-dark"
+                          onClick={handleForgotPassword}
+                        >
+                          Forgot password?
+                        </Button>
+                      </div>
                       <Input
                         id="signin-password"
                         type="password"
