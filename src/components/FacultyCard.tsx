@@ -3,10 +3,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, Linkedin, X } from 'lucide-react';
-import { FacultyMember } from '@/data/facultyData';
+import { FacultyMember as FacultyMemberType } from '@/hooks/useFacultyManagement';
 
 interface FacultyCardProps {
-  faculty: FacultyMember;
+  faculty: FacultyMemberType;
   isExpanded: boolean;
   onToggle: (id: string) => void;
 }
@@ -39,11 +39,19 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
         {/* Profile Image */}
         <div className="flex justify-center mb-4">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#006400] to-[#228B22] flex items-center justify-center ring-4 ring-[#F5F5F5] dark:ring-gray-700 transition-transform group-hover:scale-105">
-            <div className="w-20 h-20 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-            </div>
+            {faculty.photo_url ? (
+              <img 
+                src={faculty.photo_url} 
+                alt={faculty.name}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
+                <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
           </div>
         </div>
 

@@ -100,3 +100,6 @@ verify_jwt = true
 
 [functions.admin-resend-confirmation]
 verify_jwt = true
+
+[functions.migrate-faculty-data]
+verify_jwt = true

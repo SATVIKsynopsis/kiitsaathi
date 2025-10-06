@@ -35,6 +35,7 @@ import {
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
+import { FacultyManagement } from '@/components/FacultyManagement';
 
 interface LostFoundRequest {
   id: string;
@@ -625,7 +626,7 @@ export default function AdminDashboard() {
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="border-b border-gray-200 px-6 pt-6">
-                <TabsList className="grid w-full grid-cols-5 bg-gray-100">
+                <TabsList className="grid w-full grid-cols-6 bg-gray-100">
                   <TabsTrigger value="lost-found" className="flex items-center gap-2 text-sm font-medium">
                     🕵️ Lost & Found
                   </TabsTrigger>
@@ -637,6 +638,9 @@ export default function AdminDashboard() {
                   </TabsTrigger>
                   <TabsTrigger value="contacts" className="flex items-center gap-2 text-sm font-medium">
                     💬 Contacts
+                  </TabsTrigger>
+                  <TabsTrigger value="faculty" className="flex items-center gap-2 text-sm font-medium">
+                    👥 Faculty
                   </TabsTrigger>
                   <TabsTrigger value="audit" className="flex items-center gap-2 text-sm font-medium">
                     📊 Audit
@@ -1049,6 +1053,11 @@ export default function AdminDashboard() {
                     <p className="text-gray-500 text-lg">No contact submissions match your filters.</p>
                   </div>
                 )}
+              </TabsContent>
+
+              {/* Faculty Management */}
+              <TabsContent value="faculty" className="p-6">
+                <FacultyManagement />
               </TabsContent>
 
               {/* Audit Log */}
