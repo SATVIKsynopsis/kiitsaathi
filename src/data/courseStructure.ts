@@ -30,7 +30,12 @@ export interface Semester {
   sections: CourseSection[];
 }
 
-export const courseStructure: Semester[] = [
+export interface BranchCourseStructure {
+  [branch: string]: Semester[];
+}
+
+// Common semesters 1-4 for all branches
+const commonSemesters: Semester[] = [
   {
     semester: 1,
     sections: [
@@ -137,56 +142,212 @@ export const courseStructure: Semester[] = [
         ]
       }
     ]
-  },
-  {
-    semester: 5,
-    sections: [
-      {
-        type: "Theory",
-        courses: [
-          { code: "HS30101", title: "Engineering Economics", credits: 3 },
-          { code: "CS30001", title: "Design and Analysis of Algorithms", credits: 3 },
-          { code: "CS31001", title: "Software Engineering", credits: 3 },
-          { code: "CS30003", title: "Computer Networks", credits: 3 },
-          { code: "PE1", title: "Professional Elective-I", credits: 3 },
-          { code: "PE2", title: "Professional Elective-II", credits: 3 }
-        ]
-      },
-      {
-        type: "Practical",
-        courses: [
-          { code: "CS39001", title: "Algorithms Laboratory", credits: 1 },
-          { code: "CS39003", title: "Computer Networks Laboratory", credits: 1 },
-          { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 }
-        ]
-      }
-    ]
-  },
-  {
-    semester: 6,
-    sections: [
-      {
-        type: "Theory",
-        courses: [
-          { code: "HASS3", title: "HASS Elective-III", credits: 3 },
-          { code: "CS31002", title: "Machine Learning", credits: 3 },
-          { code: "CS30002", title: "Artificial Intelligence", credits: 3 },
-          { code: "PE3", title: "Professional Elective-III", credits: 3 },
-          { code: "OE2", title: "Open Elective-II/MLI", credits: 3 },
-          { code: "HS30401", title: "Universal Human Values", credits: 3 }
-        ]
-      },
-      {
-        type: "Practical",
-        courses: [
-          { code: "CS39002", title: "Machine Learning Laboratory", credits: 1 },
-          { code: "CS39004", title: "Artificial Intelligence Laboratory", credits: 1 },
-          { code: "KE30002", title: "K-Explore Open Elective-II", credits: 1 }
-        ]
-      }
-    ]
   }
 ];
+
+// Branch-specific course structure
+export const branchCourseStructure: BranchCourseStructure = {
+  "Computer Science and Engineering": [
+    ...commonSemesters,
+    {
+      semester: 5,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HS30101", title: "Engineering Economics", credits: 3 },
+            { code: "CS30001", title: "Design and Analysis of Algorithms", credits: 3 },
+            { code: "CS31001", title: "Software Engineering", credits: 3 },
+            { code: "CS30003", title: "Computer Networks", credits: 3 },
+            { code: "PE1", title: "Professional Elective-I", credits: 3 },
+            { code: "PE2", title: "Professional Elective-II", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "CS39001", title: "Algorithms Laboratory", credits: 1 },
+            { code: "CS39003", title: "Computer Networks Laboratory", credits: 1 },
+            { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 }
+          ]
+        }
+      ]
+    },
+    {
+      semester: 6,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS3", title: "HASS Elective-III", credits: 3 },
+            { code: "CS31002", title: "Machine Learning", credits: 3 },
+            { code: "CS30002", title: "Artificial Intelligence", credits: 3 },
+            { code: "PE3", title: "Professional Elective-III", credits: 3 },
+            { code: "OE2", title: "Open Elective-II/MLI", credits: 3 },
+            { code: "HS30401", title: "Universal Human Values", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "CS39002", title: "Machine Learning Laboratory", credits: 1 },
+            { code: "CS39004", title: "Artificial Intelligence Laboratory", credits: 1 },
+            { code: "KE30002", title: "K-Explore Open Elective-II", credits: 1 }
+          ]
+        }
+      ]
+    }
+  ],
+  "Information Technology": [
+    ...commonSemesters,
+    {
+      semester: 5,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS2", title: "HASS Elective-II", credits: 3 },
+            { code: "CS30001", title: "Design and Analysis of Algorithms", credits: 3 },
+            { code: "CS31001", title: "Software Engineering", credits: 4 },
+            { code: "CS30003", title: "Computer Networks", credits: 3 },
+            { code: "PE1", title: "Professional Elective-I", credits: 3 },
+            { code: "PE2", title: "Professional Elective-II", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "CS39001", title: "Algorithms Laboratory", credits: 1 },
+            { code: "CS39003", title: "Computer Networks Laboratory", credits: 1 },
+            { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 }
+          ]
+        }
+      ]
+    },
+    {
+      semester: 6,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS3", title: "HASS Elective-III", credits: 3 },
+            { code: "CS31002", title: "Machine Learning", credits: 4 },
+            { code: "CS30004", title: "Data Science and Analytics", credits: 3 },
+            { code: "PE3", title: "Professional Elective-III", credits: 3 }
+          ]
+        }
+      ]
+    }
+  ],
+  "Computer Science and Communication Engineering": [
+    ...commonSemesters,
+    {
+      semester: 5,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS2", title: "HASS Elective-II", credits: 3 },
+            { code: "CS30001", title: "Design and Analysis of Algorithms", credits: 3 },
+            { code: "CS31001", title: "Software Engineering", credits: 4 },
+            { code: "CS30003", title: "Computer Networks", credits: 3 },
+            { code: "PE1", title: "Professional Elective-I", credits: 3 },
+            { code: "PE2", title: "Professional Elective-II", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "CS39001", title: "Algorithms Laboratory", credits: 1 },
+            { code: "CS39003", title: "Computer Networks Laboratory", credits: 1 },
+            { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 },
+            { code: "CS39004", title: "Data Analytics Laboratory", credits: 1 },
+            { code: "CS39006", title: "Advance Programming Laboratory", credits: 2 },
+            { code: "CS37001", title: "Mini Project", credits: 2 }
+          ]
+        }
+      ]
+    },
+    {
+      semester: 6,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS3", title: "HASS Elective-III", credits: 3 },
+            { code: "CS30010", title: "Cloud Computing", credits: 3 },
+            { code: "EC30002", title: "Wireless Mobile Communication", credits: 3 },
+            { code: "PE3", title: "Professional Elective-III", credits: 3 },
+            { code: "OE2", title: "Open Elective-II/MI-I", credits: 3 },
+            { code: "HS30401", title: "Universal Human Values", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "EC39002", title: "Wireless Communication & Networking Lab", credits: 1 },
+            { code: "CS39006", title: "Advance Programming Laboratory", credits: 2 },
+            { code: "CS37001", title: "Mini Project", credits: 2 }
+          ]
+        }
+      ]
+    }
+  ],
+  "Computer Science and System Engineering": [
+    ...commonSemesters,
+    {
+      semester: 5,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS2", title: "HASS Elective-II", credits: 3 },
+            { code: "CS30001", title: "Design and Analysis of Algorithms", credits: 3 },
+            { code: "CS31001", title: "Software Engineering", credits: 4 },
+            { code: "CS30003", title: "Computer Networks", credits: 3 },
+            { code: "PE1", title: "Professional Elective-I", credits: 3 },
+            { code: "PE2", title: "Professional Elective-II", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "CS39001", title: "Algorithms Laboratory", credits: 1 },
+            { code: "CS39003", title: "Computer Networks Laboratory", credits: 1 },
+            { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 }
+          ]
+        }
+      ]
+    },
+    {
+      semester: 6,
+      sections: [
+        {
+          type: "Theory",
+          courses: [
+            { code: "HASS3", title: "HASS Elective-III", credits: 3 },
+            { code: "CS30006", title: "Compilers", credits: 3 },
+            { code: "EC30007", title: "ARM and Advanced Microprocessors", credits: 3 },
+            { code: "PE3", title: "Professional Elective-III", credits: 3 },
+            { code: "OE2", title: "Open Elective-II/MI-I", credits: 3 },
+            { code: "HS30401", title: "Universal Human Values", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "EC39006", title: "ARM Laboratory", credits: 1 },
+            { code: "CS39006", title: "Advance Programming Laboratory", credits: 2 },
+            { code: "CS37001", title: "Mini Project", credits: 2 }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// For backward compatibility, default to CSE
+export const courseStructure: Semester[] = branchCourseStructure["Computer Science and Engineering"];
 
 export const branches = [
   "Computer Science and Engineering",
