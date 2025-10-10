@@ -219,31 +219,35 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
 
     const commonKeywords = [
       "experience", "education", "skills", "project", "achievement",
-      "leadership", "technical", "problem-solving", "communication"
+      "leadership", "technical", "problem-solving", "communication",
+      "python", "javascript", "java", "react", "node", "sql", "aws", "git"
     ];
 
     const textLower = text.toLowerCase();
     const lines = text.split("\n");
     const wordCount = text.split(/\s+/).length;
+    const sentenceCount = text.split(/[.!?]+/).length;
 
     // Check for contact info (20 points)
     if (textLower.includes("@") && textLower.includes(".com")) {
       atsScore += 10;
-      strengths.push("Email address found");
+      strengths.push("Professional email address found");
     } else {
-      improvements.push("Add a professional email address");
+      improvements.push("Add a professional email address (e.g., yourname@email.com)");
     }
 
     if (/\d{10}/.test(text) || /\(\d{3}\)/.test(text)) {
       atsScore += 5;
-      strengths.push("Phone number included");
+      strengths.push("Contact phone number included");
     } else {
-      improvements.push("Include a contact phone number");
+      improvements.push("Include a professional contact phone number");
     }
 
-    if (textLower.includes("linkedin") || textLower.includes("github")) {
+    if (textLower.includes("linkedin") || textLower.includes("github") || textLower.includes("portfolio")) {
       atsScore += 5;
-      strengths.push("Professional links present");
+      strengths.push("Professional profile links present (LinkedIn/GitHub/Portfolio)");
+    } else {
+      improvements.push("Add LinkedIn or GitHub profile to showcase your professional presence");
     }
 
     // Check for sections (30 points)
@@ -258,83 +262,172 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
     atsScore += sectionsFound * 7;
 
     if (sectionsFound < 4) {
-      improvements.push(`Add missing sections: ${sections.filter(s => !textLower.includes(s)).join(", ")}`);
+      const missing = sections.filter(s => !textLower.includes(s));
+      improvements.push(`Add missing sections to strengthen your resume: ${missing.join(", ")}`);
     }
 
-    // Keyword analysis (20 points)
+    // Summary/Objective check
+    if (textLower.includes("summary") || textLower.includes("objective")) {
+      atsScore += 5;
+      strengths.push("Professional summary or objective statement included");
+    } else {
+      improvements.push("Add a concise professional summary highlighting your key skills and career goals");
+    }
+
+    // Keyword analysis with enhanced suggestions (25 points)
+    const keywordCount = {};
     commonKeywords.forEach(keyword => {
-      if (textLower.includes(keyword)) {
-        keywordsFound.push(keyword);
-        atsScore += 2;
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      const matches = text.match(regex);
+      const count = matches ? matches.length : 0;
+      
+      if (count > 0) {
+        keywordsFound.push(`${keyword} (${count}x)`);
+        atsScore += Math.min(count * 1.5, 3); // Reward multiple mentions, capped
       } else {
         keywordsMissing.push(keyword);
       }
     });
 
-    // Format checks (15 points)
+    if (keywordsFound.length < 5) {
+      improvements.push("Include more relevant technical keywords and skills that match job requirements");
+    }
+
+    // Format checks (20 points)
     const bulletCount = (text.match(/[•●◦▪▫–-]\s/g) || []).length;
-    if (bulletCount > 5) {
+    if (bulletCount >= 8) {
+      atsScore += 8;
+      strengths.push("Excellent use of bullet points for readability");
+    } else if (bulletCount >= 5) {
       atsScore += 5;
       strengths.push("Good use of bullet points");
+      improvements.push("Add more bullet points to highlight key achievements and responsibilities");
     } else {
-      formatIssues.push("Use more bullet points for better readability");
-      improvements.push("Format experience with bullet points");
+      formatIssues.push("Use more bullet points (aim for 3-5 per job/project)");
+      improvements.push("Format your experience with clear bullet points for better ATS parsing");
+    }
+
+    // Quantifiable achievements check
+    const numberPattern = /\b\d+%|\b\d+\+|\b\d+x|\b\$\d+/gi;
+    const quantifiables = text.match(numberPattern);
+    if (quantifiables && quantifiables.length >= 3) {
+      atsScore += 7;
+      strengths.push("Resume includes quantifiable achievements with metrics");
+    } else if (quantifiables && quantifiables.length > 0) {
+      atsScore += 3;
+      improvements.push("Add more measurable achievements with specific numbers and percentages");
+    } else {
+      improvements.push("Include quantifiable results (e.g., 'Increased efficiency by 30%', 'Led team of 5')");
     }
 
     const datePattern = /\d{4}|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/gi;
     const dates = text.match(datePattern);
     if (dates && dates.length >= 4) {
       atsScore += 5;
-      strengths.push("Timeline dates included");
+      strengths.push("Timeline dates properly formatted and included");
     } else {
-      improvements.push("Add dates to your experience and education");
+      improvements.push("Add clear dates (Month/Year format) to all experience and education entries");
     }
 
     if (text.match(/[A-Z][a-z]+\s[A-Z][a-z]+/)) {
-      atsScore += 5;
-      strengths.push("Proper name formatting detected");
+      atsScore += 3;
+      strengths.push("Professional name formatting detected");
     }
 
-    // Length check (15 points)
-    if (wordCount >= 300 && wordCount <= 800) {
-      atsScore += 15;
-      strengths.push("Resume length is optimal");
-    } else if (wordCount < 300) {
-      improvements.push("Resume is too short - add more details");
+    // Action verbs check
+    const actionVerbs = ["achieved", "developed", "created", "managed", "led", "implemented", "designed", "improved", "analyzed"];
+    const foundVerbs = actionVerbs.filter(verb => textLower.includes(verb));
+    if (foundVerbs.length >= 5) {
       atsScore += 5;
+      strengths.push("Strong action verbs used throughout resume");
+    } else if (foundVerbs.length >= 3) {
+      atsScore += 3;
+      improvements.push("Use more strong action verbs to start bullet points (e.g., achieved, led, developed)");
     } else {
-      improvements.push("Resume is too long - be more concise");
+      improvements.push("Start bullet points with powerful action verbs to demonstrate impact");
+    }
+
+    // Length and content density check (15 points)
+    if (wordCount >= 400 && wordCount <= 800) {
+      atsScore += 15;
+      strengths.push("Resume length is optimal (400-800 words)");
+    } else if (wordCount >= 300 && wordCount < 400) {
       atsScore += 10;
-      formatIssues.push("Consider reducing content to 1-2 pages");
+      improvements.push("Add more detailed descriptions of your experience and achievements");
+    } else if (wordCount < 300) {
+      improvements.push("Resume is too brief - expand on your experience, skills, and projects");
+      atsScore += 5;
+      formatIssues.push("Content is too sparse - aim for 400-800 words total");
+    } else if (wordCount > 800 && wordCount <= 1000) {
+      atsScore += 12;
+      improvements.push("Consider condensing to 1-2 pages for better readability");
+    } else {
+      improvements.push("Resume is too long - focus on most relevant and recent experience");
+      atsScore += 8;
+      formatIssues.push("Reduce content to 1-2 pages maximum");
+    }
+
+    // Writing quality check
+    const avgWordsPerSentence = wordCount / Math.max(sentenceCount, 1);
+    if (avgWordsPerSentence >= 10 && avgWordsPerSentence <= 20) {
+      atsScore += 3;
+    } else if (avgWordsPerSentence > 25) {
+      formatIssues.push("Sentences are too long - break into shorter, clearer statements");
     }
 
     // Layout score (based on structure)
     let layoutScore = 70;
     if (lines.length < 20) {
       layoutScore -= 20;
-      formatIssues.push("Resume appears to have minimal content");
+      formatIssues.push("Resume appears to have minimal content - expand each section");
+    } else if (lines.length > 100) {
+      layoutScore -= 10;
+      formatIssues.push("Resume may be too dense - ensure proper spacing and formatting");
     }
+    
     if (bulletCount === 0) {
       layoutScore -= 15;
+      formatIssues.push("No bullet points detected - use bullets for better structure");
     }
+    
     if (!textLower.includes("summary") && !textLower.includes("objective")) {
-      improvements.push("Add a professional summary at the top");
       layoutScore -= 10;
     }
 
-    // Cap score at 100
+    // Check for education details
+    if (textLower.includes("gpa") || textLower.includes("cgpa") || textLower.includes("grade")) {
+      atsScore += 3;
+      strengths.push("Academic performance metrics included");
+    }
+
+    // Certifications check
+    if (textLower.includes("certifi") || textLower.includes("certified")) {
+      atsScore += 3;
+      strengths.push("Professional certifications mentioned");
+    } else {
+      improvements.push("Add relevant certifications or courses to boost credibility");
+    }
+
+    // Cap scores at 100
     atsScore = Math.min(Math.max(atsScore, 0), 100);
     layoutScore = Math.min(Math.max(layoutScore, 0), 100);
 
+    // Add personalized improvement suggestions based on score
+    if (atsScore < 60) {
+      improvements.unshift("Critical: Restructure your resume with clear sections and strong keywords");
+    } else if (atsScore < 80) {
+      improvements.unshift("Good foundation - focus on adding quantifiable achievements and keywords");
+    }
+
     return {
       atsScore,
-      strengths: strengths.slice(0, 8),
-      improvements: improvements.slice(0, 8),
+      strengths: strengths.slice(0, 10),
+      improvements: improvements.slice(0, 10),
       keywordAnalysis: {
-        found: keywordsFound.slice(0, 10),
-        missing: keywordsMissing.slice(0, 5),
+        found: keywordsFound.slice(0, 15),
+        missing: keywordsMissing.slice(0, 8),
       },
-      formatIssues: formatIssues.slice(0, 5),
+      formatIssues: formatIssues.slice(0, 6),
       layoutScore,
     };
   };

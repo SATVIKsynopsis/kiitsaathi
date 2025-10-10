@@ -95,6 +95,7 @@ const categories = [
 ];
 
 export default function LostAndFound() {
+
   const { user } = useAuth();
   const { 
     items, 
@@ -116,6 +117,27 @@ export default function LostAndFound() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
+
+  const { user } = useAuth()
+  const { items, loading, error, addItem, refreshItems } = useSecureLostAndFound()
+  const { toast } = useToast()
+
+  const [filteredItems, setFilteredItems] = useState<LostFoundItem[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedType, setSelectedType] = useState("all")
+  const [showUploadForm, setShowUploadForm] = useState(false)
+  const [activeTab, setActiveTab] = useState("all")
+  const [uploading, setUploading] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [showPayment, setShowPayment] = useState<{ item: LostFoundItem | null; open: boolean }>({
+    item: null,
+    open: false,
+  })
+  const [paidItems, setPaidItems] = useState<{ [id: string]: boolean }>({})
+
+
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -361,6 +383,7 @@ export default function LostAndFound() {
         </div>
       </section>
 
+
       {/* How It Works */}
       <section className="py-16">
         <div className="container mx-auto px-4">
@@ -416,6 +439,9 @@ export default function LostAndFound() {
           </div>
         </div>
       </section>
+
+
+
 
       {/* Search and Filter Section */}
       <section className="py-8 bg-muted/50">
@@ -475,10 +501,23 @@ export default function LostAndFound() {
       <section className="py-8">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+
             <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto mb-8">
               <TabsTrigger value="all">All Items ({items.length})</TabsTrigger>
               <TabsTrigger value="lost">Lost ({items.filter(i => i.item_type === 'lost').length})</TabsTrigger>
               <TabsTrigger value="found">Found ({items.filter(i => i.item_type === 'found').length})</TabsTrigger>
+
+            <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-12 h-14 p-1 bg-muted/50 shadow-lg">
+              <TabsTrigger value="all" className="text-base font-semibold data-[state=active]:shadow-md">
+                All ({items.length})
+              </TabsTrigger>
+              <TabsTrigger value="lost" className="text-base font-semibold data-[state=active]:shadow-md">
+                Lost ({items.filter((i) => i.item_type === "lost").length})
+              </TabsTrigger>
+              <TabsTrigger value="found" className="text-base font-semibold data-[state=active]:shadow-md">
+                Found ({items.filter((i) => i.item_type === "found").length})
+              </TabsTrigger>
+
             </TabsList>
 
             <TabsContent value={activeTab}>
@@ -560,6 +599,7 @@ export default function LostAndFound() {
         </div>
       </section>
 
+
       {/* Testimonials */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
@@ -592,6 +632,10 @@ export default function LostAndFound() {
               </Card>
             ))}
           </div>
+
+
+          </Tabs>
+
         </div>
       </section>
 
@@ -846,5 +890,10 @@ export default function LostAndFound() {
         </Button>
       </div>
     </div>
+
   );
 }
+
+  )
+}
+

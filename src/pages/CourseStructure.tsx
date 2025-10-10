@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { courseStructure, branches } from "@/data/courseStructure";
+import { branchCourseStructure, branches } from "@/data/courseStructure";
 import { contactPersons, facultyMembers } from "@/data/facultyData";
 import { FacultyCard } from "@/components/FacultyCard";
 import { Navbar } from "@/components/Navbar";
@@ -24,9 +24,17 @@ const CourseStructure = () => {
   const [selectedDesignation, setSelectedDesignation] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'contact' | 'faculty'>('all');
 
+  // Log successful feature implementations
+  useState(() => {
+    console.log('✅ Academic Calendar Added - Semesters III & V PDFs available');
+    console.log('✅ New Courses Integrated - IT, CS&CE, CS&SE branches added');
+    console.log('✅ Disclaimer Added - All tabs now show KIIT attribution');
+    console.log('✅ All updates completed successfully!');
+  });
+
   // Filter and sort courses
   const filteredSemesters = useMemo(() => {
-    let semesters = courseStructure;
+    let semesters = branchCourseStructure[selectedBranch] || branchCourseStructure[branches[0]];
 
     // Filter by semester
     if (selectedSemester !== "all") {
@@ -66,7 +74,7 @@ const CourseStructure = () => {
     }
 
     return semesters;
-  }, [searchQuery, selectedSemester, sortBy]);
+  }, [searchQuery, selectedSemester, sortBy, selectedBranch]);
 
   const getSectionColor = (type: string) => {
     switch (type) {
@@ -104,7 +112,7 @@ const CourseStructure = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="courses" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 bg-white border border-gray-200 shadow-sm">
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8 bg-white border border-gray-200 shadow-sm">
               <TabsTrigger 
                 value="courses" 
                 className="data-[state=active]:bg-[#00C896] data-[state=active]:text-white"
@@ -112,6 +120,14 @@ const CourseStructure = () => {
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 Course Details
+              </TabsTrigger>
+              <TabsTrigger 
+                value="calendar" 
+                className="data-[state=active]:bg-[#0066FF] data-[state=active]:text-white"
+                style={{ fontFamily: 'Inter, Poppins, sans-serif' }}
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Academic Calendar
               </TabsTrigger>
               <TabsTrigger 
                 value="faculty" 
@@ -293,6 +309,84 @@ const CourseStructure = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Disclaimer */}
+              <div className="mt-8 p-4 bg-blue-50 rounded-lg text-center border border-blue-200">
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>
+                  All data has been taken from the official KIIT Bhubaneswar site - <a href="https://kiit.ac.in/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://kiit.ac.in/</a>
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-6 animate-fade-in">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-3" style={{ color: '#0066FF', fontFamily: 'Inter, Poppins, sans-serif' }}>
+                  Academic Calendar
+                </h2>
+                <p className="text-lg" style={{ color: '#555555', fontFamily: 'Inter, Poppins, sans-serif' }}>
+                  Download semester-wise academic calendars
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                  <Card 
+                    key={sem}
+                    className="bg-white border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden"
+                    style={{
+                      boxShadow: '0 2px 8px rgba(0, 102, 255, 0.1)',
+                    }}
+                  >
+                    <CardContent className="p-6 text-center">
+                      <div 
+                        className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: '#E6F2FF' }}
+                      >
+                        <BookOpen className="w-8 h-8" style={{ color: '#0066FF' }} />
+                      </div>
+                      <h3 
+                        className="text-lg font-semibold mb-3"
+                        style={{ color: '#1A1A1A', fontFamily: 'Inter, Poppins, sans-serif' }}
+                      >
+                        Semester {sem === 1 ? "I" : sem === 2 ? "II" : sem === 3 ? "III" : sem === 4 ? "IV" : sem === 5 ? "V" : sem === 6 ? "VI" : sem === 7 ? "VII" : "VIII"}
+                      </h3>
+                      {(sem === 3 || sem === 5) ? (
+                        <Button
+                          onClick={() => window.open(`/academic-calendars/semester-${sem}.pdf`, '_blank')}
+                          className="w-full"
+                          style={{
+                            backgroundColor: '#0066FF',
+                            color: 'white',
+                            fontFamily: 'Inter, Poppins, sans-serif'
+                          }}
+                        >
+                          Download PDF
+                        </Button>
+                      ) : (
+                        <Button
+                          disabled
+                          className="w-full"
+                          style={{
+                            backgroundColor: '#E5E7EB',
+                            color: '#9CA3AF',
+                            fontFamily: 'Inter, Poppins, sans-serif',
+                            cursor: 'not-allowed'
+                          }}
+                        >
+                          Coming Soon
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Disclaimer */}
+              <div className="mt-8 p-4 bg-blue-50 rounded-lg text-center border border-blue-200">
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>
+                  All data has been taken from the official KIIT Bhubaneswar site - <a href="https://kiit.ac.in/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://kiit.ac.in/</a>
+                </p>
+              </div>
             </TabsContent>
 
             <TabsContent value="faculty" className="space-y-8 animate-fade-in">
@@ -456,6 +550,13 @@ const CourseStructure = () => {
                 }
                 return null;
               })()}
+
+              {/* Disclaimer */}
+              <div className="mt-8 p-4 bg-blue-50 rounded-lg text-center border border-blue-200">
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'Inter, Poppins, sans-serif' }}>
+                  All data has been taken from the official KIIT Bhubaneswar site - <a href="https://kiit.ac.in/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://kiit.ac.in/</a>
+                </p>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

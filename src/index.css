@@ -5,10 +5,13 @@
 @tailwind utilities;
 
 
-*::-webkit-scrollbar {
-  display: none;
+/* Disable text selection globally */
+* {
+  user-select: none;
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none;    /* For Firefox */
+  -ms-user-select: none;     /* For old Edge/IE */
 }
-/* ...existing code... */
 
 /* Hide scrollbar for Chrome, Edge, Safari */
 body::-webkit-scrollbar,

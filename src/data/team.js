@@ -1,0 +1,110 @@
+export const Default = "https://drive.google.com/uc?export=view&id=";
+export const Placeholder = "/team/Krishna.jpg";
+
+export const teamData = [
+  {
+    name: "Krishna Mohanty",
+    LinkedIn: "https://www.linkedin.com/in/krishna-mohanty-67a9082b0",
+    Instagram: "https://www.instagram.com/_krish_na08",
+    Image: "/team/Krishna.jpg",
+    Github: "https://github.com/KrishnaMohanty08",
+  },
+  {
+    name: "Vedant Agrawal",
+    LinkedIn: "https://www.linkedin.com/in/vedant-agrawal-946353325",
+    Instagram: "https://www.instagram.com/agrawal_vedant_16",
+    Image: Placeholder,
+    Github: null,
+  },
+  {
+    name: "Kirti Kumari",
+    LinkedIn: "https://www.linkedin.com/in/kirti-kumari-246582321",
+    Instagram: "https://www.instagram.com/cocokirti",
+    Image: "/team/Kirti.jpg",
+    Github: null,
+  },
+  {
+    name: "Diya Dasgupta",
+    LinkedIn: "https://www.linkedin.com/in/diya-dasgupta-747b2a261",
+    Instagram: "https://www.instagram.com/hester.05",
+    Image: "/team/Diya.jpg",
+    Github: null,
+  },
+  {
+    name: "Satvik Upadhyaya",
+    LinkedIn: "https://www.linkedin.com/in/satvik-upadhyaya-073978334",
+    Instagram: "https://www.instagram.com/being_shelbish1422",
+    Image: Placeholder,
+    Github: "https://github.com/SATVIKsynopsis",
+  },
+  {
+    name: "Anushka Gupta",
+    LinkedIn: "https://www.linkedin.com/in/anushka-gupta-4a366b2b6",
+    Instagram: "https://www.instagram.com/momsaid_noname",
+    Image: "/team/Anushka.jpg",
+    Github: null,
+  },
+  {
+    name: "Shreyansh Duggar",
+    LinkedIn: "https://www.linkedin.com/in/shreyanshduggar01",
+    Instagram: "https://www.instagram.com/shreyans.h1",
+    Image: "/team/Shreyansh.jpg",
+    Github: "https://github.com/shr4421",
+  },
+  {
+    name: "Smit Bharat Patil",
+    LinkedIn: "https://www.linkedin.com/in/sbktckp",
+    Instagram: "https://www.instagram.com/sbktckp",
+    Image: "/team/Smit.jpg",
+    Github: "https://github.com/sbktckp",
+  },
+  {
+    name: "Prajjwal Patel",
+    LinkedIn: "https://www.linkedin.com/in/prajjwal-patel-5642b7318",
+    Instagram: null,
+    Image: "/team/Prajjwal.jpg",
+    Github: "https://github.com/prajj267",
+  },
+  {
+    name: "Prangshu Mondal",
+    LinkedIn: "https://www.linkedin.com/in/prangggshu",
+    Instagram: "https://www.instagram.com/prangggshu",
+    Image: "/team/Prangshu.jpg",
+    Github: "https://github.com/prangggshu",
+  },
+  {
+    name: "Anushka Sinha",
+    LinkedIn: "https://www.linkedin.com/in/anushka-sinha510",
+    Instagram: "https://www.instagram.com/its_ansukaaa04",
+    Image: "/team/AnushkaSinha.jpg",
+    Github: null,
+  },
+  {
+    name: "Siddharth Khubchandani",
+    LinkedIn: "https://www.linkedin.com/in/siddharth-khubchandani-4aa898389",
+    Instagram: "https://www.instagram.com/siddharth.khubchandani",
+    Image: "/team/Siddharth.jpg",
+    Github: null,
+  },
+  {
+    name: "Aadarsh Gupta",
+    LinkedIn: "https://www.linkedin.com/in/aadarshgupta01",
+    Instagram: "https://www.instagram.com/aadarsh._.gupta01",
+    Image: Placeholder,
+    Github: null,
+  },
+  {
+    name: "Piyush Swain",
+    LinkedIn: null,
+    Instagram: "https://www.instagram.com/mr_piyush2106",
+    Image: "/team/Piyush.jpg",
+    Github: null,
+  },
+  {
+    name: "Aditi Srivastava",
+    LinkedIn: "https://www.linkedin.com/in/aditi-srivastava-1a6969386?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+    Instagram: "https://www.instagram.com/adiisaire?igsh=MTRraWhsNWZ0b3k3dA==",
+    Image: "/team/Aditi.jpg",
+    Github: null,
+  }
+];

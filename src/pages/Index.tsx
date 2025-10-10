@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { NotificationBell } from "@/components/NotificationBell";
 import { AdminCommandExecutor } from "@/components/AdminCommandExecutor";
-import { MeetOurTeam } from "@/components/MeetOurTeam";
+import  MeetOurTeam  from "@/components/MeetOurTeam";
 import OurMentors from "@/components/OurMentors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -244,7 +244,7 @@ export const ServicesGrid = () => {
         <div className="text-center mb-12 px-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-kiit-green-dark mb-6">
             <Star className="w-4 h-4" />
-            15+ Campus Services
+            10+ Campus Services
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-6">
@@ -313,6 +313,7 @@ export const ServicesGrid = () => {
               return (
                 <div
                   key={index}
+                  onClick={() => handleServiceClick(service)}
                   className="service-card bg-white group text-kiit-green-dark"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
@@ -324,7 +325,7 @@ export const ServicesGrid = () => {
                   </div>
 
                   <div className="space-y-2 px-2  hover:bg-gray-200 hover:rounded-lg p-4">
-                    <h3 onClick={() => handleServiceClick(service)}
+                    <h3
                       className="text-lg sm:text-xl hover:text-black font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
                       {service.title}
                     </h3>
@@ -338,15 +339,6 @@ export const ServicesGrid = () => {
                         {service.price}
                       </span>
 
-                      {/* <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-all duration-300 w-full sm:w-auto"
-                        onClick={() => handleServiceClick(service)}
-                      >
-                        Try Now
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button> */}
                     </div>
                   </div>
                 </div>
