@@ -13,8 +13,6 @@
   -ms-user-select: none;     /* For old Edge/IE */
 }
 
-/* ...existing code... */
-
 /* Hide scrollbar for Chrome, Edge, Safari */
 body::-webkit-scrollbar,
 html::-webkit-scrollbar {
