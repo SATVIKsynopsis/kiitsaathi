@@ -100,4 +100,11 @@ export const teamData = [
     Image: "/team/Piyush.jpg",
     Github: null,
   },
+  {
+    name: "Aditi Srivastava",
+    LinkedIn: "https://www.linkedin.com/in/aditi-srivastava-1a6969386?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+    Instagram: "https://www.instagram.com/adiisaire?igsh=MTRraWhsNWZ0b3k3dA==",
+    Image: "/team/Aditi.jpg",
+    Github: null,
+  }
 ];
