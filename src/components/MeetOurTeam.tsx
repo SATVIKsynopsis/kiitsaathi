@@ -39,8 +39,8 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-1-west.png",
       northwest: "/team/member-1-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin: "https://www.linkedin.com/in/aditya-sharma-757886269/",
+    instagram: "https://www.instagram.com/aditya_sharma3805?igsh=bmpzeGVuYXJvbDdt&utm_source=qr",
     github: "#",
   },
   {
@@ -58,8 +58,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-2-west.png",
       northwest: "/team/member-2-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin:
+      "https://www.linkedin.com/in/anushka-gupta-4a366b2b6?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+    instagram: "https://www.instagram.com/momsaid_noname?igsh=MWxpaTg3ajNpeXUycg==",
     github: "#",
   },
   {
@@ -77,9 +78,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-3-west.png",
       northwest: "/team/member-3-northwest.png",
     },
-    linkedin: "#",
+    linkedin: "https://www.linkedin.com/in/prajjwal-patel-5642b7318/",
     instagram: "#",
-    github: "#",
+    github: "https://github.com/prajj267",
   },
   {
     id: 4,
@@ -115,9 +116,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-5-west.png",
       northwest: "/team/member-5-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
-    github: "#",
+    linkedin: "https://www.linkedin.com/in/prangggshu",
+    instagram: "https://www.instagram.com/prangggshu",
+    github: "https://github.com/prangggshu",
   },
   {
     id: 6,
@@ -134,9 +135,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-6-west.png",
       northwest: "/team/member-6-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
-    github: "#",
+    linkedin: "http://www.linkedin.com/in/krishna-mohanty-67a9082b0",
+    instagram: "https://www.instagram.com/_krish_na08?igsh=MTlhMXY4cXJ4cm1weA==",
+    github: "https://github.com/KrishnaMohanty08?tab=repositories",
   },
   {
     id: 7,
@@ -153,9 +154,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-7-west.png",
       northwest: "/team/member-7-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
-    github: "#",
+    linkedin: "https://www.linkedin.com/in/satvik-upadhyaya-073978334/",
+    instagram: "https://www.instagram.com/being_shelbish1422?igsh=djhhOWUybG03N3c5",
+    github: "https://github.com/SATVIKsynopsis",
   },
   {
     id: 8,
@@ -248,8 +249,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-12-west.png",
       northwest: "/team/member-12-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin:
+      "https://www.linkedin.com/in/vedant-agrawal-946353325?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+    instagram: "https://www.instagram.com/agrawal_vedant_16?igsh=bTFzZG4zcHd3MmY2",
     github: "#",
   },
   {
@@ -267,9 +269,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-13-west.png",
       northwest: "/team/member-13-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
-    github: "#",
+    linkedin: "https://www.linkedin.com/in/sbktckp/",
+    instagram: "https://www.instagram.com/sbktckp",
+    github: "https://github.com/sbktckp",
   },
   {
     id: 14,
@@ -286,8 +288,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-14-west.png",
       northwest: "/team/member-14-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin:
+      "https://www.linkedin.com/in/kirti-kumari-246582321?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
+    instagram: "https://www.instagram.com/cocokirti?igsh=NHBkaHRxd2E3bGRn&utm_source=qr",
     github: "#",
   },
   {
@@ -324,8 +327,8 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-16-west.png",
       northwest: "/team/member-16-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin: "http://www.linkedin.com/in/diya-dasgupta-747b2a261",
+    instagram: "https://www.instagram.com/hester.05?igsh=NWJ2ejJpYTdvam8w",
     github: "#",
   },
   {
@@ -343,9 +346,10 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-17-west.png",
       northwest: "/team/member-17-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
-    github: "#",
+    linkedin:
+      "https://www.linkedin.com/in/shreyanshduggar01?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+    instagram: "https://www.instagram.com/shreyans.h1?igsh=ajMwNTM1NG51aDdv",
+    github: "https://github.com/shr4421",
   },
 ];
 
