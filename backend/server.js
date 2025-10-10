@@ -43,23 +43,30 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://kiitsaathi.vercel.app",
   "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app",
+  "https://kiitsaathi-git-satvik-resume-aditya-sharmas-projects-3c0e452b.vercel.app", // ✅ new correct one
   "https://kiitsaathi-git-satvik-adityash8997s-projects.vercel.app"
 ];
 
 // CORS configuration
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests from localhost, Vercel, and Render preview URLs
+      if (
+        !origin ||
+        origin.includes("localhost") ||
+        origin.endsWith(".vercel.app") ||
+        origin.endsWith(".onrender.com")
+      ) {
+        callback(null, true);
+      } else {
+        console.warn("❌ Blocked by CORS:", origin);
+        callback(new Error("CORS not allowed for this origin"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json({ limit: '10mb' }));
 
