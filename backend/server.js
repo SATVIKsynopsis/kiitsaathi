@@ -48,6 +48,8 @@ const allowedOrigins = [
 ];
 
 // CORS configuration
+
+
 app.use(
   cors({
     origin: (origin, callback) => {
