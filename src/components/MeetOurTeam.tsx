@@ -98,7 +98,7 @@ const teamMembers: TeamMember[] = [
       northwest: "/team/member-4-northwest.png",
     },
     linkedin: "#",
-    instagram: "#",
+    instagram: "https://www.instagram.com/mr_piyush2106",
     github: "#",
   },
   {
@@ -173,8 +173,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-8-west.png",
       northwest: "/team/member-8-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin:
+      "https://www.linkedin.com/in/aadarshgupta01?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+    instagram: "https://www.instagram.com/aadarsh._.gupta01?igsh=MTdzcTM0dmxkZW1iOA==",
     github: "#",
   },
   {
@@ -192,8 +193,8 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-9-west.png",
       northwest: "/team/member-9-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin: "https://www.linkedin.com/in/anushka-sinha510/",
+    instagram: "https://www.instagram.com/its_ansukaaa04/",
     github: "#",
   },
   {
@@ -230,8 +231,9 @@ const teamMembers: TeamMember[] = [
       west: "/team/member-11-west.png",
       northwest: "/team/member-11-northwest.png",
     },
-    linkedin: "#",
-    instagram: "#",
+    linkedin:
+      "https://www.linkedin.com/in/siddharth-khubchandani-4aa898389?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
+    instagram: "https://www.instagram.com/siddharth.khubchandani?igsh=bXAwODV4Z3BmMGxj",
     github: "#",
   },
   {
