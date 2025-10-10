@@ -233,7 +233,17 @@ export const branchCourseStructure: BranchCourseStructure = {
             { code: "HASS3", title: "HASS Elective-III", credits: 3 },
             { code: "CS31002", title: "Machine Learning", credits: 4 },
             { code: "CS30004", title: "Data Science and Analytics", credits: 3 },
-            { code: "PE3", title: "Professional Elective-III", credits: 3 }
+            { code: "PE3", title: "Professional Elective-III", credits: 3 },
+            { code: "OE2", title: "Open Elective-II / MI-I", credits: 3 },
+            { code: "HS30401", title: "Universal Human Values", credits: 3 }
+          ]
+        },
+        {
+          type: "Practical",
+          courses: [
+            { code: "CS39004", title: "Data Analytics Laboratory", credits: 1 },
+            { code: "CS39006", title: "Advance Programming Laboratory", credits: 2 },
+            { code: "CS37001", title: "Mini Project", credits: 2 }
           ]
         }
       ]
@@ -260,10 +270,7 @@ export const branchCourseStructure: BranchCourseStructure = {
           courses: [
             { code: "CS39001", title: "Algorithms Laboratory", credits: 1 },
             { code: "CS39003", title: "Computer Networks Laboratory", credits: 1 },
-            { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 },
-            { code: "CS39004", title: "Data Analytics Laboratory", credits: 1 },
-            { code: "CS39006", title: "Advance Programming Laboratory", credits: 2 },
-            { code: "CS37001", title: "Mini Project", credits: 2 }
+            { code: "KE1", title: "K-Explore Open Elective-I", credits: 1 }
           ]
         }
       ]
@@ -278,7 +285,7 @@ export const branchCourseStructure: BranchCourseStructure = {
             { code: "CS30010", title: "Cloud Computing", credits: 3 },
             { code: "EC30002", title: "Wireless Mobile Communication", credits: 3 },
             { code: "PE3", title: "Professional Elective-III", credits: 3 },
-            { code: "OE2", title: "Open Elective-II/MI-I", credits: 3 },
+            { code: "OE2", title: "Open Elective-II / MI-I", credits: 3 },
             { code: "HS30401", title: "Universal Human Values", credits: 3 }
           ]
         },
@@ -293,7 +300,7 @@ export const branchCourseStructure: BranchCourseStructure = {
       ]
     }
   ],
-  "Computer Science and System Engineering": [
+  "Computer Science and Systems Engineering": [
     ...commonSemesters,
     {
       semester: 5,
@@ -329,7 +336,7 @@ export const branchCourseStructure: BranchCourseStructure = {
             { code: "CS30006", title: "Compilers", credits: 3 },
             { code: "EC30007", title: "ARM and Advanced Microprocessors", credits: 3 },
             { code: "PE3", title: "Professional Elective-III", credits: 3 },
-            { code: "OE2", title: "Open Elective-II/MI-I", credits: 3 },
+            { code: "OE2", title: "Open Elective-II / MI-I", credits: 3 },
             { code: "HS30401", title: "Universal Human Values", credits: 3 }
           ]
         },
@@ -353,5 +360,5 @@ export const branches = [
   "Computer Science and Engineering",
   "Information Technology",
   "Computer Science and Communication Engineering",
-  "Computer Science and System Engineering"
+  "Computer Science and Systems Engineering"
 ];
