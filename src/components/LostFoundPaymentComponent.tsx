@@ -120,7 +120,7 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
       }, 2000);
 
       // Create order with payment splitting information
-      const orderRes = await fetch(`${import.meta.env.VITE_API_URL}/create-lost-found-order`, {
+      const orderRes = await fetch(`http://localhost:8080/create-lost-found-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -157,7 +157,7 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
             console.log('Razorpay payment response:', response);
             
             // Verify payment and process split
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/verify-lost-found-payment`, {
+            const verifyRes = await fetch(`http://localhost:8080/verify-lost-found-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
