@@ -48,8 +48,6 @@ const allowedOrigins = [
 ];
 
 // CORS configuration
-
-
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -73,6 +71,7 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 
 // Error handling middleware
+
 app.use((err, req, res, next) => {
   if (err.message === "Not allowed by CORS") {
     return res.status(403).json({ error: 'CORS policy violation' });
