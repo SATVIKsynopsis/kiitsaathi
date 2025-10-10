@@ -1,47 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Check,
+  CreditCard,
+  IndianRupee,
+  Shield,
+  Clock,
+  X,
+  Loader2,
+  Zap,
+} from "lucide-react";
 
-import { Check, CreditCard, IndianRupee, Shield, Users, Clock, X, Loader2, Zap } from "lucide-react";
-
-
-
+// ---------------- Custom Animations ----------------
 const styles = `
   @keyframes loading {
     0% { width: 0%; }
     50% { width: 75%; }
     100% { width: 100%; }
   }
-  
+
   @keyframes shimmer {
     0% { background-position: -200px 0; }
     100% { background-position: calc(200px + 100%) 0; }
   }
-  
+
   .shimmer {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200px 100%;
     animation: shimmer 1.5s infinite;
   }
-  
+
   .dark .shimmer {
     background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
     background-size: 200px 100%;
   }
 `;
 
-// Inject styles
-if (typeof document !== 'undefined') {
+if (typeof document !== "undefined") {
   const styleSheet = document.createElement("style");
   styleSheet.type = "text/css";
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 }
 
-import { Check, CreditCard, IndianRupee, Shield, Clock, X } from "lucide-react";
-
-
+// ---------------- Component Props ----------------
 interface LostFoundPaymentComponentProps {
   itemId: string;
   itemTitle: string;
@@ -58,6 +62,7 @@ declare global {
   }
 }
 
+// ---------------- Component ----------------
 const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
   itemId,
   itemTitle,
@@ -65,7 +70,7 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
   itemPosterEmail,
   payerUserId,
   onPaymentSuccess,
-  onPaymentCancel
+  onPaymentCancel,
 }) => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -73,15 +78,15 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
   const [isInitializingBackend, setIsInitializingBackend] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Initializing payment...");
 
-  // Load Razorpay script
+  // ---------------- Load Razorpay Script ----------------
   useEffect(() => {
     const loadRazorpayScript = () => {
       return new Promise((resolve) => {
-        const existingScript = document.getElementById('razorpay-script');
+        const existingScript = document.getElementById("razorpay-script");
         if (!existingScript) {
-          const script = document.createElement('script');
-          script.id = 'razorpay-script';
-          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          const script = document.createElement("script");
+          script.id = "razorpay-script";
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
           script.onload = () => {
             setRazorpayLoaded(true);
             resolve(true);
@@ -97,12 +102,13 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
     loadRazorpayScript();
   }, []);
 
+  // ---------------- Payment Logic ----------------
   const handlePayment = async () => {
     if (!razorpayLoaded) {
       toast({
         title: "Payment System Loading",
-        description: "Please wait a moment while we initialize the payment system...",
-        variant: "default"
+        description:
+          "Please wait a moment while we initialize the payment system...",
       });
       return;
     }
@@ -112,8 +118,6 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
     setLoadingMessage("Waking up our servers...");
 
     try {
-
-      // Add a timeout to show different messages for slow backend
       const messageTimer = setTimeout(() => {
         setLoadingMessage("Starting backend services...");
         setTimeout(() => {
@@ -121,38 +125,27 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
         }, 3000);
       }, 2000);
 
-      // Create order with payment splitting information
-      const orderRes = await fetch(`http://localhost:8080/create-lost-found-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          amount: 500, // 5 rupees in paise
-
-      const orderRes = await fetch(`${import.meta.env.VITE_API_URL}/create-lost-found-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: 500, // ₹5 in paise
-
-          itemId,
-          itemTitle,
-          itemPosterEmail,
-          payerUserId,
-          receipt: `lf_${itemId.slice(-6)}_${Date.now().toString().slice(-8)}`
-        }),
-      });
-
+      // Create Order
+      const orderRes = await fetch(
+        `${import.meta.env.VITE_API_URL}/create-lost-found-order`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: 500, // ₹5 in paise
+            itemId,
+            itemTitle,
+            itemPosterEmail,
+            payerUserId,
+            receipt: `lf_${itemId.slice(-6)}_${Date.now().toString().slice(-8)}`,
+          }),
+        }
+      );
 
       clearTimeout(messageTimer);
       setIsInitializingBackend(false);
 
-      if (!orderRes.ok) {
-        throw new Error('Failed to create order');
-      }
-
-
-      if (!orderRes.ok) throw new Error('Failed to create order');
-
+      if (!orderRes.ok) throw new Error("Failed to create order");
       const order = await orderRes.json();
 
       const options = {
@@ -165,35 +158,27 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
         image: "/favicon.ico",
         handler: async (response: any) => {
           try {
-
-            console.log('Razorpay payment response:', response);
-            
-            // Verify payment and process split
-            const verifyRes = await fetch(`http://localhost:8080/verify-lost-found-payment`, {
-
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/verify-lost-found-payment`, {
-
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                itemId,
-                itemTitle,
-                itemPosterEmail,
-
-                payerUserId
-
-                payerUserId,
-                splitDetails: {
-                  totalAmount: 5,
-                  platformFee: 5,
-                  posterAmount: 0
-                }
-
-              }),
-            });
+            const verifyRes = await fetch(
+              `${import.meta.env.VITE_API_URL}/verify-lost-found-payment`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  itemId,
+                  itemTitle,
+                  itemPosterEmail,
+                  payerUserId,
+                  splitDetails: {
+                    totalAmount: 5,
+                    platformFee: 5,
+                    posterAmount: 0,
+                  },
+                }),
+              }
+            );
 
             const verifyResult = await verifyRes.json();
             if (verifyResult.success) {
@@ -204,13 +189,16 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
               });
               onPaymentSuccess();
             } else {
-              throw new Error(verifyResult.message || 'Payment verification failed');
+              throw new Error(
+                verifyResult.message || "Payment verification failed"
+              );
             }
-          } catch (err) {
+          } catch {
             toast({
               title: "Payment Verification Failed",
-              description: "Please contact support if amount was deducted.",
-              variant: "destructive"
+              description:
+                "Please contact support if amount was deducted.",
+              variant: "destructive",
             });
           }
         },
@@ -218,150 +206,29 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
         notes: {
           item_id: itemId,
           item_title: itemTitle,
-          service: "lost_found_contact"
+          service: "lost_found_contact",
         },
         theme: { color: "#3399cc" },
-        modal: { ondismiss: () => setIsProcessing(false) }
+        modal: { ondismiss: () => setIsProcessing(false) },
       };
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (error) {
-
-      console.error('Payment initialization error:', error);
+      console.error("Payment initialization error:", error);
       setIsInitializingBackend(false);
-
-
       toast({
         title: "Payment Failed",
-        description: "Could not initialize payment. Our servers might be starting up - please try again in a moment.",
-        variant: "destructive"
+        description:
+          "Could not initialize payment. Please try again in a moment.",
+        variant: "destructive",
       });
       setIsProcessing(false);
     }
   };
 
+  // ---------------- UI ----------------
   return (
-
-    <Card className="w-full max-w-4xl mx-auto shadow-2xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950 overflow-hidden">
-      <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6">
-        <CardTitle className="flex items-center justify-center gap-3 text-2xl">
-          <Shield className="w-8 h-8" />
-          Unlock Contact Details
-        </CardTitle>
-        <p className="text-blue-100 text-base mt-2">Secure payment to connect with the poster</p>
-      </CardHeader>
-      <CardContent className="p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Side - Item Info & Payment Details */}
-          <div className="space-y-6">
-            {/* Item Information */}
-            <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 rounded-xl border border-blue-200 dark:border-blue-800">
-              <h3 className="font-bold text-xl mb-3 text-blue-900 dark:text-blue-100">{itemTitle}</h3>
-              <p className="text-blue-700 dark:text-blue-300">
-                Posted by: <span className="font-semibold text-lg">{itemPosterName}</span>
-              </p>
-            </div>
-
-            {/* Payment Breakdown */}
-            <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl border border-green-200 dark:border-green-800">
-              <h4 className="font-bold flex items-center gap-3 text-green-800 dark:text-green-200 text-lg mb-4">
-                <IndianRupee className="w-6 h-6" />
-                Payment Breakdown
-              </h4>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                  <span className="flex items-center gap-3 text-base">
-                    <Shield className="w-5 h-5 text-blue-600" />
-                    Platform Service Fee
-                  </span>
-                  <span className="font-bold text-blue-600 text-lg">₹5</span>
-                </div>
-                <Separator className="my-3" />
-                <div className="flex justify-between font-bold text-xl p-4 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-lg">
-                  <span>Total Amount</span>
-                  <span className="text-3xl text-blue-600 dark:text-blue-400">₹5</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side - Features & Payment Button */}
-          <div className="space-y-6">
-            {/* Features */}
-            <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-200 dark:border-purple-800">
-              <h4 className="font-bold text-purple-800 dark:text-purple-200 text-lg mb-4">What you get:</h4>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-base">Complete contact details (Email & Phone)</span>
-                </div>
-                <div className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-base">Instant access after payment</span>
-                </div>
-                <div className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-base">Secure & encrypted transaction</span>
-                </div>
-                <div className="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-base">Support platform development</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Buttons */}
-            <div className="space-y-4">
-              <Button 
-                onClick={handlePayment}
-                disabled={isProcessing || !razorpayLoaded}
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
-                size="lg"
-              >
-                {isInitializingBackend ? (
-                  <div className="flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="animate-pulse">{loadingMessage}</span>
-                  </div>
-                ) : isProcessing ? (
-                  <div className="flex items-center gap-3">
-                    <Zap className="w-5 h-5 animate-bounce" />
-                    Opening Payment Gateway...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="w-5 h-5" />
-                    Pay ₹5 & Get Contact Details
-                  </div>
-                )}
-              </Button>
-
-
-              
-
-              <Button 
-                variant="outline" 
-                onClick={onPaymentCancel}
-                className="w-full h-12 text-base"
-                disabled={isProcessing}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </Button>
-            </div>
-
-            {/* Security Note */}
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-inner">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Shield className="w-5 h-5 text-green-600" />
-                  <span className="font-semibold text-green-700 dark:text-green-300">100% Secure Payment</span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Powered by Razorpay with bank-level security. Your payment supports the platform and helps maintain the Lost & Found service.
-                </p>
-
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <Card className="w-full max-w-5xl mx-auto rounded-2xl shadow-2xl border border-border/30 overflow-hidden bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950 animate-fadeIn">
         <CardHeader className="text-center pb-3 border-b border-border/20 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
@@ -371,14 +238,16 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
           <div className="flex items-center justify-center gap-4 mt-2 text-sm">
             <span className="font-semibold">{itemTitle}</span>
             <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">Posted by: {itemPosterName}</span>
+            <span className="text-muted-foreground">
+              Posted by: {itemPosterName}
+            </span>
           </div>
         </CardHeader>
 
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            {/* Column 1: Payment Breakdown */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 p-5 rounded-lg border border-blue-200 dark:border-blue-800 flex flex-col justify-between">
+            {/* Payment Breakdown */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 p-5 rounded-lg border border-blue-200 dark:border-blue-800">
               <h4 className="font-semibold flex items-center gap-2 mb-3 justify-center">
                 <IndianRupee className="w-5 h-5" />
                 Payment Breakdown
@@ -391,144 +260,73 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
                   </span>
                   <span className="font-bold text-blue-600">₹5</span>
                 </div>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <div>• Secure payment processing</div>
-                  <div>• Platform maintenance & support</div>
-                </div>
                 <div className="border-t pt-3 mt-4">
                   <div className="flex justify-between font-bold text-xl">
                     <span>Total</span>
                     <span className="text-blue-600">₹5</span>
                   </div>
                 </div>
-
               </div>
             </div>
 
-
-        {/* Backend Loading Animation */}
-        {isInitializingBackend && (
-          <div className="col-span-1 lg:col-span-2 mt-6">
-            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/50 dark:via-indigo-950/50 dark:to-purple-950/50 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-800 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="relative">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                  <div className="absolute inset-0 w-6 h-6 border-2 border-blue-200 rounded-full animate-ping"></div>
-                </div>
-                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Waking up our servers...
-                </span>
-              </div>
-              
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-4 leading-relaxed">
-                Our backend is hosted on a free plan and needs a moment to start up. This process usually takes 30-60 seconds. 
-                <span className="font-semibold text-blue-800 dark:text-blue-200"> Thank you for your patience! 🚀</span>
-              </p>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between text-xs text-blue-600 dark:text-blue-400 font-medium">
-                  <span>{loadingMessage}</span>
-                  <span className="animate-pulse">⚡</span>
-                </div>
-                
-                <div className="relative bg-blue-200 dark:bg-blue-800 rounded-full h-2 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 rounded-full animate-pulse"></div>
-                  <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 h-full rounded-full animate-[loading_3s_ease-in-out_infinite] w-3/4"></div>
-                </div>
-                
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-
-            {/* Column 2: What You Get */}
+            {/* What You Get */}
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 p-5 rounded-lg border border-green-200 dark:border-green-800">
               <h4 className="font-semibold text-green-800 dark:text-green-200 mb-4 text-center flex items-center justify-center gap-2">
                 ✨ What you get
               </h4>
               <div className="space-y-3 text-sm">
-                <div className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  Complete contact details (Email & Phone)
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  Instant access after payment
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  One-time payment (no recurring charges)
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  Help reunite lost items with owners
-                </div>
+                {[
+                  "Complete contact details (Email & Phone)",
+                  "Instant access after payment",
+                  "One-time payment (no recurring charges)",
+                  "Help reunite lost items with owners",
+                ].map((t, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    {t}
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Column 3: Important Note + Buttons */}
+            {/* Action Buttons */}
             <div className="flex flex-col justify-between">
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 p-5 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
-                <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-3 text-center">
-                  📝 Important Note
-                </h4>
-                <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
-                  This is a one-time payment to access contact details. The full amount supports our
-                  platform operations and helps keep this service free for posting items.
-                </p>
-              </div>
+              <Button
+                onClick={handlePayment}
+                disabled={isProcessing || !razorpayLoaded}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isInitializingBackend ? (
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>{loadingMessage}</span>
+                  </div>
+                ) : isProcessing ? (
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-5 h-5" />
+                    Pay ₹5 & Get Contact Details
+                  </div>
+                )}
+              </Button>
 
-              <div className="space-y-3">
-                <Button
-                  onClick={handlePayment}
-                  disabled={isProcessing || !razorpayLoaded}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 animate-spin" />
-                      Processing...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5" />
-                      Pay ₹5 & Get Contact Details
-                    </div>
-                  )}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={onPaymentCancel}
-                  className="w-full h-10"
-                  disabled={isProcessing}
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Cancel
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={onPaymentCancel}
+                className="w-full h-10 mt-3"
+                disabled={isProcessing}
+              >
+                <X className="w-4 h-4 mr-2" /> Cancel
+              </Button>
             </div>
-          </div>
-
-          <div className="mt-6 text-xs text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Shield className="w-3 h-3" />
-              <span className="font-medium">Secure payment powered by Razorpay</span>
-            </div>
-            <p>Your payment supports platform operations and keeps this service free for posting items.</p>
           </div>
         </CardContent>
       </Card>
     </div>
-
   );
 };
 

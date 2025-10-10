@@ -7,6 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import * as pdfjsLib from "pdfjs-dist";
 import { toast } from "sonner";
 
+// API Base URL configuration
+const API_BASE_URL = 'https://kiitsaathi-resume-1.onrender.com';
+
 // Try multiple CDN sources for better reliability
 const workerUrls = [
   `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
@@ -121,7 +124,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
     setAnalysisType('form');
 
     try {
-      const response = await fetch('http://localhost:3001/analyze-resume-form', {
+      const response = await fetch(`${API_BASE_URL}/analyze-resume-form`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +182,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
         fullText: fileName || "Resume content"
       };
 
-      const response = await fetch('http://localhost:3001/analyze-resume-form', {
+      const response = await fetch(`${API_BASE_URL}/analyze-resume-form`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -486,7 +489,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       const formData = new FormData();
       formData.append("resume", selectedFile);
       
-      const response = await fetch("http://localhost:3001/analyze-resume-ats", {
+      const response = await fetch(`${API_BASE_URL}/analyze-resume-ats`, {
         method: "POST",
         body: formData,
       });
