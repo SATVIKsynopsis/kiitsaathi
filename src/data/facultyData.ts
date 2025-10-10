@@ -6,7 +6,7 @@ export interface FacultyMember {
   name: string;
   designation: string;
   email: string;
-  phone: string;
+  phone?: string;
   linkedin: string;
   category: "contact" | "faculty";
   department?: string;
@@ -439,7 +439,7 @@ const facultyMembersData: FacultyMember[] = [
     name: "A Ranjith",
     designation: "School of Computer Engineering",
     email: "a.ranjithfcs@kiit.ac.in",
-    //    phone: "+91-9437012400",
+    phone: "+91-9437012400",
     linkedin: "https://in.linkedin.com/in/a-ranjith-207b8523b",
     category: "faculty",
     department: "SCE",

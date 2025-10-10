@@ -74,7 +74,7 @@ const CourseStructure = () => {
     }
 
     return semesters;
-  }, [searchQuery, selectedSemester, sortBy]);
+  }, [searchQuery, selectedSemester, sortBy, selectedBranch]);
 
   const getSectionColor = (type: string) => {
     switch (type) {
