@@ -39,9 +39,7 @@ const upload = multer({
 });
 
 // Initialize Gemini AI with stable SDK (kept for backward compatibility if needed)
-const genAI = new GoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+
 
 // Initialize Groq for resume analysis
 const groqClient = new Groq({
@@ -109,7 +107,6 @@ app.get('/health', async (req, res) => {
       timestamp: new Date().toISOString(),
       supabase: error ? 'Error' : 'Connected',
       razorpay: process.env.RAZORPAY_KEY_ID ? 'Configured' : 'Missing',
-      gemini: process.env.GEMINI_API_KEY ? 'Configured' : 'Missing'
     });
   } catch (error) {
     res.status(500).json({ 
@@ -241,7 +238,6 @@ console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing
 console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? `✅ Set (${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 20)}...)` : '❌ Missing');
 console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? '✅ Set' : '❌ Missing');
 console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '✅ Set' : '❌ Missing');
-console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Set' : '❌ Missing');
 console.log('PERPLEXITY_API_KEY:', process.env.PERPLEXITY_API_KEY ? '✅ Set' : '❌ Missing');
 
 // Supabase instance
@@ -1905,7 +1901,7 @@ CRITICAL: This format has been proven to score 90+ on recruiter ATS systems. Fol
 // Helper function to enhance resume data as fallback
 function enhanceResumeDataFallback(originalData) {
   return {
-    
+
     personalInfo: originalData.personalInfo || {},
     summary: originalData.summary || "Dynamic professional with proven track record of delivering results and driving innovation. Strong analytical and problem-solving skills with experience in collaborative environments. Committed to continuous learning and professional development.",
     education: Array.isArray(originalData.education) ? originalData.education : [],
@@ -1938,7 +1934,6 @@ app.listen(PORT, () => {
   console.log('🚀 KIIT Saathi Backend Server Running!');
   console.log(`📡 Server listening on port ${PORT}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-  console.log(`🧪 Test Gemini: http://localhost:${PORT}/test-gemini`);
   console.log(`📄 PDF Analysis endpoint: http://localhost:${PORT}/analyze-resume-ats`);
   console.log('✅ Server initialization complete!');
 });
