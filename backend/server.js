@@ -1905,6 +1905,7 @@ CRITICAL: This format has been proven to score 90+ on recruiter ATS systems. Fol
 // Helper function to enhance resume data as fallback
 function enhanceResumeDataFallback(originalData) {
   return {
+    
     personalInfo: originalData.personalInfo || {},
     summary: originalData.summary || "Dynamic professional with proven track record of delivering results and driving innovation. Strong analytical and problem-solving skills with experience in collaborative environments. Committed to continuous learning and professional development.",
     education: Array.isArray(originalData.education) ? originalData.education : [],
