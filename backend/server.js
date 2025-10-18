@@ -5,25 +5,29 @@ import cors from 'cors';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import Perplexity from '@perplexity-ai/perplexity_ai';
+import Groq from 'groq-sdk';
 import multer from 'multer';
 import fs from 'fs';
 import { createRequire } from 'module';
 
-// Use createRequire to import CommonJS modules
 const require = createRequire(import.meta.url);
 const pdfreader = require('pdfreader');
-// Uncomment below to add OCR capability for scanned PDFs
-// const Tesseract = require('tesseract.js');
-// const pdf2pic = require("pdf2pic");
+const pdfParseModule = require('pdf-parse');
+
+const pdfParse = pdfParseModule.default || pdfParseModule;
+console.log('📦 pdf-parse loaded, type:', typeof pdfParse);
+console.log('📦 pdf-parse keys:', Object.keys(pdfParseModule));
+console.log('📦 pdfParse is function?', typeof pdfParse === 'function');
+
 
 const app = express();
 
-// Configure multer for file uploads
 const upload = multer({
   dest: 'uploads/',
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 10 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
@@ -34,8 +38,20 @@ const upload = multer({
   }
 });
 
-// Initialize Gemini AI with new SDK
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Initialize Gemini AI with stable SDK (kept for backward compatibility if needed)
+const genAI = new GoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
+// Initialize Groq for resume analysis
+const groqClient = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+// Initialize Perplexity AI (for resume generation)
+const perplexityClient = new Perplexity({
+  apiKey: process.env.PERPLEXITY_API_KEY,
+});
 
 const allowedOrigins = [
   "http://localhost:8080",
@@ -110,18 +126,86 @@ app.get('/test', (req, res) => {
 });
 
 // Test Gemini API endpoint
+
+/* ==================== USAGE SUMMARY ROUTE ==================== */
+app.get('/usage-summary', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'Missing userId' });
+    }
+
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth() + 1;
+
+    const actions = ['generation', 'analysis'];
+    const limits = { generation: 2, analysis: 3 };
+    const summary = {};
+
+    for (const action of actions) {
+      const { data, error } = await supabase
+        .from('resume_usage')
+        .select('count')
+        .eq('user_id', userId)
+        .eq('action', action)
+        .eq('year', year)
+        .eq('month', month)
+        .limit(1)
+        .maybeSingle();
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 = No rows found for maybeSingle; ignore
+        throw new Error(error.message);
+      }
+      const used = data?.count || 0;
+      const limit = limits[action];
+      summary[action] = { used, limit, remaining: Math.max(0, limit - used) };
+    }
+
+    return res.json({ success: true, summary });
+  } catch (err) {
+    console.error('Usage summary error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to fetch usage summary' });
+  }
+});
+
+// Debug endpoint to check database state
+app.get('/debug-usage', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'Missing userId' });
+    }
+
+    const { data, error } = await supabase
+      .from('resume_usage')
+      .select('*')
+      .eq('user_id', userId)
+      .order('year', { ascending: false })
+      .order('month', { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    return res.json({ success: true, records: data });
+  } catch (err) {
+    console.error('Debug usage error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/test-gemini', async (req, res) => {
   try {
-    // Use the new SDK format with confirmed working model
-    const resp = await ai.models.generateContent({
-      model: "gemini-2.0-flash-001",
-      contents: "Hello, this is a test for resume analysis"
-    });
-    const text = resp.text;
+    // Use the stable SDK format with confirmed working model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const result = await model.generateContent("Hello, this is a test for resume analysis");
+    const response = await result.response;
+    const text = response.text();
     
     res.json({ 
       success: true, 
-      workingModel: "gemini-2.0-flash-001",
+      workingModel: "gemini-2.5-flash",
       message: 'Gemini API is working!',
       response: text 
     });
@@ -158,12 +242,105 @@ console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY 
 console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? '✅ Set' : '❌ Missing');
 console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '✅ Set' : '❌ Missing');
 console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Set' : '❌ Missing');
+console.log('PERPLEXITY_API_KEY:', process.env.PERPLEXITY_API_KEY ? '✅ Set' : '❌ Missing');
 
 // Supabase instance
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+/* ==================== MONTHLY USAGE TRACKING HELPERS ==================== */
+async function getOrInitMonthlyUsage(userId, action) {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1; // 1-12
+
+  // Try to fetch existing row
+  const { data: rows, error: selErr } = await supabase
+    .from('resume_usage')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('action', action)
+    .eq('year', year)
+    .eq('month', month)
+    .limit(1);
+
+  if (selErr) throw new Error(`Usage select failed: ${selErr.message}`);
+  if (rows && rows.length > 0) return rows[0];
+
+  // Insert new row with 0 count
+  const insertRow = { user_id: userId, action, year, month, count: 0 };
+  const { data: inserted, error: insErr } = await supabase
+    .from('resume_usage')
+    .insert([insertRow])
+    .select('*')
+    .limit(1);
+  if (insErr) {
+    // If unique violation, re-select (concurrent init)
+    const { data: retryRows, error: retryErr } = await supabase
+      .from('resume_usage')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('action', action)
+      .eq('year', year)
+      .eq('month', month)
+      .limit(1);
+    if (retryErr) throw new Error(`Usage reselect failed: ${retryErr.message}`);
+    return retryRows[0];
+  }
+  return inserted[0];
+}
+
+async function incrementMonthlyUsage(userId, action) {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+
+  console.log(`📊 Incrementing usage for user ${userId}, action: ${action}, ${year}-${month}`);
+
+  // Atomic increment using Postgres UPDATE with conflict handling
+  // First, ensure the row exists
+  const existing = await getOrInitMonthlyUsage(userId, action);
+  console.log(`📊 Current usage before increment:`, existing);
+  
+  // Now do an atomic increment using raw SQL through RPC or UPDATE
+  const { data, error } = await supabase.rpc('increment_resume_usage', {
+    p_user_id: userId,
+    p_action: action,
+    p_year: year,
+    p_month: month
+  });
+  
+  console.log('🔍 RPC Response - Data:', data, 'Error:', error);
+  
+  if (error) {
+    // Fallback: use non-atomic increment if RPC doesn't exist
+    console.warn('⚠️ RPC not available, using non-atomic increment:', error.message);
+    const current = await getOrInitMonthlyUsage(userId, action);
+    const nextCount = (current?.count || 0) + 1;
+    console.log(`📊 Incrementing from ${current?.count || 0} to ${nextCount}`);
+    const { data: updateData, error: updateError } = await supabase
+      .from('resume_usage')
+      .update({ count: nextCount })
+      .eq('user_id', userId)
+      .eq('action', action)
+      .eq('year', year)
+      .eq('month', month)
+      .select('*');
+    if (updateError) throw new Error(`Usage update failed: ${updateError.message}`);
+    console.log(`✅ Usage incremented successfully:`, updateData?.[0]);
+    return updateData?.[0];
+  }
+  
+  console.log(`✅ Usage incremented via RPC:`, data);
+  return data;
+}
+
+async function checkMonthlyLimit(userId, action, limit) {
+  const usage = await getOrInitMonthlyUsage(userId, action);
+  return (usage?.count || 0) < limit;
+}
 
 /* ==================== PAYMENT & ORDER ROUTES ==================== */
 
@@ -610,14 +787,94 @@ app.get('/has-paid-lost-found-contact', async (req, res) => {
 
 /* ==================== RESUME ATS ANALYSIS ROUTES ==================== */
 
+// Debug endpoint to test RPC function
+app.get('/test-rpc', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId required' });
+    }
+
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth() + 1;
+
+    console.log('🧪 Testing RPC function for user:', userId);
+    
+    // Check BEFORE state
+    const { data: beforeState, error: beforeError } = await supabase
+      .from('resume_usage')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('action', 'analysis')
+      .eq('year', year)
+      .eq('month', month)
+      .single();
+
+    console.log('📊 State BEFORE RPC:', beforeState);
+
+    // Test the RPC function
+    const { data, error } = await supabase.rpc('increment_resume_usage', {
+      p_user_id: userId,
+      p_action: 'analysis',
+      p_year: year,
+      p_month: month
+    });
+
+    console.log('🔍 RPC Result - Data:', data, 'Error:', error);
+
+    // Check AFTER state
+    const { data: afterState, error: afterError } = await supabase
+      .from('resume_usage')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('action', 'analysis')
+      .eq('year', year)
+      .eq('month', month)
+      .single();
+
+    console.log('📊 State AFTER RPC:', afterState);
+
+    res.json({
+      success: !error,
+      rpcResult: { data, error: error?.message },
+      beforeState,
+      afterState,
+      incremented: afterState?.count > beforeState?.count
+    });
+
+  } catch (err) {
+    console.error('❌ Test RPC error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ATS Resume Analysis endpoint using Gemini AI (Form Data)
 app.post('/analyze-resume-form', async (req, res) => {
   try {
-    const { resumeData } = req.body;
+    const { resumeData, userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'Missing userId' });
+    }
+
+    // Enforce quota: max 3 analyses per month
+    const canUse = await checkMonthlyLimit(userId, 'analysis', 3);
+    if (!canUse) {
+      return res.status(429).json({
+        success: false,
+        error: 'Monthly limit reached',
+        message: 'You have reached your monthly limit of 3 resume analyses. Please try again next month.'
+      });
+    }
 
     if (!resumeData) {
       return res.status(400).json({ error: 'Resume data is required' });
     }
+
+    console.log('🤖 Starting resume analysis with Groq AI...');
+    console.log('👤 User ID:', userId);
+    console.log('📝 Analysis type: Form-based resume');
 
     // Convert resume data to a comprehensive text format
     const resumeText = formatResumeForAnalysis(resumeData);
@@ -744,29 +1001,58 @@ Focus on:
 Provide honest, constructive feedback that will help improve both ATS compatibility and human readability.
 `;
 
-    // Use new SDK format for generating content
-    const resp = await ai.models.generateContent({
-      model: "gemini-2.0-flash-001",
-      contents: prompt
+    console.log('🚀 Sending resume data to Groq AI for analysis...');
+    console.log('🤖 Model: llama-3.3-70b-versatile');
+    console.log('📝 Resume text length:', resumeText.length, 'characters');
+    console.log('📄 Resume text preview:', resumeText.substring(0, 500));
+    
+    // Use Groq for fast and reliable analysis
+    const completion = await groqClient.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert ATS resume analyzer. Always respond with valid JSON only."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      model: "llama-3.3-70b-versatile", // Fast and capable model
+      temperature: 0.3,
+      max_tokens: 4000,
+      response_format: { type: "json_object" }
     });
-    const analysisText = resp.text;
+    
+    console.log('✅ Received response from Groq AI!');
+    
+    const analysisText = completion.choices[0]?.message?.content || '{}';
+    console.log('📊 Groq response length:', analysisText.length, 'characters');
+    console.log('📋 Groq response preview:', analysisText.substring(0, 500));
 
     // Try to extract JSON from the response
     let analysisResult;
     try {
-      // Look for JSON in the response
-      const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        analysisResult = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found in response');
-      }
+      // Parse the JSON directly (Groq returns JSON object format)
+      analysisResult = JSON.parse(analysisText);
+      console.log('✅ Successfully parsed Groq JSON response');
+      console.log('📊 Parsed score:', analysisResult.atsScore);
+      console.log('📝 Parsed summary:', analysisResult.summary?.substring(0, 100));
     } catch (parseError) {
-      console.error('Error parsing Gemini response:', parseError);
-      console.log('Raw response:', analysisText);
+      console.error('❌ Error parsing Groq response:', parseError);
+      console.log('🔴 Raw response:', analysisText);
       
       // Fallback analysis if JSON parsing fails
       analysisResult = createFallbackAnalysis(resumeData, analysisText);
+    }
+
+    // Increment usage count after success
+    console.log('📊 About to increment analysis usage for user:', userId);
+    try { 
+      await incrementMonthlyUsage(userId, 'analysis'); 
+      console.log('✅ Analysis usage increment completed successfully');
+    } catch (e) { 
+      console.error('❌ Analysis usage increment failed:', e.message, e); 
     }
 
     res.json({
@@ -787,9 +1073,28 @@ Provide honest, constructive feedback that will help improve both ATS compatibil
 // File upload endpoint for PDF resume analysis
 app.post('/analyze-resume-ats', upload.single('resume'), async (req, res) => {
   try {
+    const userId = req.body?.userId;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'Missing userId' });
+    }
+
+    // Enforce quota: max 3 analyses per month
+    const canUse = await checkMonthlyLimit(userId, 'analysis', 3);
+    if (!canUse) {
+      return res.status(429).json({
+        success: false,
+        error: 'Monthly limit reached',
+        message: 'You have reached your monthly limit of 3 resume analyses. Please try again next month.'
+      });
+    }
     // Handle file upload
     if (req.file) {
       const filePath = req.file.path;
+      
+      console.log('🤖 Starting resume analysis with Groq AI...');
+      console.log('👤 User ID:', userId);
+      console.log('📝 Analysis type: PDF-based resume');
+      console.log('📄 File name:', req.file.originalname);
       
       try {
         // Read the uploaded PDF file
@@ -837,6 +1142,15 @@ app.post('/analyze-resume-ats', upload.single('resume'), async (req, res) => {
           console.log('📊 ATS Score:', fallbackAnalysis.atsScore);
           console.log('📝 Analysis type:', 'Scanned PDF fallback');
           
+          // Increment usage (counts as analysis)
+          console.log('📊 About to increment analysis usage (scanned PDF fallback) for user:', userId);
+          try { 
+            await incrementMonthlyUsage(userId, 'analysis'); 
+            console.log('✅ Analysis usage increment completed successfully (scanned PDF)');
+          } catch (e) { 
+            console.error('❌ Analysis usage increment failed:', e.message, e); 
+          }
+
           return res.json({
             success: true,
             analysis: fallbackAnalysis,
@@ -880,40 +1194,81 @@ Please provide a detailed analysis in the following JSON format:
   "improvements": [
     "Specific, actionable improvement suggestions"
   ],
-  "detailedRecommendations": [
-    "Priority 1: Most critical improvement needed",
-    "Priority 2: Important enhancement",
-    "Priority 3: Additional optimization",
-    "Priority 4: Format improvement",
-    "Priority 5: Content enhancement"
-  ],
-  "keywordAnalysis": {
-    "matchedKeywords": ["professional keywords likely present"],
-    "missingKeywords": ["important keywords that should be added"],
-    "keywordDensity": number (0-100)
-  },
   "sectionAnalysis": {
     "personalInfo": {
       "score": number (0-100),
-      "feedback": "Analysis of contact information section"
+      "feedback": "Analysis of contact information section",
+      "issues": ["specific issues found"],
+      "suggestions": ["specific improvements"]
+    },
+    "summary": {
+      "score": number (0-100),
+      "feedback": "Analysis of professional summary",
+      "issues": ["specific issues found"],
+      "suggestions": ["specific improvements"]
     },
     "experience": {
       "score": number (0-100),
-      "feedback": "Analysis of work experience section"
+      "feedback": "Analysis of work experience section",
+      "issues": ["specific issues found"],
+      "suggestions": ["specific improvements"]
     },
     "education": {
       "score": number (0-100),
-      "feedback": "Analysis of education section"
+      "feedback": "Analysis of education section",
+      "issues": ["specific issues found"],
+      "suggestions": ["specific improvements"]
     },
     "skills": {
       "score": number (0-100),
-      "feedback": "Analysis of skills section"
+      "feedback": "Analysis of skills section",
+      "issues": ["specific issues found"],
+      "suggestions": ["specific improvements"]
+    },
+    "projects": {
+      "score": number (0-100),
+      "feedback": "Analysis of projects section",
+      "issues": ["specific issues found"],
+      "suggestions": ["specific improvements"]
+    }
+  },
+  "keywordAnalysis": {
+    "score": number (0-100),
+    "industryKeywords": {
+      "found": ["industry-specific keywords found in resume"],
+      "missing": ["important industry keywords missing"],
+      "suggestions": ["keyword suggestions for improvement"]
+    },
+    "technicalSkills": {
+      "found": ["technical skills found in resume"],
+      "missing": ["important technical skills missing"],
+      "suggestions": ["technical skills to add"]
     }
   },
   "formatAnalysis": {
     "score": number (0-100),
-    "feedback": "Analysis of formatting and ATS readability"
-  }
+    "issues": ["Formatting issues that hurt readability"],
+    "suggestions": ["Formatting improvements"]
+  },
+  "lengthAnalysis": {
+    "score": number (0-100),
+    "currentLength": "assessment of current resume length",
+    "recommendations": "recommendations for resume length"
+  },
+  "careerLevel": "entry/mid/senior",
+  "recommendedImprovements": [
+    {
+      "priority": "high/medium/low",
+      "category": "content/format/keywords",
+      "issue": "specific issue description",
+      "solution": "specific solution",
+      "impact": "expected impact on score"
+    }
+  ],
+  "industrySpecificAdvice": "Advice specific to the person's industry/field",
+  "nextSteps": [
+    "Prioritized list of next steps to improve the resume"
+  ]
 }
 
 Key factors to analyze:
@@ -927,12 +1282,34 @@ Key factors to analyze:
 Provide specific, actionable recommendations that will improve both ATS performance and human readability.
 `;
 
-        // Use new SDK format for generating content
-        const resp = await ai.models.generateContent({
-          model: "gemini-2.0-flash-001",
-          contents: prompt
+        console.log('🚀 Sending PDF resume data to Groq AI for analysis...');
+        console.log('🤖 Model: llama-3.3-70b-versatile');
+        console.log('📊 Extracted text length:', extractedText.length, 'characters');
+        console.log('📄 Extracted text preview:', extractedText.substring(0, 500));
+        
+        // Use Groq for fast and reliable analysis
+        const completion = await groqClient.chat.completions.create({
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert ATS resume analyzer. Always respond with valid JSON only."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          model: "llama-3.3-70b-versatile", // Fast and capable model
+          temperature: 0.3,
+          max_tokens: 4000,
+          response_format: { type: "json_object" }
         });
-        const analysisText = resp.text;
+        
+        console.log('✅ Received response from Groq AI!');
+        
+        const analysisText = completion.choices[0]?.message?.content || '{}';
+        console.log('📊 Groq response length:', analysisText.length, 'characters');
+        console.log('📋 Groq response preview:', analysisText.substring(0, 500));
 
         // Clean up the uploaded file
         fs.unlinkSync(filePath);
@@ -940,15 +1317,14 @@ Provide specific, actionable recommendations that will improve both ATS performa
         // Try to extract JSON from the response
         let analysisResult;
         try {
-          const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            analysisResult = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error('No JSON found in response');
-          }
+          // Parse the JSON directly (Groq returns JSON object format)
+          analysisResult = JSON.parse(analysisText);
+          console.log('✅ Successfully parsed Groq JSON response');
+          console.log('📊 Parsed score:', analysisResult.atsScore);
+          console.log('📝 Parsed summary:', analysisResult.summary?.substring(0, 100));
         } catch (parseError) {
-          console.error('Error parsing Gemini response:', parseError);
-          console.log('Raw Gemini response:', analysisText);
+          console.error('❌ Error parsing Groq response:', parseError);
+          console.log('🔴 Raw response:', analysisText);
           
           // Create a fallback analysis if JSON parsing fails
           const fileInfo = {
@@ -961,11 +1337,20 @@ Provide specific, actionable recommendations that will improve both ATS performa
           analysisResult.extractedTextLength = extractedText.length;
         }
 
+        // Increment usage after success
+        console.log('📊 About to increment analysis usage (PDF Groq) for user:', userId);
+        try { 
+          await incrementMonthlyUsage(userId, 'analysis'); 
+          console.log('✅ Analysis usage increment completed successfully (PDF Groq)');
+        } catch (e) { 
+          console.error('❌ Analysis usage increment failed:', e.message, e); 
+        }
+
         return res.json({
           success: true,
           analysis: analysisResult,
-          source: 'gemini_ai_analysis',
-          model: 'gemini-2.0-flash-001',
+          source: 'groq_ai_analysis',
+          model: 'llama-3.3-70b-versatile',
           extractedTextLength: extractedText.length
         });
 
@@ -1209,59 +1594,339 @@ function createAdvancedFallbackAnalysis(fileInfo) {
 }
 
 // Helper function to extract text from PDF using pdfreader
+// Helper function to extract text from PDF using pdf-parse
 function extractTextFromPDF(filePath) {
-  return new Promise((resolve, reject) => {
-    const textChunks = [];
-    let itemCount = 0;
-    let textItemCount = 0;
-    
-    console.log('Starting PDF parsing with pdfreader...');
-    
-    const pdfReader = new pdfreader.PdfReader();
-    
-    pdfReader.parseFileItems(filePath, (err, item) => {
-      if (err) {
-        console.error('PDF parsing error:', err);
-        console.error('Error details:', {
-          message: err.message,
-          code: err.code,
-          errno: err.errno
-        });
-        reject(new Error(`Failed to parse PDF: ${err.message}`));
-        return;
-      }
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log('🔍 Starting PDF text extraction with pdf-parse...');
+      console.log('📄 File path:', filePath);
       
-      itemCount++;
+      // Read the PDF file as a buffer
+      const dataBuffer = fs.readFileSync(filePath);
+      console.log('📊 File size:', dataBuffer.length, 'bytes');
       
-      if (!item) {
-        // End of file reached
-        const fullText = textChunks.join(' ').trim();
-        console.log(`PDF parsing completed:`);
-        console.log(`- Total items processed: ${itemCount}`);
-        console.log(`- Text items found: ${textItemCount}`);
-        console.log(`- Final text length: ${fullText.length}`);
-        console.log(`- Text preview: "${fullText.substring(0, 100)}..."`);
-        
-        resolve(fullText);
-        return;
-      }
+      // Use the correct way to call pdf-parse
+      // pdf-parse returns a promise when called with a buffer
+const data = await pdfParse(dataBuffer);
+
+
+      const extractedText = data.text.trim();
       
-      if (item.text) {
-        // Item contains text, add it to our collection
-        textItemCount++;
-        const cleanText = item.text.trim();
-        if (cleanText.length > 0) {
-          textChunks.push(cleanText);
-          console.log(`Text item ${textItemCount}: "${cleanText.substring(0, 50)}${cleanText.length > 50 ? '...' : ''}"`);
+      console.log('✅ PDF parsing completed successfully!');
+      console.log('📝 Extracted text length:', extractedText.length, 'characters');
+      console.log('📄 Number of pages:', data.numpages);
+      console.log('📋 Text preview:', extractedText.substring(0, 200) + '...');
+      
+      resolve(extractedText);
+      
+    } catch (err) {
+      console.error('❌ PDF parsing error:', err);
+      console.error('🔴 Error details:', {
+        message: err.message,
+        code: err.code,
+        errno: err.errno
+      });
+      
+      // Try alternative PDF parsing method with pdfreader
+      console.log('🔄 Trying alternative PDF parsing with pdfreader...');
+      try {
+        const alternativeText = await extractTextWithPdfReader(filePath);
+        if (alternativeText && alternativeText.trim().length > 10) {
+          console.log('✅ Alternative PDF parsing successful!');
+          resolve(alternativeText);
+        } else {
+          reject(new Error(`Failed to parse PDF with both methods: ${err.message}`));
         }
-      } else if (item.x !== undefined && item.y !== undefined) {
-        // This is a positioning item
-        console.log(`Position item: x=${item.x}, y=${item.y}`);
-      } else {
-        console.log('Other item type:', Object.keys(item));
+      } catch (altErr) {
+        console.error('❌ Alternative PDF parsing also failed:', altErr.message);
+        reject(new Error(`Failed to parse PDF: ${err.message}`));
       }
-    });
+    }
   });
+}
+
+// Alternative PDF extraction using pdfreader
+function extractTextWithPdfReader(filePath) {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log('🔍 Attempting PDF extraction with pdfreader...');
+      const pdfReader = new pdfreader.PdfReader();
+      let text = '';
+      let pageNumber = 0;
+      
+      pdfReader.parseFileItems(filePath, function(err, item) {
+        if (err) {
+          console.error('❌ pdfreader error:', err);
+          reject(err);
+        } else if (!item) {
+          console.log(`📄 pdfreader processed ${pageNumber} pages`);
+          resolve(text);
+        } else if (item.page) {
+          pageNumber = item.page;
+          text += '\n\n--- Page ' + pageNumber + ' ---\n\n';
+        } else if (item.text) {
+          text += item.text + ' ';
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+/* ==================== HIGH-ATS RESUME GENERATION ROUTE ==================== */
+
+// Generate high-ATS resume content using Gemini AI
+app.post('/generate-high-ats-resume', async (req, res) => {
+  try {
+    const { resumeData, userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'Missing userId' });
+    }
+
+    // Enforce quota: max 2 generations per month
+    const canUse = await checkMonthlyLimit(userId, 'generation', 2);
+    if (!canUse) {
+      return res.status(429).json({
+        success: false,
+        error: 'Monthly limit reached',
+        message: 'You have reached your monthly limit of 2 resume generations. Please try again next month.'
+      });
+    }
+
+    if (!resumeData) {
+      return res.status(400).json({ error: 'Resume data is required' });
+    }
+
+    console.log('🚀 Generating high-ATS resume content...');
+    
+    // High-ATS resume generation prompt based on 92 ATS score resume format
+    const prompt = `
+You are an expert ATS resume writer. Create a resume with 90+ ATS score using the EXACT format below that recruiters' ATS systems love.
+
+USER DATA TO ENHANCE:
+${JSON.stringify(resumeData, null, 2)}
+
+CRITICAL: Follow this EXACT FORMAT that scores 90+ on recruiter ATS systems:
+
+FORMAT TEMPLATE (92 ATS Score Resume):
+---
+[FULL NAME]
+[Professional Title/Role] | [Degree/Certification] | [Location]
+📧 [email] 📞 [phone] 📍 [location] 💼 [linkedin]
+
+WORK EXPERIENCE
+[Company Name]                                                [Location]
+[Job Title]                                                  [Date Range]
+• [Action verb] [specific task/project] using [technologies], [quantified result]
+• [Action verb] with a team of [number] to [achieve something], ensuring [specific outcome]
+• [Action verb] [specific achievement], [method], reducing [metric] by [percentage]
+• [Action verb] [technology/process], securing [specific benefit] for [number]+ [users/accounts]
+• [Action verb] in [specific area] and [related area], improving [metric] and [metric]
+• [Action verb] the [system/process] on [platforms], ensuring [benefit] and [percentage] [metric]
+
+EDUCATION
+[Institution Name]                                           [Date Range]  
+[Degree Name] • [CGPA/Grade]
+
+PROJECT
+[Project Name] 🔗                                           [Date Range]
+• [Action verb] [Project Name], a [description] to [purpose] and [benefit]
+• [Action verb] [specific feature/technology], [method], [result]
+• [Action verb] [specific implementation] with [technology], ensuring [benefit] for [number]+ [users]
+• [Action verb] [specific feature] system with [technology], improving [metric] by [percentage]
+• [Action verb] [specific functionality], [method], boosting [metric] by [percentage]
+• Built using [Technology Stack], and deployed on [Platform], ensuring [benefit]
+
+SKILLS
+• Languages: [List of programming languages]
+• Frameworks: [List of frameworks and libraries]
+• Cloud/Databases/Tech Stack: [List of platforms, databases, tools]
+
+Achievement
+• [Specific achievement with numbers/ranking]
+
+INSTRUCTIONS:
+1. Use the EXACT format above - this format scored 92 on ATS
+2. Replace ALL brackets with appropriate content from user data
+3. Add realistic metrics (percentages, numbers, users, etc.)
+4. Use strong action verbs: Developed, Implemented, Optimized, Achieved, Led, Managed, Built, Designed, Created, Integrated, Collaborated, Participated, Deployed
+5. Include specific technologies mentioned in user data
+6. Add quantified achievements (15%, 20%, 500+ users, etc.)
+7. Keep bullet points concise but specific
+8. Maintain professional language
+9. Ensure all sections follow the exact spacing and format shown
+
+Generate the enhanced resume in this JSON format:
+{
+  "personalInfo": {
+    "fullName": "original name",
+    "email": "original email",
+    "phone": "original phone",
+    "city": "original city", 
+    "linkedin": "enhanced linkedin or original",
+    "portfolio": "enhanced portfolio or original"
+  },
+  "professionalTitle": "Enhanced professional title with keywords",
+  "summary": "Brief professional summary line like 'Full Stack Developer | Integrated Dual Degree (Btech+Mtech) | CSE IIT Kharagpur'",
+  "experience": [
+    {
+      "company": "enhanced company name",
+      "title": "enhanced job title",
+      "location": "original or enhanced location", 
+      "startDate": "original start date",
+      "endDate": "original end date",
+      "bullets": [
+        "Enhanced bullet following exact format with metrics",
+        "Another enhanced bullet with specific technologies and percentages",
+        "Third bullet with quantified achievements and action verbs",
+        "Fourth bullet with team collaboration and results",
+        "Fifth bullet with technical implementation details"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "original institution",
+      "degree": "enhanced degree title",
+      "cgpa": "original or enhanced CGPA",
+      "startDate": "original start",
+      "endDate": "original end"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Enhanced Project Name Pro 🔗",
+      "dateRange": "enhanced date range",
+      "bullets": [
+        "Enhanced project description with specific purpose",
+        "Technical implementation with specific technologies", 
+        "Security/authentication features with user numbers",
+        "Performance improvements with specific metrics",
+        "Team collaboration and productivity gains",
+        "Technology stack and deployment details"
+      ]
+    }
+  ],
+  "skills": {
+    "languages": ["Enhanced list of programming languages"],
+    "frameworks": ["Enhanced frameworks and libraries"],
+    "cloudDatabasesTech": ["Enhanced cloud platforms, databases, and tools"]
+  },
+  "achievements": ["Enhanced achievement with specific metrics/ranking"]
+}
+
+CRITICAL: This format has been proven to score 90+ on recruiter ATS systems. Follow it exactly.`;
+
+    // Use Perplexity to generate enhanced resume content
+    const completion = await perplexityClient.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      model: "sonar",
+    });
+    
+    const generatedText = completion.choices[0].message.content;
+
+    // Try to extract JSON from the response
+    let enhancedResumeData;
+    try {
+      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsedData = JSON.parse(jsonMatch[0]);
+        // Always use user-provided summary and skills (do not use AI's for these fields)
+        enhancedResumeData = {
+          personalInfo: parsedData.personalInfo || {},
+          summary: typeof resumeData.summary === 'string' && resumeData.summary.trim().length > 0
+            ? resumeData.summary.trim()
+            : '',
+          education: Array.isArray(parsedData.education) ? parsedData.education : [],
+          experience: Array.isArray(parsedData.experience) ? parsedData.experience : [],
+          projects: Array.isArray(parsedData.projects) ? parsedData.projects : [],
+          skills: {
+            technical: Array.isArray(resumeData.skills?.technical) ? resumeData.skills.technical : [],
+            soft: Array.isArray(resumeData.skills?.soft) ? resumeData.skills.soft : [],
+            frameworks: parsedData.skills?.frameworks || [],
+            cloudDatabasesTech: parsedData.skills?.cloudDatabasesTech || []
+          },
+          certifications: Array.isArray(parsedData.certifications) ? parsedData.certifications : [],
+          awards: Array.isArray(parsedData.awards) ? parsedData.awards : [],
+          languages: Array.isArray(parsedData.languages) ? parsedData.languages : [],
+          interests: Array.isArray(parsedData.interests) ? parsedData.interests : [],
+          achievements: Array.isArray(parsedData.achievements) ? parsedData.achievements : []
+        };
+      } else {
+        throw new Error('No JSON found in response');
+      }
+    } catch (parseError) {
+      console.error('Error parsing Perplexity response:', parseError);
+      console.log('Raw response:', generatedText);
+      // Fallback: return enhanced version of original data
+      enhancedResumeData = enhanceResumeDataFallback(resumeData);
+    }
+
+  console.log('✅ High-ATS resume content generated successfully with Perplexity AI');
+
+  // Increment usage count after success
+  console.log('📊 About to increment usage for user:', userId);
+  try { 
+    await incrementMonthlyUsage(userId, 'generation'); 
+    console.log('✅ Usage increment completed successfully');
+  } catch (e) { 
+    console.error('❌ Usage increment failed:', e.message, e); 
+  }
+
+    res.json({
+      success: true,
+      enhancedResumeData,
+      atsScore: 92, // Matches the proven high ATS score format
+      improvements: [
+        "Applied proven 92 ATS score format structure",
+        "Enhanced with industry-standard keywords and metrics", 
+        "Optimized bullet points with quantifiable achievements",
+        "Implemented recruiter-preferred formatting and layout",
+        "Added technical skills in ATS-friendly categorized format"
+      ],
+      rawResponse: generatedText
+    });
+
+  } catch (error) {
+    console.error('Error generating high-ATS resume with Perplexity:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate resume with Perplexity AI',
+      message: error.message 
+    });
+  }
+});
+
+// Helper function to enhance resume data as fallback
+function enhanceResumeDataFallback(originalData) {
+  return {
+    personalInfo: originalData.personalInfo || {},
+    summary: originalData.summary || "Dynamic professional with proven track record of delivering results and driving innovation. Strong analytical and problem-solving skills with experience in collaborative environments. Committed to continuous learning and professional development.",
+    education: Array.isArray(originalData.education) ? originalData.education : [],
+    experience: Array.isArray(originalData.experience) ? originalData.experience : [],
+    projects: Array.isArray(originalData.projects) ? originalData.projects : [],
+    skills: {
+      technical: Array.isArray(originalData.skills?.technical) ? [...originalData.skills.technical, "Microsoft Office", "Data Analysis", "Project Management"] : ["Microsoft Office", "Data Analysis", "Project Management"],
+      soft: ["Leadership", "Communication", "Problem-solving", "Teamwork", "Time Management"],
+      frameworks: Array.isArray(originalData.skills?.frameworks) ? originalData.skills.frameworks : [],
+      cloudDatabasesTech: Array.isArray(originalData.skills?.cloudDatabasesTech) ? originalData.skills.cloudDatabasesTech : []
+    },
+    certifications: Array.isArray(originalData.certifications) ? originalData.certifications : ["Relevant Professional Development"],
+    awards: Array.isArray(originalData.awards) ? originalData.awards : [],
+    languages: Array.isArray(originalData.languages) ? originalData.languages : [],
+    interests: Array.isArray(originalData.interests) ? originalData.interests : [],
+    achievements: Array.isArray(originalData.achievements) ? originalData.achievements : [],
+    improvements: [
+      "Enhanced professional summary with key strengths",
+      "Added essential soft skills for ATS optimization", 
+      "Included standard professional competencies"
+    ]
+  };
 }
 
 /* ==================== SERVER START ==================== */
