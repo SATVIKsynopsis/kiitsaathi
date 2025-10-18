@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Zap, Clock, BookOpen } from "lucide-react";
 import kiitMascot from "@/assets/kiit-mascot.png";
 
+
+
+
 const ChatBotPage = () => {
   const navigate = useNavigate();
 

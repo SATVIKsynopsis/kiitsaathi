@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { EnhancedAnalysisDisplay } from "./ResumeAnalyzerEnhanced";
 
 // API Base URL configuration
-const API_BASE_URL = 'http://localhost:3001'; // Using localhost for development
+const API_BASE_URL = 'https://kiitsaathi-5-resume.onrender.com';
 
 // Try multiple CDN sources for better reliability
 const workerUrls = [

@@ -110,10 +110,7 @@ const ResumeSaathi = () => {
   // Fetch monthly quota usages from backend
   const fetchMonthlyUsage = async () => {
     try {
-      const API_BASE_URL =
-        process.env.NODE_ENV === "production"
-          ? "https://kiitsaathi-resume-1.onrender.com"
-          : "http://localhost:3001";
+      const API_BASE_URL = "https://kiitsaathi-5-resume.onrender.com";
       const res = await fetch(`${API_BASE_URL}/usage-summary?userId=${user?.id}`);
       if (!res.ok) return;
       const data = await res.json();
@@ -135,10 +132,7 @@ const ResumeSaathi = () => {
 
       const minDelay = new Promise((resolve) => setTimeout(resolve, 4500));
 
-      const API_BASE_URL =
-        process.env.NODE_ENV === "production"
-          ? "https://kiitsaathi-resume-1.onrender.com"
-          : "http://localhost:3001";
+      const API_BASE_URL = "https://kiitsaathi-5-resume.onrender.com";
 
       const response = await fetch(`${API_BASE_URL}/generate-high-ats-resume`, {
         method: "POST",
