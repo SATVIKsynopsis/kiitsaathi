@@ -1,21 +1,41 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { Upload, FileText, CheckCircle, AlertTriangle, TrendingUp, XCircle } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Upload, FileText, CheckCircle, AlertTriangle, TrendingUp, XCircle, BarChart3, Target, Lightbulb, Award, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as pdfjsLib from "pdfjs-dist";
 import { toast } from "sonner";
+import { EnhancedAnalysisDisplay } from "./ResumeAnalyzerEnhanced";
 
 // API Base URL configuration
-const API_BASE_URL = "https://kiitsaathi-resume-1.onrender.com";
+const API_BASE_URL = 'https://kiitsaathi-5-resume.onrender.com';
 
-// Try multiple CDN sources for better reliability (constructed properly)
+// Try multiple CDN sources for better reliability
 const workerUrls = [
-  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${(pdfjsLib as any).version}/build/pdf.worker.min.js`,
-  `https://unpkg.com/pdfjs-dist@${(pdfjsLib as any).version}/build/pdf.worker.min.js`,
-  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`,
+  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
+  `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
 ];
+
+// Try to set up worker with fallback URLs
+let workerSet = false;
+for (const workerUrl of workerUrls) {
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+    workerSet = true;
+    console.log(`PDF.js worker set to: ${workerUrl}`);
+    break;
+  } catch (error) {
+    console.warn(`Failed to set worker URL: ${workerUrl}`, error);
+  }
+}
+
+if (!workerSet) {
+  console.warn("All PDF.js worker URLs failed, PDF analysis may not work");
+}
 
 interface AnalysisResult {
   atsScore: number;
@@ -38,91 +58,142 @@ interface GeminiAnalysisResult {
   criticalIssues: string[];
   improvements: string[];
   sectionAnalysis: {
-    [k: string]: {
-      score: number;
-      feedback: string;
-      issues?: string[];
-      suggestions?: string[];
+    personalInfo: SectionAnalysis;
+    summary: SectionAnalysis;
+    experience: SectionAnalysis;
+    education: SectionAnalysis;
+    skills: SectionAnalysis;
+    projects: SectionAnalysis;
+  };
+  keywordAnalysis: {
+    score: number;
+    industryKeywords: {
+      found: string[];
+      missing: string[];
+      suggestions: string[];
+    };
+    technicalSkills: {
+      found: string[];
+      missing: string[];
+      suggestions: string[];
     };
   };
-  keywordAnalysis: any;
-  formatAnalysis?: any;
-  lengthAnalysis?: any;
-  careerLevel?: string;
-  recommendedImprovements?: any[];
-  industrySpecificAdvice?: string;
-  nextSteps?: string[];
+  formatAnalysis: {
+    score: number;
+    issues: string[];
+    suggestions: string[];
+  };
+  lengthAnalysis: {
+    score: number;
+    currentLength: string;
+    recommendations: string;
+  };
+  careerLevel: string;
+  recommendedImprovements: RecommendedImprovement[];
+  industrySpecificAdvice: string;
+  nextSteps: string[];
+}
+
+interface SectionAnalysis {
+  score: number;
+  feedback: string;
+  issues: string[];
+  suggestions: string[];
+}
+
+interface RecommendedImprovement {
+  priority: 'high' | 'medium' | 'low';
+  category: string;
+  issue: string;
+  solution: string;
+  impact: string;
 }
 
 export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: (data: any) => void }) => {
+  const { user } = useAuth();
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzingGemini, setAnalyzingGemini] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [geminiResult, setGeminiResult] = useState<GeminiAnalysisResult | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [analysisType, setAnalysisType] = useState<"file" | "form" | "pdf">("file");
-  const [uploadState, setUploadState] = useState<"idle" | "uploaded" | "analyzed">("idle");
+  const [extractedPdfText, setExtractedPdfText] = useState<string>("");  // Store PDF text
+  const [analysisType, setAnalysisType] = useState<'file' | 'form'>('file');
+  const [uploadState, setUploadState] = useState<'idle' | 'uploaded' | 'analyzed'>('idle');
   const [hasAnalysisResults, setHasAnalysisResults] = useState(false);
+  const [monthlyUsage, setMonthlyUsage] = useState<{ analysis?: { used: number; limit: number; remaining: number } }>({});
 
-  // Initialize PDF.js worker (use first candidate)
-  useEffect(() => {
+  const fetchMonthlyUsageAnalyzer = async () => {
     try {
-      // Pick first worker URL (we cannot reliably test reachability here)
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrls[0];
-      // For debug purposes - this is safe
-      // eslint-disable-next-line no-console
-      console.log(`PDF.js worker set to: ${workerUrls[0]}`);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn("Failed to set PDF.js worker URL", err);
+      console.log('📊 Fetching monthly analysis usage for user:', user?.id);
+      const res = await fetch(`${API_BASE_URL}/usage-summary?userId=${user?.id}`);
+      if (!res.ok) {
+        console.warn('❌ Failed to fetch usage, status:', res.status);
+        return;
+      }
+      const data = await res.json();
+      console.log('📊 Usage data received:', data);
+      if (data?.success) {
+        setMonthlyUsage({ analysis: data.summary?.analysis });
+        console.log('✅ Monthly usage updated:', { analysis: data.summary?.analysis });
+      }
+    } catch (e) {
+      console.warn('Failed to fetch monthly usage (analyzer):', e);
     }
-  }, []);
+  };
 
-  // -- Gemini/form-based analysis (uses backend)
+  useEffect(() => {
+    if (user?.id) fetchMonthlyUsageAnalyzer();
+  }, [user?.id]);
+
+  // New function to analyze resume data using Gemini
   const analyzeResumeWithGemini = async (resumeData: any) => {
-    setAnalyzingGemini(true);
+    setAnalyzing(true);
     setGeminiResult(null);
-    setAnalysisType("form");
+    setAnalysisType('form');
 
     try {
       const response = await fetch(`${API_BASE_URL}/analyze-resume-form`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ resumeData }),
+  body: JSON.stringify({ resumeData, userId: user?.id }),
       });
 
       if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(`HTTP error! status: ${response.status} ${text}`);
+        if (response.status === 429) {
+          const err = await response.json().catch(() => ({} as any));
+          throw new Error(err?.message || 'Monthly limit reached for resume analysis (3 per month).');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-
+      
       if (data.success && data.analysis) {
         setGeminiResult(data.analysis);
-        setUploadState("analyzed");
+        setUploadState('analyzed');
         setHasAnalysisResults(true);
         toast.success("Resume analyzed successfully with AI!");
-
+        // refresh monthly usage remaining
+        fetchMonthlyUsageAnalyzer();
+        
+        // Call the callback if provided
         if (onAnalyzeResumeData) {
           onAnalyzeResumeData(data.analysis);
         }
       } else {
-        throw new Error(data.message || "Analysis failed");
+        throw new Error(data.message || 'Analysis failed');
       }
     } catch (error: any) {
-      // eslint-disable-next-line no-console
       console.error("Error analyzing resume with Gemini:", error);
-      toast.error(`Failed to analyze resume: ${error?.message ?? error}`);
+      toast.error(error?.message || `Failed to analyze resume`);
     } finally {
-      setAnalyzingGemini(false);
+      setAnalyzing(false);
     }
   };
 
-  // Button that triggers Gemini analysis based on a previously computed basic result
   const handleGeminiAnalysis = async () => {
     if (!result) return;
 
@@ -130,52 +201,58 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
     setGeminiResult(null);
 
     try {
+      // Convert basic result to resume data format for Gemini analysis
       const resumeData = {
         personalInfo: {
           name: "Resume Analysis",
           email: "",
           phone: "",
-          location: "",
+          location: ""
         },
         experience: [],
         education: [],
         skills: result.keywordAnalysis.found || [],
         projects: [],
-        fullText: fileName || "Resume content",
+        // Add extracted content for more detailed analysis
+        fullText: fileName || "Resume content"
       };
 
       const response = await fetch(`${API_BASE_URL}/analyze-resume-form`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ resumeData }),
+  body: JSON.stringify({ resumeData, userId: user?.id }),
       });
 
       if (!response.ok) {
-        const txt = await response.text().catch(() => "");
-        throw new Error(`Analysis failed: ${response.status} ${txt}`);
+        if (response.status === 429) {
+          const err = await response.json().catch(() => ({} as any));
+          throw new Error(err?.message || 'Monthly limit reached for resume analysis (3 per month).');
+        }
+        throw new Error(`Analysis failed: ${response.status}`);
       }
 
       const data = await response.json();
+      
       if (data.success && data.analysis) {
         setGeminiResult(data.analysis);
-        setUploadState("analyzed");
+        setUploadState('analyzed');
         setHasAnalysisResults(true);
         toast.success("Advanced AI analysis completed!");
+        // refresh monthly usage remaining
+        fetchMonthlyUsageAnalyzer();
       } else {
-        throw new Error(data.message || "Analysis failed");
+        throw new Error(data.message || 'Analysis failed');
       }
     } catch (error: any) {
-      // eslint-disable-next-line no-console
-      console.error("Error in Gemini analysis:", error);
-      toast.error("Failed to perform advanced analysis. Please try again.");
+      console.error('Error in Gemini analysis:', error);
+      toast.error(error?.message || "Failed to perform advanced analysis. Please try again.");
     } finally {
       setAnalyzingGemini(false);
     }
   };
 
-  // Local ATS-like analysis (text-only)
   const analyzeResumeText = (text: string): AnalysisResult => {
     let atsScore = 0;
     const strengths: string[] = [];
@@ -187,16 +264,16 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
     const commonKeywords = [
       "experience", "education", "skills", "project", "achievement",
       "leadership", "technical", "problem-solving", "communication",
-      "python", "javascript", "java", "react", "node", "sql", "aws", "git",
+      "python", "javascript", "java", "react", "node", "sql", "aws", "git"
     ];
 
     const textLower = text.toLowerCase();
-    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    const wordCount = text.split(/\s+/).filter(Boolean).length;
-    const sentenceCount = text.split(/[.!?]+/).filter(Boolean).length;
+    const lines = text.split("\n");
+    const wordCount = text.split(/\s+/).length;
+    const sentenceCount = text.split(/[.!?]+/).length;
 
-    // Contact info
-    if (textLower.includes("@") && (textLower.includes(".com") || textLower.includes(".in" ) || textLower.includes(".org"))) {
+    // Check for contact info (20 points)
+    if (textLower.includes("@") && textLower.includes(".com")) {
       atsScore += 10;
       strengths.push("Professional email address found");
     } else {
@@ -217,7 +294,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Add LinkedIn or GitHub profile to showcase your professional presence");
     }
 
-    // Sections
+    // Check for sections (30 points)
     const sections = ["experience", "education", "skills", "projects"];
     let sectionsFound = 0;
     sections.forEach(section => {
@@ -227,12 +304,13 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       }
     });
     atsScore += sectionsFound * 7;
+
     if (sectionsFound < 4) {
       const missing = sections.filter(s => !textLower.includes(s));
       improvements.push(`Add missing sections to strengthen your resume: ${missing.join(", ")}`);
     }
 
-    // Summary/objective
+    // Summary/Objective check
     if (textLower.includes("summary") || textLower.includes("objective")) {
       atsScore += 5;
       strengths.push("Professional summary or objective statement included");
@@ -240,14 +318,16 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Add a concise professional summary highlighting your key skills and career goals");
     }
 
-    // Keyword analysis
-    (commonKeywords).forEach(keyword => {
-      const regex = new RegExp(`\\b${keyword}\\b`, "gi");
+    // Keyword analysis with enhanced suggestions (25 points)
+    const keywordCount = {};
+    commonKeywords.forEach(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
       const matches = text.match(regex);
       const count = matches ? matches.length : 0;
+      
       if (count > 0) {
         keywordsFound.push(`${keyword} (${count}x)`);
-        atsScore += Math.min(count * 1.5, 3);
+        atsScore += Math.min(count * 1.5, 3); // Reward multiple mentions, capped
       } else {
         keywordsMissing.push(keyword);
       }
@@ -257,7 +337,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Include more relevant technical keywords and skills that match job requirements");
     }
 
-    // Bullets
+    // Format checks (20 points)
     const bulletCount = (text.match(/[•●◦▪▫–-]\s/g) || []).length;
     if (bulletCount >= 8) {
       atsScore += 8;
@@ -271,8 +351,8 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Format your experience with clear bullet points for better ATS parsing");
     }
 
-    // Quantifiable achievements
-    const numberPattern = /\b\d+%|\b\d+\+|\b\d+x|\$\d+/gi;
+    // Quantifiable achievements check
+    const numberPattern = /\b\d+%|\b\d+\+|\b\d+x|\b\$\d+/gi;
     const quantifiables = text.match(numberPattern);
     if (quantifiables && quantifiables.length >= 3) {
       atsScore += 7;
@@ -284,8 +364,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Include quantifiable results (e.g., 'Increased efficiency by 30%', 'Led team of 5')");
     }
 
-    // Dates
-    const datePattern = /\b\d{4}\b|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/gi;
+    const datePattern = /\d{4}|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/gi;
     const dates = text.match(datePattern);
     if (dates && dates.length >= 4) {
       atsScore += 5;
@@ -294,13 +373,12 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Add clear dates (Month/Year format) to all experience and education entries");
     }
 
-    // Name format
-    if (text.match(/[A-Z][a-z]+(\s[A-Z][a-z]+)/)) {
+    if (text.match(/[A-Z][a-z]+\s[A-Z][a-z]+/)) {
       atsScore += 3;
       strengths.push("Professional name formatting detected");
     }
 
-    // Action verbs
+    // Action verbs check
     const actionVerbs = ["achieved", "developed", "created", "managed", "led", "implemented", "designed", "improved", "analyzed"];
     const foundVerbs = actionVerbs.filter(verb => textLower.includes(verb));
     if (foundVerbs.length >= 5) {
@@ -313,7 +391,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Start bullet points with powerful action verbs to demonstrate impact");
     }
 
-    // Length
+    // Length and content density check (15 points)
     if (wordCount >= 400 && wordCount <= 800) {
       atsScore += 15;
       strengths.push("Resume length is optimal (400-800 words)");
@@ -333,7 +411,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       formatIssues.push("Reduce content to 1-2 pages maximum");
     }
 
-    // Writing quality
+    // Writing quality check
     const avgWordsPerSentence = wordCount / Math.max(sentenceCount, 1);
     if (avgWordsPerSentence >= 10 && avgWordsPerSentence <= 20) {
       atsScore += 3;
@@ -341,7 +419,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       formatIssues.push("Sentences are too long - break into shorter, clearer statements");
     }
 
-    // Layout score
+    // Layout score (based on structure)
     let layoutScore = 70;
     if (lines.length < 20) {
       layoutScore -= 20;
@@ -350,15 +428,17 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       layoutScore -= 10;
       formatIssues.push("Resume may be too dense - ensure proper spacing and formatting");
     }
+    
     if (bulletCount === 0) {
       layoutScore -= 15;
       formatIssues.push("No bullet points detected - use bullets for better structure");
     }
+    
     if (!textLower.includes("summary") && !textLower.includes("objective")) {
       layoutScore -= 10;
     }
 
-    // Education metrics
+    // Check for education details
     if (textLower.includes("gpa") || textLower.includes("cgpa") || textLower.includes("grade")) {
       atsScore += 3;
       strengths.push("Academic performance metrics included");
@@ -372,9 +452,11 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
       improvements.push("Add relevant certifications or courses to boost credibility");
     }
 
-    atsScore = Math.min(Math.max(Math.round(atsScore), 0), 100);
-    layoutScore = Math.min(Math.max(Math.round(layoutScore), 0), 100);
+    // Cap scores at 100
+    atsScore = Math.min(Math.max(atsScore, 0), 100);
+    layoutScore = Math.min(Math.max(layoutScore, 0), 100);
 
+    // Add personalized improvement suggestions based on score
     if (atsScore < 60) {
       improvements.unshift("Critical: Restructure your resume with clear sections and strong keywords");
     } else if (atsScore < 80) {
@@ -394,7 +476,6 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
     };
   };
 
-  // File upload handler
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -413,97 +494,105 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
     setSelectedFile(file);
     setResult(null);
     setGeminiResult(null);
-    setUploadState("uploaded");
+    setUploadState('uploaded');
     setHasAnalysisResults(false);
   }, []);
 
-  // Reset upload
+  // Function to reset and allow new upload
   const handleUploadAnother = () => {
     setFileName("");
     setSelectedFile(null);
     setResult(null);
     setGeminiResult(null);
-    setUploadState("idle");
+    setUploadState('idle');
     setHasAnalysisResults(false);
     setAnalyzing(false);
     setAnalyzingGemini(false);
-
-    if (typeof document !== "undefined") {
-      const fileInput = document.getElementById("resume-upload") as HTMLInputElement | null;
-      if (fileInput) fileInput.value = "";
+    
+    // Clear the file input
+    const fileInput = document.getElementById('resume-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
-
+    
+    // Refresh the usage counter to show updated count
+    fetchMonthlyUsageAnalyzer();
+    
     toast.success("Ready for new resume upload!");
   };
 
-  // File analysis (PDF)
   const handleFileAnalysis = async () => {
     if (!selectedFile) return;
 
     setAnalyzing(true);
     setResult(null);
-    setAnalysisType("pdf");
+    setAnalysisType('pdf');
 
     try {
-      // Try server-side PDF analysis first (preferred)
+      // For PDF files, directly use Gemini AI backend analysis
       const formData = new FormData();
       formData.append("resume", selectedFile);
-
+      
       const response = await fetch(`${API_BASE_URL}/analyze-resume-ats`, {
         method: "POST",
-        body: formData,
+        body: (() => { formData.append('userId', user?.id || ''); return formData; })(),
       });
 
       if (!response.ok) {
-        // fallback to client-side PDF parsing if server fails
-        const txt = await response.text().catch(() => "");
-        // eslint-disable-next-line no-console
-        console.warn(`Server PDF analysis failed (${response.status}): ${txt}`);
-      } else {
-        const geminiResult = await response.json();
-        if (geminiResult?.success && geminiResult?.analysis) {
-          const analysis: AnalysisResult = {
-            atsScore: geminiResult.analysis.atsScore || 0,
-            strengths: geminiResult.analysis.strengths || [],
-            improvements:
-              geminiResult.analysis.criticalIssues || geminiResult.analysis.improvements || [],
-            keywordAnalysis: {
-              found: geminiResult.analysis.keywordAnalysis?.matchedKeywords || [],
-              missing: geminiResult.analysis.keywordAnalysis?.missingKeywords || [],
-            },
-            formatIssues: [],
-            layoutScore: 85,
-            recommendations: geminiResult.analysis.detailedRecommendations || [],
-          };
-
-          setResult(analysis);
-          setUploadState("analyzed");
-          setHasAnalysisResults(true);
-          toast.success("Resume analyzed with AI!");
-          return;
+        if (response.status === 429) {
+          const err = await response.json().catch(() => ({} as any));
+          throw new Error(err?.message || 'Monthly limit reached for resume analysis (3 per month).');
         }
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Fallback: client-side extraction using pdf.js
+      const geminiResult = await response.json();
+      
+      if (geminiResult.success && geminiResult.analysis) {
+        // Set the comprehensive Groq analysis directly
+        setGeminiResult(geminiResult.analysis);
+        setUploadState('analyzed');
+        setHasAnalysisResults(true);
+        toast.success("Resume analyzed with Groq AI!");
+        
+        // Refresh monthly usage counter after successful analysis
+        console.log('🔄 Refreshing analysis usage counter after successful PDF analysis...');
+        await fetchMonthlyUsageAnalyzer();
+        console.log('✅ Analysis usage counter refreshed');
+        return;
+      }
+
+      // Fallback for other file types or if PDF analysis fails
       const arrayBuffer = await selectedFile.arrayBuffer();
-      const pdf = await (pdfjsLib as any).getDocument({ data: arrayBuffer }).promise;
-      let fullText = "";
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(" ");
-        fullText += pageText + "\n";
-      }
+      
+      // Try PDF.js for text extraction as fallback
+      try {
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        
+        let fullText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(" ");
+          fullText += pageText + "\n";
+        }
 
-      const analysis = analyzeResumeText(fullText);
-      setResult(analysis);
-      setUploadState("analyzed");
-      setHasAnalysisResults(true);
-      toast.success("Resume analyzed successfully!");
+  const analysis = analyzeResumeText(fullText);
+        setResult(analysis);
+        setUploadState('analyzed');
+        setHasAnalysisResults(true);
+        toast.success("Resume analyzed successfully!");
+  // refresh monthly usage remaining
+  fetchMonthlyUsageAnalyzer();
+      } catch (pdfError) {
+        console.error("PDF.js analysis failed:", pdfError);
+        throw new Error("PDF analysis failed");
+      }
     } catch (error: any) {
-      // eslint-disable-next-line no-console
       console.error("Error analyzing resume:", error);
-      toast.error("Failed to analyze resume. Please try uploading again or use the form-based analysis below.");
+      toast.error(error?.message || "Failed to analyze resume. Please try uploading again or use the form-based analysis below.");
     } finally {
       setAnalyzing(false);
     }
@@ -531,13 +620,14 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
             Resume Analyzer
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Upload your resume PDF to get instant ATS score, formatting feedback, and improvement suggestions
+            Upload your resume PDF to get instant score, formatting feedback, and improvement suggestions
           </p>
         </CardHeader>
         <CardContent className="pt-6">
-          {hasAnalysisResults && uploadState === "analyzed" && (
+          {/* Upload Another Resume Button - Show when analysis is complete */}
+          {hasAnalysisResults && uploadState === 'analyzed' && (
             <div className="mb-6 text-center">
-              <Button
+              <Button 
                 onClick={handleUploadAnother}
                 variant="outline"
                 className="border-[hsl(var(--kiit-green))] text-[hsl(var(--kiit-green))] hover:bg-[hsl(var(--kiit-green))] hover:text-white transition-all duration-300"
@@ -545,38 +635,61 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Another Resume
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">Clear current analysis and upload a new resume</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Clear current analysis and upload a new resume
+              </p>
             </div>
           )}
 
+          {/* Upload Section - Show only when no analysis results */}
           {!hasAnalysisResults && (
-            <div
-              className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-300 ${
-                uploadState === "uploaded" ? "border-blue-300 bg-blue-50" : "border-[hsl(var(--kiit-green))] bg-[hsl(var(--kiit-green-soft))] hover:bg-[hsl(var(--kiit-green-soft))]/70"
-              }`}
-            >
-              <Upload className={`w-12 h-12 mb-4 ${uploadState === "uploaded" ? "text-blue-500" : "text-[hsl(var(--kiit-green))]"}`} />
-
-              {uploadState === "idle" && (
+            <div className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-300 ${
+              uploadState === 'uploaded' 
+                ? 'border-blue-300 bg-blue-50' 
+                : 'border-[hsl(var(--kiit-green))] bg-[hsl(var(--kiit-green-soft))] hover:bg-[hsl(var(--kiit-green-soft))]/70'
+            }`}>
+              <Upload className={`w-12 h-12 mb-4 ${
+                uploadState === 'uploaded' ? 'text-blue-500' : 'text-[hsl(var(--kiit-green))]'
+              }`} />
+              
+              {uploadState === 'idle' && (
                 <label htmlFor="resume-upload" className="cursor-pointer">
-                  <Button variant="default" className="bg-[hsl(var(--kiit-green))] hover:bg-[hsl(var(--kiit-green-dark))]" asChild>
+                  <Button 
+                    variant="default" 
+                    className="bg-[hsl(var(--kiit-green))] hover:bg-[hsl(var(--kiit-green-dark))]"
+                    disabled={(monthlyUsage.analysis?.remaining ?? 3) <= 0}
+                    asChild={!(monthlyUsage.analysis?.remaining ?? 3) <= 0}
+                  >
                     <span>Choose Resume PDF</span>
                   </Button>
-                  <input id="resume-upload" type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" />
+                  <input
+                    id="resume-upload"
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    disabled={(monthlyUsage.analysis?.remaining ?? 3) <= 0}
+                  />
                 </label>
               )}
 
-              {uploadState === "uploaded" && (
+              {uploadState === 'uploaded' && (
                 <div className="text-center">
-                  <Button variant="outline" disabled className="bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300">
+                  <Button 
+                    variant="outline" 
+                    disabled
+                    className="bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300"
+                  >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     File Selected
                   </Button>
-                  <p className="text-sm text-blue-600 font-medium mt-2">✓ Ready to analyze</p>
+                  <p className="text-sm text-blue-600 font-medium mt-2">
+                    ✓ Ready to analyze
+                  </p>
                 </div>
               )}
 
-              {fileName && uploadState === "uploaded" && (
+              {fileName && uploadState === 'uploaded' && (
                 <div className="mt-3 space-y-3 w-full max-w-sm">
                   <div className="bg-white rounded-lg p-3 border">
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
@@ -584,16 +697,18 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
                       {fileName}
                     </p>
                   </div>
-                  <Button
+                  <Button 
                     onClick={handleFileAnalysis}
-                    disabled={!selectedFile || analyzing}
-                    className="w-full bg-gradient-to-r from-[hsl(var(--kiit-green))] to-blue-500 hover:from-[hsl(var(--kiit-green-dark))] hover:to-blue-600 text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    disabled={!selectedFile || analyzing || (monthlyUsage.analysis?.remaining ?? 3) <= 0}
+                    className={`w-full bg-gradient-to-r from-[hsl(var(--kiit-green))] to-blue-500 hover:from-[hsl(var(--kiit-green-dark))] hover:to-blue-600 text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${(monthlyUsage.analysis?.remaining ?? 3) <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {analyzing ? (
                       <>
-                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                         Analyzing...
                       </>
+                    ) : (monthlyUsage.analysis?.remaining ?? 3) <= 0 ? (
+                      'Monthly limit reached (3/3 used)'
                     ) : (
                       <>
                         <FileText className="w-4 h-4 mr-2" />
@@ -604,33 +719,35 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
                 </div>
               )}
 
-              <p className="mt-4 text-xs text-muted-foreground">Max file size: 5MB • PDF format only</p>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Max file size: 5MB • PDF format only
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Analyses remaining this month: {Math.max(0, monthlyUsage.analysis?.remaining ?? 3)}
+              </p>
+              {(monthlyUsage.analysis?.remaining ?? 3) <= 0 && (
+                <p className="mt-2 text-sm text-red-600 font-semibold">
+                  ⚠️ Monthly limit reached. You can analyze more resumes next month.
+                </p>
+              )}
             </div>
           )}
 
           {analyzing && (
             <div className="mt-6 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[hsl(var(--kiit-green))] border-t-transparent mb-3" />
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[hsl(var(--kiit-green))] border-t-transparent mb-3"></div>
               <p className="text-sm text-muted-foreground">Analyzing your resume...</p>
             </div>
           )}
 
           {analyzingGemini && (
             <div className="mt-6 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-3" />
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-3"></div>
               <p className="text-sm text-muted-foreground">Performing comprehensive AI analysis...</p>
             </div>
           )}
 
-          {result && !analyzingGemini && !geminiResult && (
-            <div className="mt-6 text-center">
-              <Button onClick={handleGeminiAnalysis} className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
-                <TrendingUp className="w-5 h-5 mr-2" />
-                Get Advanced AI Analysis
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">Powered by Google Gemini • Comprehensive ATS scoring & improvement suggestions</p>
-            </div>
-          )}
+          {/* Remove the "Get Advanced AI Analysis" button - PDF analysis is already comprehensive */}
         </CardContent>
       </Card>
 
@@ -639,7 +756,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
           <Card className="border-[hsl(var(--campus-blue))] shadow-lg">
             <CardHeader className="bg-gradient-to-r from-[hsl(var(--campus-blue))]/10 to-white">
               <CardTitle className="flex items-center justify-between">
-                <span>ATS Score</span>
+                <span>Resume Score</span>
                 <Badge variant="secondary" className={`text-lg px-4 py-2 ${getScoreColor(result.atsScore)}`}>
                   {result.atsScore}/100
                 </Badge>
@@ -653,9 +770,9 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
                 </div>
                 <Progress value={result.atsScore} className="h-3" />
                 <p className="text-sm text-muted-foreground">
-                  {result.atsScore >= 80 && "Your resume is well-optimized for ATS systems!"}
+                  {result.atsScore >= 80 && "Your resume is well-optimized!"}
                   {result.atsScore >= 60 && result.atsScore < 80 && "Your resume is good but has room for improvement."}
-                  {result.atsScore < 60 && "Your resume needs significant improvements to pass ATS screening."}
+                  {result.atsScore < 60 && "Your resume needs significant improvements."}
                 </p>
               </div>
 
@@ -721,7 +838,9 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               <div>
-                <h4 className="font-semibold text-sm mb-2 text-[hsl(var(--kiit-green))]">Found Keywords ({result.keywordAnalysis.found.length})</h4>
+                <h4 className="font-semibold text-sm mb-2 text-[hsl(var(--kiit-green))]">
+                  Found Keywords ({result.keywordAnalysis.found.length})
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {result.keywordAnalysis.found.map((keyword, idx) => (
                     <Badge key={idx} variant="secondary" className="bg-[hsl(var(--kiit-green-soft))] text-[hsl(var(--kiit-green-dark))]">
@@ -732,7 +851,9 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
               </div>
               {result.keywordAnalysis.missing.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-sm mb-2 text-muted-foreground">Consider Adding</h4>
+                  <h4 className="font-semibold text-sm mb-2 text-muted-foreground">
+                    Consider Adding
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {result.keywordAnalysis.missing.map((keyword, idx) => (
                       <Badge key={idx} variant="outline" className="border-muted-foreground/30">
@@ -766,6 +887,7 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
             </Card>
           )}
 
+          {/* AI Recommendations Section */}
           {result.recommendations && result.recommendations.length > 0 && (
             <Card className="border-2 border-blue-200 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
@@ -791,7 +913,9 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
 
           <Card className="bg-gradient-to-r from-[hsl(var(--kiit-green-soft))] to-blue-50 border-[hsl(var(--kiit-green))]">
             <CardContent className="pt-6">
-              <h3 className="font-semibold text-lg mb-3 text-[hsl(var(--kiit-green-dark))]">📋 Quick Tips for ATS Optimization</h3>
+              <h3 className="font-semibold text-lg mb-3 text-[hsl(var(--kiit-green-dark))]">
+                📋 Quick Tips for Resume Optimization
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-[hsl(var(--kiit-green))]">•</span>
@@ -819,245 +943,11 @@ export const ResumeAnalyzer = ({ onAnalyzeResumeData }: { onAnalyzeResumeData?: 
         </div>
       )}
 
+      {/* Comprehensive Gemini Analysis Results */}
       {geminiResult && (
-        <div className="space-y-6 animate-in fade-in duration-700">
-          <Card className="border-2 border-blue-200 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
-                  Comprehensive ATS Analysis
-                </span>
-                <Badge
-                  className={`text-lg px-4 py-2 ${
-                    geminiResult.atsScore >= 90 ? "bg-green-100 text-green-800" :
-                    geminiResult.atsScore >= 80 ? "bg-blue-100 text-blue-800" :
-                    geminiResult.atsScore >= 70 ? "bg-yellow-100 text-yellow-800" :
-                    "bg-red-100 text-red-800"
-                  }`}
-                >
-                  Grade: {geminiResult.overallGrade}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Advanced ATS Compatibility Score</span>
-                  <span className="text-2xl font-bold text-blue-600">{geminiResult.atsScore}/100</span>
-                </div>
-                <Progress value={geminiResult.atsScore} className="h-3" />
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-blue-800 leading-relaxed">{geminiResult.summary}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {geminiResult.criticalIssues && geminiResult.criticalIssues.length > 0 && (
-            <Card className="border-red-200 shadow-md">
-              <CardHeader className="bg-red-50">
-                <CardTitle className="flex items-center gap-2 text-red-700">
-                  <XCircle className="w-5 h-5" />
-                  Critical Issues ({geminiResult.criticalIssues.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <ul className="space-y-3">
-                  {geminiResult.criticalIssues.map((issue, idx) => (
-                    <li key={idx} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                      <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-red-800">{issue}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {geminiResult.sectionAnalysis && (
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Section-by-Section Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="grid gap-4">
-                  {Object.entries(geminiResult.sectionAnalysis).map(([section, analysis]) => (
-                    <div key={section} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold capitalize">{section.replace(/([A-Z])/g, " $1").trim()}</h4>
-                        <Badge variant={(analysis.score ?? 0) >= 80 ? "default" : (analysis.score ?? 0) >= 60 ? "secondary" : "destructive"}>
-                          {analysis.score}/100
-                        </Badge>
-                      </div>
-                      <Progress value={analysis.score} className="h-2 mb-3" />
-                      <p className="text-sm text-gray-600 mb-3">{analysis.feedback}</p>
-
-                      {analysis.issues && analysis.issues.length > 0 && (
-                        <div className="mb-3">
-                          <h5 className="text-sm font-medium text-red-700 mb-2">Issues:</h5>
-                          <ul className="space-y-1">
-                            {analysis.issues.map((issue, idx) => (
-                              <li key={idx} className="text-sm text-red-600 flex items-start gap-2">
-                                <span className="text-red-500 mt-1">•</span>
-                                {issue}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {analysis.suggestions && analysis.suggestions.length > 0 && (
-                        <div>
-                          <h5 className="text-sm font-medium text-green-700 mb-2">Suggestions:</h5>
-                          <ul className="space-y-1">
-                            {analysis.suggestions.map((suggestion, idx) => (
-                              <li key={idx} className="text-sm text-green-600 flex items-start gap-2">
-                                <span className="text-green-500 mt-1">•</span>
-                                {suggestion}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {geminiResult.keywordAnalysis && (
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  Advanced Keyword Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="mb-4">
-                  <Progress value={geminiResult.keywordAnalysis.score ?? 0} className="h-2" />
-                  <p className="text-sm text-gray-600 mt-1">Keyword Optimization: {geminiResult.keywordAnalysis.score ?? 0}/100</p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-2">Industry Keywords Found</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {geminiResult.keywordAnalysis.industryKeywords?.found?.map((keyword: string, idx: number) => (
-                          <Badge key={idx} className="bg-green-100 text-green-800">{keyword}</Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium text-blue-700 mb-2">Technical Skills Found</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {geminiResult.keywordAnalysis.technicalSkills?.found?.map((skill: string, idx: number) => (
-                          <Badge key={idx} className="bg-blue-100 text-blue-800">{skill}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium text-orange-700 mb-2">Missing Keywords</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {geminiResult.keywordAnalysis.industryKeywords?.missing?.map((keyword: string, idx: number) => (
-                          <Badge key={idx} variant="outline" className="border-orange-300 text-orange-700">{keyword}</Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium text-purple-700 mb-2">Suggested Technical Skills</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {geminiResult.keywordAnalysis.technicalSkills?.suggestions?.map((skill: string, idx: number) => (
-                          <Badge key={idx} variant="outline" className="border-purple-300 text-purple-700">{skill}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {geminiResult.recommendedImprovements && geminiResult.recommendedImprovements.length > 0 && (
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5" />
-                  Prioritized Recommendations
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="space-y-4">
-                  {geminiResult.recommendedImprovements.map((rec: any, idx: number) => (
-                    <div key={idx} className={`border rounded-lg p-4 ${rec.priority === "high" ? "border-red-200 bg-red-50" : rec.priority === "medium" ? "border-yellow-200 bg-yellow-50" : "border-green-200 bg-green-50"}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge className={`${rec.priority === "high" ? "bg-red-100 text-red-800" : rec.priority === "medium" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"}`}>
-                          {rec.priority.toUpperCase()} PRIORITY
-                        </Badge>
-                        <Badge variant="outline">{rec.category}</Badge>
-                      </div>
-                      <h4 className="font-medium mb-2">{rec.issue}</h4>
-                      <p className="text-sm text-gray-700 mb-2">{rec.solution}</p>
-                      <p className="text-xs text-gray-600">Expected Impact: {rec.impact}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {geminiResult.industrySpecificAdvice && (
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
-                    Industry-Specific Advice
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <p className="text-gray-700 leading-relaxed">{geminiResult.industrySpecificAdvice}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {geminiResult.nextSteps && geminiResult.nextSteps.length > 0 && (
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    Next Steps
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <ol className="space-y-2">
-                    {geminiResult.nextSteps.map((step, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mt-0.5">{idx + 1}</span>
-                        <span className="text-gray-700">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
+        <EnhancedAnalysisDisplay geminiResult={geminiResult} />
       )}
     </div>
   );
 };
 
-export default ResumeAnalyzer;

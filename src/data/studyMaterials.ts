@@ -56,7 +56,7 @@ export const semesterSubjects = [
       "AFL",
       "DSD",
       "Data Structures Lab",
-      "Digital Logic Lab",
+      "DSD Lab",
     ],
   },
   {

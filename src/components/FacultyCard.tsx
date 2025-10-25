@@ -33,7 +33,7 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
 
     const newUrl = await uploadPhoto(faculty.id, file);
     if (newUrl) {
-      setPhotoUrl(newUrl + '?t=' + Date.now()); // Cache bust
+      setPhotoUrl(newUrl + '?t=' + Date.now());
     }
     setShowUploadOverlay(false);
   };
@@ -56,17 +56,17 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
   };
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-[#006400]/20 bg-gradient-to-br from-white to-[#F5F5F5] dark:from-gray-900 dark:to-gray-800">
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 bg-white dark:from-gray-900 dark:to-gray-800 rounded-xl">
       <CardContent className="p-6">
         {/* Profile Image */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-5">
           <div 
             className="relative w-24 h-24 rounded-full group/photo cursor-pointer"
             onMouseEnter={() => isAdmin && setShowUploadOverlay(true)}
             onMouseLeave={() => !uploading && setShowUploadOverlay(false)}
             onClick={() => isAdmin && fileInputRef.current?.click()}
           >
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#006400] to-[#228B22] flex items-center justify-center ring-4 ring-[#F5F5F5] dark:ring-gray-700 transition-transform group-hover:scale-105 overflow-hidden">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#006400] to-[#228B22] flex items-center justify-center ring-2 ring-gray-100 dark:ring-gray-700 transition-all group-hover:ring-4 overflow-hidden">
               {photoUrl ? (
                 <img 
                   src={photoUrl} 
@@ -85,9 +85,9 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
             
             {/* Upload Overlay - Admin Only */}
             {isAdmin && showUploadOverlay && (
-              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-opacity animate-fade-in">
+              <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center transition-opacity animate-fade-in">
                 <div className="text-center">
-                  <Camera className="w-8 h-8 text-white mx-auto mb-1" />
+                  <Camera className="w-7 h-7 text-white mx-auto mb-1" />
                   <span className="text-xs text-white font-medium">
                     {uploading ? 'Uploading...' : 'Change Photo'}
                   </span>
@@ -111,14 +111,14 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
         {/* School Badge */}
         <div className="flex justify-center mb-3">
           <Badge 
-            className="bg-gradient-to-r from-[#006400] to-[#228B22] text-white px-3 py-1 text-xs font-medium"
+            className="bg-gradient-to-r from-[#006400] to-[#228B22] text-white px-3 py-1 text-xs font-medium shadow-sm"
           >
             {faculty.school || 'School of Computer Engineering'}
           </Badge>
         </div>
 
         {/* Name */}
-        <h3 className="text-lg font-bold text-center mb-4 text-gray-900 dark:text-white line-clamp-2 min-h-[3.5rem] flex items-center justify-center">
+        <h3 className="text-lg font-semibold text-center mb-4 text-gray-900 dark:text-white line-clamp-2 min-h-[3.5rem] flex items-center justify-center px-2">
           {faculty.name}{faculty.school === 'School of Management' && faculty.designation && faculty.designation !== 'Adding Soon..' ? ` (${faculty.designation})` : ''}
         </h3>
 
@@ -128,56 +128,56 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
             size="sm"
             variant="outline"
             onClick={() => handleActionClick('email')}
-            className="border-[#1E90FF] text-[#1E90FF] hover:bg-[#1E90FF] hover:text-white transition-all"
+            className="border-gray-300 text-gray-700 hover:border-[#1E90FF] hover:bg-[#1E90FF] hover:text-white transition-all shadow-sm"
           >
-            <Mail className="w-4 h-4 mr-1" />
+            <Mail className="w-4 h-4 mr-1.5" />
             {showEmail && isExpanded ? 'Hide' : 'Email'}
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleActionClick('phone')}
-            className="border-[#006400] text-[#006400] hover:bg-[#006400] hover:text-white transition-all"
+            className="border-gray-300 text-gray-700 hover:border-[#006400] hover:bg-[#006400] hover:text-white transition-all shadow-sm"
           >
-            <Phone className="w-4 h-4 mr-1" />
+            <Phone className="w-4 h-4 mr-1.5" />
             {showPhone && isExpanded ? 'Hide' : 'Phone'}
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleActionClick('linkedin')}
-            className="border-[#228B22] text-[#228B22] hover:bg-[#228B22] hover:text-white transition-all"
+            className="border-gray-300 text-gray-700 hover:border-[#228B22] hover:bg-[#228B22] hover:text-white transition-all shadow-sm"
           >
-            <Linkedin className="w-4 h-4 mr-1" />
+            <Linkedin className="w-4 h-4 mr-1.5" />
             LinkedIn
           </Button>
         </div>
 
         {/* Expanded Details */}
         {isExpanded && (showEmail || showPhone || showLinkedIn) && (
-          <div className="mt-4 pt-4 border-t border-[#006400]/20 animate-fade-in">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 text-sm space-y-2">
+          <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700 animate-fade-in">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 text-sm space-y-2.5">
                 {showEmail && (
-                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
                     <Mail className="w-4 h-4 text-[#1E90FF] flex-shrink-0" />
-                    <a href={`mailto:${faculty.email}`} className="hover:underline break-all">
+                    <a href={`mailto:${faculty.email}`} className="hover:text-[#1E90FF] hover:underline break-all transition-colors">
                       {faculty.email}
                     </a>
                   </div>
                 )}
                 {showPhone && (
-                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
                     <Phone className="w-4 h-4 text-[#006400] flex-shrink-0" />
-                    <a href={`tel:${faculty.phone}`} className="hover:underline">
+                    <a href={`tel:${faculty.phone}`} className="hover:text-[#006400] hover:underline transition-colors">
                       {faculty.phone}
                     </a>
                   </div>
                 )}
                 {showLinkedIn && (
-                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
                     <Linkedin className="w-4 h-4 text-[#228B22] flex-shrink-0" />
-                    <a href={faculty.linkedin} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">
+                    <a href={faculty.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-[#228B22] hover:underline break-all transition-colors">
                       View Profile
                     </a>
                   </div>
@@ -187,7 +187,7 @@ export const FacultyCard = ({ faculty, isExpanded, onToggle }: FacultyCardProps)
                 size="sm"
                 variant="ghost"
                 onClick={hideAll}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </Button>

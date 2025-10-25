@@ -32,9 +32,10 @@ interface Resume {
 interface ResumeHistoryListProps {
   onEdit: (resume: Resume) => void;
   onPreview: (resume: Resume) => void;
+  quotaExhausted?: boolean; // New prop to check if quota is exhausted
 }
 
-export const ResumeHistoryList = ({ onEdit, onPreview }: ResumeHistoryListProps) => {
+export const ResumeHistoryList = ({ onEdit, onPreview, quotaExhausted = false }: ResumeHistoryListProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [resumes, setResumes] = useState<Resume[]>([]);
@@ -202,8 +203,19 @@ export const ResumeHistoryList = ({ onEdit, onPreview }: ResumeHistoryListProps)
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onEdit(resume)}
-                    className="flex-1"
+                    onClick={() => {
+                      if (quotaExhausted) {
+                        toast({
+                          title: "Monthly limit reached",
+                          description: "You have used all 2 resume generations for this month. Editing is disabled until next month.",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      onEdit(resume);
+                    }}
+                    disabled={quotaExhausted}
+                    className={`flex-1 ${quotaExhausted ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Edit className="w-4 h-4 mr-1" />
                     Edit
@@ -277,4 +289,4 @@ export const ResumeHistoryList = ({ onEdit, onPreview }: ResumeHistoryListProps)
       </Card>
     </div>
   );
-};
+}; 

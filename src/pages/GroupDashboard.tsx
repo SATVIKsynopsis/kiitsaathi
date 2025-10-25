@@ -29,6 +29,7 @@ import { Navbar } from "@/components/Navbar";
 import { ViewBalances } from "@/components/ViewBalances";
 import { ExportSummary } from "@/components/ExportSummary";
 import { GroupSettings } from "@/components/GroupSettings";
+import { useGroupAutoLink } from "@/hooks/useGroupAutoLink";
 
 interface Group {
   id: string;
@@ -41,6 +42,7 @@ interface Member {
   id: string;
   name: string;
   email_phone: string;
+  roll_number?: string;
 }
 
 interface Expense {
@@ -57,6 +59,9 @@ const GroupDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Auto-link groups based on roll number
+  useGroupAutoLink();
   
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -87,115 +92,50 @@ const GroupDashboard = () => {
   }, [groupId, user]);
 
   const ensureUserProfile = async () => {
-    if (!user) return;
-    
-    try {
-      // Check if profile exists, if not create it
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
+  if (!user) return;
 
-      if (!profile && !profileError) {
-        // Create profile if it doesn't exist
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            email: user.email,
-            full_name: user.email // fallback to email if no name
-          });
+  try {
+    const res = await fetch("/api/profile/ensure", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.email,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) console.error("Profile ensure failed:", data.message);
+  } catch (err) {
+    console.error("Error ensuring profile:", err);
+  }
+};
 
-        if (insertError) {
-          console.error("Error creating profile:", insertError);
-        }
-      }
-    } catch (error) {
-      console.error("Error ensuring profile:", error);
-    }
-  };
 
   const loadGroupData = async () => {
-    try {
-      setLoading(true);
-      
-      // Ensure user has a profile entry (needed for RLS policies)
-      if (user?.id) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: user.id,
-            email: user.email || '',
-            full_name: user.user_metadata?.full_name || user.email || ''
-          }, {
-            onConflict: 'id',
-            ignoreDuplicates: false
-          });
-        
-        if (profileError) {
-          console.warn("Profile upsert warning:", profileError);
-        }
-      }
-      
-      // Load group details
-      const { data: groupData, error: groupError } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('id', groupId)
-        .single();
-      
-      if (groupError) throw groupError;
-      setGroup(groupData);
+  if (!user) return;
+  try {
+    setLoading(true);
 
-      // Load members
-      console.log('🔍 Fetching members for group:', groupId);
-      const { data: membersData, error: membersError } = await supabase
-        .from('group_members')
-        .select('*')
-        .eq('group_id', groupId);
-      
-      console.log('📊 Members fetch result:', { 
-        membersData, 
-        membersError, 
-        count: membersData?.length,
-        userId: user?.id
-      });
-      
-      if (membersError) {
-        console.error('❌ Members fetch error:', membersError);
-        throw membersError;
-      }
-      
-      if (!membersData || membersData.length === 0) {
-        console.warn('⚠️ No members found for group:', groupId);
-      }
-      
-      setMembers(membersData || []);
+    const res = await fetch(`/api/group/${groupId}?user_id=${user.id}`);
+    const data = await res.json();
 
-      // Load expenses with member details
-      const { data: expensesData, error: expensesError } = await supabase
-        .from('expenses')
-        .select(`
-          *,
-          paid_by_member:group_members(*)
-        `)
-        .eq('group_id', groupId)
-        .order('date', { ascending: false });
-      
-      if (expensesError) throw expensesError;
-      setExpenses(expensesData);
+    if (!data.success) throw new Error(data.message);
 
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    setGroup(data.group);
+    setMembers(data.members);
+    setExpenses(data.expenses);
+  } catch (err) {
+    toast({
+      title: "Error",
+      description: err.message,
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const addExpense = async () => {
     if (!expenseForm.title || !expenseForm.amount || !expenseForm.paid_by_member_id) {

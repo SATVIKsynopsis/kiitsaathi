@@ -102,6 +102,8 @@ export const ResumeForm = ({ onSubmit, initialData, editingId, externalError }: 
   const [newSkill, setNewSkill] = useState("");
   const [skillType, setSkillType] = useState<"technical" | "soft">("technical");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [mode, setMode] = useState<"enhance" | "strict">("enhance");
+
 
   const form = useForm<ResumeData>({
     resolver: zodResolver(resumeSchema),
@@ -825,46 +827,35 @@ export const ResumeForm = ({ onSubmit, initialData, editingId, externalError }: 
               {/* Template Selection Tab */}
               <TabsContent value="template" className="space-y-6">
                 <div className="text-center mb-6">
-                  <h3 className="text-lg font-semibold mb-2">Choose Your Resume Template</h3>
-                  <p className="text-muted-foreground">Select a professional template that best represents your style</p>
+                  <h3 className="text-lg font-semibold mb-2">Resume Template</h3>
+                  <p className="text-muted-foreground">Using the Classic Professional template</p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { id: 'classic', name: 'Classic Professional', preview: '📄', desc: 'Traditional layout with clear sections' },
-                    { id: 'modern', name: 'Modern Clean', preview: '✨', desc: 'Clean design with subtle accents' },
-                    { id: 'creative', name: 'Creative Bold', preview: '🎨', desc: 'Bold design for creative roles' },
-                    { id: 'minimal', name: 'Minimal Elegance', preview: '🔹', desc: 'Simple and elegant layout' },
-                    { id: 'corporate', name: 'Corporate Style', preview: '🏢', desc: 'Professional business format' }
-                  ].map((template) => (
-                    <div
-                      key={template.id}
-                      className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
-                        selectedTemplate === template.id
-                          ? 'border-primary bg-primary/5 shadow-md'
-                          : 'border-border hover:border-primary/50 hover:shadow-sm'
-                      }`}
-                      onClick={() => setSelectedTemplate(template.id)}
-                    >
-                      <div className="text-center">
-                        <div className="text-4xl mb-3">{template.preview}</div>
-                        <h4 className="font-semibold mb-2">{template.name}</h4>
-                        <div className="text-sm text-muted-foreground mb-2">
-                          {template.desc}
-                        </div>
-                        {selectedTemplate === template.id && (
-                          <Badge variant="default" className="text-xs">Selected</Badge>
-                        )}
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="cursor-default p-6 rounded-lg border-2 border-primary bg-primary/5 shadow-md">
+                    <div className="text-center">
+                      <div className="text-5xl mb-4">📄</div>
+                      <h4 className="font-semibold mb-2 text-lg">Classic Professional</h4>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        Traditional layout with clear sections - Perfect for ATS optimization
                       </div>
+                      <Badge variant="default" className="text-xs">Active Template</Badge>
                     </div>
-                  ))}
+                  </div>
                 </div>
+
+
+
+{/* Existing Template Info */}
+<div className="text-center bg-muted/50 p-4 rounded-lg">
+  <p className="text-sm text-muted-foreground">
+    Current template:{" "}
+    <span className="font-semibold text-primary capitalize">{selectedTemplate}</span>
+  </p>
+</div>
+
                 
-                <div className="text-center bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Current template: <span className="font-semibold text-primary capitalize">{selectedTemplate}</span>
-                  </p>
-                </div>
+              
               </TabsContent>
             </Tabs>
 

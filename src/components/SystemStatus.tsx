@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
@@ -21,45 +20,22 @@ export function SystemStatus() {
 
   const checkSystemStatus = async () => {
     const newChecks = { auth: false, database: false, storage: false, policies: false };
-    
     try {
       // Check auth
       newChecks.auth = !!user;
-      
-      // Check database connection
-      try {
-        const { error } = await supabase.from('print_jobs').select('count').limit(1);
-        newChecks.database = !error;
-      } catch (e) {
-        newChecks.database = false;
-      }
-      
-      // Check storage connection
-      try {
-        const { error } = await supabase.storage.from('print-job-files').list('', { limit: 1 });
-        newChecks.storage = !error;
-      } catch (e) {
-        newChecks.storage = false;
-      }
-      
-      // Check policies (simple test)
-      if (user) {
-        try {
-          const { error } = await supabase.from('print_jobs').select('*').eq('user_id', user.id).limit(1);
-          newChecks.policies = !error;
-        } catch (e) {
-          newChecks.policies = false;
-        }
-      }
-      
+
+      // Call backend API for system status
+      const response = await fetch('/api/system-status', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch system status');
+      const result = await response.json();
+      newChecks.database = !!result.database;
+      newChecks.storage = !!result.storage;
+      newChecks.policies = !!result.policies;
+
       setChecks(newChecks);
-      
-      // Determine overall status
       const allReady = newChecks.auth && newChecks.database && newChecks.storage && newChecks.policies;
       const hasIssues = !newChecks.database || !newChecks.storage;
-      
       setStatus(hasIssues ? 'issues' : (allReady ? 'ready' : 'checking'));
-      
     } catch (error) {
       console.error('System status check failed:', error);
       setStatus('issues');

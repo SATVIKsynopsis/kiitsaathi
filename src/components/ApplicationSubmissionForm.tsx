@@ -70,20 +70,23 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
   };
 
   const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `application_${lostItemId}_${Date.now()}.${fileExt}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from("lost-and-found-images")
-      .upload(fileName, file);
-      
-    if (uploadError) throw uploadError;
-    
-    const { data } = supabase.storage
-      .from("lost-and-found-images")
-      .getPublicUrl(fileName);
-      
-    return data.publicUrl;
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('lostItemId', lostItemId);
+    // You can add more fields if needed
+
+    const response = await fetch(`${import.meta.env.VITE_LOST_FOUND_API_URL}/upload-lost-found-image`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to upload image');
+    }
+    const result = await response.json();
+    if (!result.publicUrl) throw new Error('No image URL returned');
+    return result.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
