@@ -1959,7 +1959,13 @@ app.get("/api/study-materials", async (req, res) => {
       }
 
       try {
-        // Remove leading slashes if any
+        // Check if it's already a full URL
+        if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+          console.log(`✅ Material ${material.id} already has a full URL:`, filePath);
+          return { ...material, pdf_url: filePath };
+        }
+
+        // Remove leading slashes if any for storage path
         const storagePath = filePath.replace(/^\/+/, '');
         
         console.log(`🔗 Generating PUBLIC URL for material ${material.id}:`, {
@@ -1969,7 +1975,7 @@ app.get("/api/study-materials", async (req, res) => {
           materialType: type
         });
 
-        // Generate PUBLIC URL instead of signed URL
+        // Generate PUBLIC URL from storage path
         const { data: publicUrlData } = supabase.storage
           .from('study-materials')
           .getPublicUrl(storagePath);
