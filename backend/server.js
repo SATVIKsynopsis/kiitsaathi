@@ -1895,9 +1895,9 @@ app.get('/api/semester-combos', async (req, res) => {
 
 // Get study materials
 app.get("/api/study-materials", async (req, res) => {
+  const { type, subject, semester, year, search } = req.query;
+  
   try {
-    const { type, subject, semester, year, search } = req.query;
-    
     console.log('📚 Study materials request received:', {
       type,
       subject,
@@ -1920,20 +1920,28 @@ app.get("/api/study-materials", async (req, res) => {
 
     let query = supabase
       .from(tableName)
-      .select('id, title, subject, semester, branch, year, uploaded_by, views, pdf_url, storage_path, created_at')
-      .eq('status', 'approved') // Assuming tables have a status column
+      .select('*') // Select all columns to avoid missing column errors
       .order('created_at', { ascending: false });
 
-    // Apply filters
+    // Apply filters only if the columns exist
     if (subject) query = query.eq('subject', subject);
     if (semester) query = query.eq('semester', semester);
     if (year) query = query.eq('year', year);
     if (search) query = query.ilike('title', `%${search}%`);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error(`❌ Supabase query error:`, error);
+      throw error;
+    }
 
     console.log(`📊 Found ${data?.length || 0} materials in ${tableName} table`);
+
+    // If no data, return empty array
+    if (!data || data.length === 0) {
+      console.log(`📭 No materials found, returning empty array`);
+      return res.json({ data: [] });
+    }
 
     // Generate PUBLIC URLs for pdf_url (stored as storage_path in the bucket)
     const materialsWithPublicUrls = data.map((material) => {
@@ -1984,8 +1992,42 @@ app.get("/api/study-materials", async (req, res) => {
 
     res.json({ data: materialsWithPublicUrls });
   } catch (error) {
-    console.error(`Error fetching ${type} materials:`, error);
-    res.status(500).json({ error: `Failed to fetch ${type} materials` });
+    console.error(`❌ Error fetching study materials (type: ${type}):`, error);
+    res.status(500).json({ error: `Failed to fetch study materials`, details: error.message });
+  }
+});
+
+// Debug endpoint to test table access
+app.get("/api/study-materials/debug/:type", async (req, res) => {
+  try {
+    const { type } = req.params;
+    console.log(`🔍 Debug: Testing access to ${type} table`);
+    
+    const { data, error, count } = await supabase
+      .from(type)
+      .select('*', { count: 'exact' })
+      .limit(5);
+    
+    if (error) {
+      console.error(`❌ Debug error:`, error);
+      return res.json({ 
+        success: false, 
+        table: type,
+        error: error.message,
+        details: error 
+      });
+    }
+    
+    console.log(`✅ Debug: Found ${count} total rows, returning first 5`);
+    res.json({ 
+      success: true, 
+      table: type,
+      totalCount: count,
+      sampleData: data,
+      columns: data.length > 0 ? Object.keys(data[0]) : []
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
