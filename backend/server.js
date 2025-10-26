@@ -222,25 +222,32 @@ app.get("/api/admin/dashboard-data", async (req, res) => {
       .from("profiles")
       .select("*", { count: "exact", head: true });
 
+    const { count: study_material_requests } = await supabase
+      .from("study_material_requests")
+      .select("*", { count: "exact", head: true });
+
     const today = new Date().toISOString().split("T")[0];
     const actionsToday =
       actions?.filter((a) => a.created_at.startsWith(today)).length || 0;
 
     const stats = {
-      totalPendingLostFound:
-        lfRequests?.filter((r) => r.status === "pending").length || 0,
-      totalPendingEvents:
-        eventReqs?.filter((r) => r.status === "pending").length || 0,
-      totalPendingResale:
-        resaleReqs?.filter((r) => r.status === "pending").length || 0,
-      totalPendingContacts:
-        contacts?.filter((c) => c.status === "new").length || 0,
-      totalActionsToday: actionsToday,
-      totalUsers: totalUsers || 0,
-      totalFeedbacks: feedbackData?.length || 0,
-      totalUnresolvedFeedbacks:
-        feedbackData?.filter((f) => !f.resolved).length || 0,
-    };
+  totalPendingLostFound:
+    lfRequests?.filter((r) => r.status === "pending").length || 0,
+  totalPendingEvents:
+    eventReqs?.filter((r) => r.status === "pending").length || 0,
+  totalPendingResale:
+    resaleReqs?.filter((r) => r.status === "pending").length || 0,
+  totalPendingContacts:
+    contacts?.filter((c) => c.status === "new").length || 0,
+  totalActionsToday: actionsToday,
+  totalUsers: totalUsers || 0,
+  totalFeedbacks: feedbackData?.length || 0,
+  totalUnresolvedFeedbacks:
+    feedbackData?.filter((f) => !f.resolved).length || 0,
+
+  // ✅ Add this line:
+  totalStudyMaterialRequests: study_material_requests || 0,
+};
 
     res.json({
       lostFoundRequests: lfRequests || [],
