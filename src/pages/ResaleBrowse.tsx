@@ -62,7 +62,7 @@ export default function ResaleBrowse() {
       if (error) throw error;
       setListings(data || []);
     } catch (error) {
-      console.error('Error fetching listings:', error);
+      
       toast.error('Failed to load listings');
     } finally {
       setLoading(false);

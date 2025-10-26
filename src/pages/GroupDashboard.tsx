@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+
 import { 
   Plus, 
   Users, 
@@ -105,9 +106,10 @@ const GroupDashboard = () => {
       }),
     });
     const data = await res.json();
-    if (!data.success) console.error("Profile ensure failed:", data.message);
+    if (!data.success) alert("Profile ensure failed:");
   } catch (err) {
-    console.error("Error ensuring profile:", err);
+   
+    alert("Error ensuring profile:");
   }
 };
 
@@ -148,20 +150,7 @@ const GroupDashboard = () => {
     }
 
     try {
-      console.log("Raw amount from form:", expenseForm.amount);
-      console.log("Type of raw amount:", typeof expenseForm.amount);
-      console.log("Raw amount length:", expenseForm.amount.length);
-      console.log("Raw amount characters:", expenseForm.amount.split(''));
-      console.log("Parsed amount:", parseFloat(expenseForm.amount));
-      console.log("Number constructor:", Number(expenseForm.amount));
-      console.log("Creating expense with data:", {
-        group_id: groupId,
-        title: expenseForm.title,
-        amount: parseFloat(expenseForm.amount),
-        paid_by_member_id: expenseForm.paid_by_member_id,
-        date: expenseForm.date,
-        notes: expenseForm.notes
-      });
+     
 
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
@@ -180,11 +169,11 @@ const GroupDashboard = () => {
         .single();
 
       if (expenseError) {
-        console.error("Expense creation error:", expenseError);
+       
         throw expenseError;
       }
 
-      console.log("Expense created successfully:", expense);
+ 
 
       // Add expense splits (equal split for now)
       const splitAmount = parseFloat(expenseForm.amount) / members.length;
@@ -194,16 +183,13 @@ const GroupDashboard = () => {
         amount: splitAmount
       }));
 
-      console.log("Creating expense splits:", splits);
-      console.log("Current user ID:", user?.id);
-      console.log("Group members:", members);
 
       const { error: splitsError } = await supabase
         .from('expense_splits')
         .insert(splits);
 
       if (splitsError) {
-        console.error("Splits creation error:", splitsError);
+       
         throw splitsError;
       }
 
@@ -225,12 +211,7 @@ const GroupDashboard = () => {
       loadGroupData();
 
     } catch (error: any) {
-      console.error('Error adding expense:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      console.log('Current user ID:', user?.id);
-      console.log('Group ID:', groupId);
-      console.log('Members:', members);
-      console.log('Expense form:', expenseForm);
+      
       
       toast({
         title: "Error",
@@ -414,7 +395,7 @@ const GroupDashboard = () => {
                         value={expenseForm.amount}
                         onChange={(e) => {
                           const value = e.target.value;
-                          console.log("Amount input change:", value);
+                          
                           // Only allow numbers and one decimal point
                           if (value === '' || /^\d*\.?\d*$/.test(value)) {
                             setExpenseForm(prev => ({ ...prev, amount: value }));
@@ -444,7 +425,7 @@ const GroupDashboard = () => {
                     <Select 
                       value={expenseForm.paid_by_member_id} 
                       onValueChange={(value) => {
-                        console.log('💳 Selected paid_by member:', value);
+                        
                         setExpenseForm(prev => ({ ...prev, paid_by_member_id: value }));
                       }}
                       disabled={members.length === 0}
@@ -492,7 +473,7 @@ const GroupDashboard = () => {
             <Button 
               variant={activeView === 'balances' ? 'default' : 'outline'}
               onClick={() => {
-                console.log('Clicked View Balances button');
+                
                 setActiveView('balances');
               }}
             >
@@ -530,7 +511,7 @@ const GroupDashboard = () => {
             <Button 
               variant={activeView === 'balances' ? 'default' : 'outline'}
               onClick={() => {
-                console.log('Clicked Balances button (mobile)');
+               
                 setActiveView('balances');
               }}
               size="sm"
@@ -617,7 +598,7 @@ const GroupDashboard = () => {
 
           {activeView === 'balances' && (
             <>
-              {console.log('Rendering ViewBalances component for group:', groupId)}
+             
               <ViewBalances groupId={groupId!} currency={group.currency} />
             </>
           )}

@@ -209,7 +209,7 @@ const SGPACalculator = () => {
         logoImg.src = kiitMascot;
         doc.addImage(logoImg, 'JPEG', 15, yPos, 20, 20);
       } catch (err) {
-        console.warn("Logo could not be added to PDF:", err);
+        
       }
 
       // Title
@@ -408,16 +408,11 @@ const SGPACalculator = () => {
       // Save PDF
       doc.save(filename);
       
-      console.info("SGPA export: PDF generated", filename);
+      
       toast.success("PDF exported successfully!");
       
     } catch (error) {
-      console.error("PDF generation error:", error, {
-        branch: selectedBranch,
-        semester: selectedSemester,
-        subjectsCount: subjects.length,
-        historyCount: semesterHistory.length
-      });
+      
       toast.error("Failed to generate PDF. Please try again.");
     } finally {
       setIsGeneratingPDF(false);
@@ -535,11 +530,11 @@ const SGPACalculator = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       
-      console.info("SGPA export: CSV generated", a.download);
+      
       toast.success('Data exported to CSV successfully');
       
     } catch (error) {
-      console.error("CSV generation error:", error);
+      
       toast.error("Failed to export CSV. Please try again.");
     }
   };

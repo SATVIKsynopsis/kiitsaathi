@@ -44,7 +44,7 @@ export default function Auth() {
           setNotice('Please verify your email before accessing KIIT Saathi. Check your inbox for the verification link.');
         }
       } catch (error) {
-        console.error('Session check error:', error);
+       
       }
     };
     checkUser();
@@ -133,7 +133,7 @@ export default function Auth() {
       const errorMsg = 'Google login failed. Please try again.';
       setError(errorMsg);
       toast.error(errorMsg);
-      console.error('Google login error:', error);
+     
     }
   };
 
@@ -198,7 +198,7 @@ export default function Auth() {
       setPassword('');
       setFullName('');
     } catch (error) {
-      console.error('Sign up error:', error);
+      
       setError(error.message || 'An error occurred during sign up');
       toast.error(error.message || 'Sign up failed');
     } finally {
@@ -247,7 +247,7 @@ export default function Auth() {
       toast.success('Successfully signed in!');
       navigate('/');
     } catch (error) {
-      console.error('Sign in error:', error);
+      
       setError(error.message || 'An error occurred during sign in');
       toast.error(error.message || 'Sign in failed');
     } finally {
@@ -277,7 +277,7 @@ export default function Auth() {
 
       toast.success('Confirmation email resent. Please check your inbox.');
     } catch (err: any) {
-      console.error('Resend confirmation error:', err);
+     
       toast.error(err.message || 'Failed to resend confirmation email');
     } finally {
       setLoading(false);
@@ -313,7 +313,7 @@ export default function Auth() {
 
       toast.success('Password reset email sent! Check your inbox.');
     } catch (err: any) {
-      console.error('Password reset error:', err);
+     
       toast.error(err.message || 'Failed to send password reset email');
     } finally {
       setLoading(false);

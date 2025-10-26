@@ -312,7 +312,7 @@ const InterviewDeadlinesTracker = () => {
       toast.error(result.message || "Failed to add event");
     }
   } catch (err) {
-    console.error("Unexpected error:", err);
+ 
     toast.error("Failed to submit event");
   } finally {
     setIsSubmitting(false);
@@ -369,7 +369,7 @@ const handleInterviewSubmit = async (e: React.FormEvent) => {
       toast.error(result.message || "Failed to submit interview");
     }
   } catch (err) {
-    console.error("Unexpected error:", err);
+    
     toast.error("Failed to submit interview");
   } finally {
     setIsSubmitting(false);
@@ -409,12 +409,12 @@ const handleInterviewSubmit = async (e: React.FormEvent) => {
               >
                 + Create Event
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => setAddInterviewOpen(true)}
-                className=" mx-4 bg-green-600 hover:bg-blue-700"
+                className="hidden mx-4 bg-green-600 hover:bg-blue-700"
               >
                 + Create Interview
-              </Button>
+              </Button> */}
             </div>
           )}
         </div>
@@ -814,7 +814,7 @@ const handleInterviewSubmit = async (e: React.FormEvent) => {
         )}
         {/* Add Interview Dialog */}
         {/* Add Interview Dialog */}
-        {addInterviewOpen && (
+        {/* {addInterviewOpen && (
           <Dialog open={addInterviewOpen} onOpenChange={setAddInterviewOpen}>
             <DialogContent className="bg-gradient-to-br from-campus-blue to-purple-900 text-white max-w-2xl">
               <DialogHeader className="text-center">
@@ -970,7 +970,7 @@ const handleInterviewSubmit = async (e: React.FormEvent) => {
               </form>
             </DialogContent>
           </Dialog>
-        )}
+        )} */}
       </div>
       <Footer />
       {showConfetti && <Confetti width={width} height={height} />}

@@ -195,7 +195,7 @@ export default function StudyMaterial() {
       const params = new URLSearchParams();
       
       // Always include type
-      console.log('🔍 activeSection before params:', activeSection);
+     
       params.append('type', activeSection); // pyqs, notes, ebooks, ppts
       
       // Only add other params if they have values
@@ -213,7 +213,7 @@ export default function StudyMaterial() {
       }
 
       const finalUrl = `${HOSTED_URL}/api/study-materials?${params.toString()}`;
-      // console.log(' Query params:', Object.fromEntries(params));
+      
 
       const response = await fetch(finalUrl, {
         headers: {
@@ -257,12 +257,7 @@ export default function StudyMaterial() {
 
   // Filter function for study materials
   const filterMaterials = (materials: StudyMaterialItem[]) => {
-    console.log('Filter conditions:', {
-      searchQuery,
-      selectedSubject,
-      selectedSemester,
-      selectedYear
-    });
+    
 
     return materials.filter(item => {
       const matchesSearch = searchQuery === "" ||
@@ -279,12 +274,12 @@ export default function StudyMaterial() {
 
 // ✅ Enhanced handleView with better logging and feedback
 const handleView = async (id: number) => {
-  console.log('🔍 handleView called with ID:', id);
+  
   try {
     const material = materials.find((m) => m.id === id);
     
     if (!material || !material.pdf_url) {
-      console.error('❌ Material or pdf_url not found:', { id, material });
+      
       toast.error("No file available to view");
       return;
     }
@@ -300,22 +295,22 @@ const handleView = async (id: number) => {
       toast.error("Please allow pop-ups to preview files");
     }
   } catch (error) {
-    console.error("❌ Error in handleView:", error);
+   
     toast.error("Failed to open file");
   }
 };
 
 const handleDownload = async (material: StudyMaterialItem) => {
-  console.log('⬇ handleDownload called with material:', JSON.stringify(material, null, 2));
+  
   try {
     if (!material || !material.pdf_url) {
-      console.error(' No valid material or pdf_url:', JSON.stringify(material, null, 2));
+      
       toast.error("No file available to download");
       return;
     }
 
     const loadingToast = toast.loading(`Downloading ${material.title}...`);
-    console.log(' Attempting to download from URL:', material.pdf_url);
+    
     
     const response = await fetch(material.pdf_url, {
       headers: {
@@ -342,7 +337,7 @@ const handleDownload = async (material: StudyMaterialItem) => {
     toast.dismiss(loadingToast);
     toast.success(`Downloaded ${material.title}`);
   } catch (error: any) {
-    console.error("❌ Download error:", error);
+    
     toast.error("Failed to download file");
   }
 };
@@ -350,12 +345,7 @@ const handleDownload = async (material: StudyMaterialItem) => {
 // ✅ Add debugging on material load
 useEffect(() => {
   if (materials.length > 0) {
-    console.log('📊 Materials loaded:', {
-      count: materials.length,
-      firstMaterial: materials[0],
-      allColumns: Object.keys(materials[0])
-    });
-  }
+    }
 }, [materials]);
 
 
@@ -439,7 +429,7 @@ useEffect(() => {
         </div>
 
         {/* Enhanced Error Display */}
-        {error && (
+        {error && activeSection !== "playlists" && activeSection !== "groups" && (
           <div className="mb-8 p-6 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive shadow-lg">
             <div className="flex-shrink-0 w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5" />

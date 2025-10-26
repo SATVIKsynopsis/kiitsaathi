@@ -701,13 +701,9 @@ const KiitSocieties = () => {
 
         const eventsBySociety = await res.json();
         setSocietyEvents(eventsBySociety);
-        console.log("Events by society:", eventsBySociety);
-        console.log(
-          "Society names in array:",
-          kiitSocieties.map((s) => s.name)
-        );
+        
       } catch (error) {
-        console.error("Error fetching events:", error);
+       
         toast.error("Failed to load events");
       } finally {
         setLoading(false);

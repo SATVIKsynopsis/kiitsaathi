@@ -52,7 +52,7 @@ export default function Feedback() {
     setFeedbackText("");
     setRating(null);
   } catch (error) {
-    console.error("Error submitting feedback:", error);
+ 
     toast.error("Failed to submit feedback. Please try again.");
   } finally {
     setIsSubmitting(false);

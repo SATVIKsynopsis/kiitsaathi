@@ -1,103 +1,152 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MapPin, Calendar, Phone, CheckCircle, Plus, Camera, Clock, X, ImageIcon } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { Navbar } from "@/components/Navbar"
-import { useSecureLostAndFound } from "@/hooks/useSecureLostAndFound"
-import { DatabaseErrorFallback } from "@/components/DatabaseErrorFallback"
-import { supabase } from "@/integrations/supabase/client"
-import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner"
-import { useAuth } from "@/hooks/useAuth"
-import LostFoundPaymentComponent from "@/components/LostFoundPaymentComponent"
-import { ApplicationSubmissionForm } from "@/components/ApplicationSubmissionForm"
-import { ViewApplicationsDialog } from "@/components/ViewApplicationsDialog"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  MapPin,
+  Calendar,
+  Phone,
+  CheckCircle,
+  Plus,
+  Camera,
+  Clock,
+  X,
+  ImageIcon,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Navbar } from "@/components/Navbar";
+import { useSecureLostAndFound } from "@/hooks/useSecureLostAndFound";
+import { DatabaseErrorFallback } from "@/components/DatabaseErrorFallback";
+import { supabase } from "@/integrations/supabase/client";
+import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
+import { useAuth } from "@/hooks/useAuth";
+import LostFoundPaymentComponent from "@/components/LostFoundPaymentComponent";
+import { ApplicationSubmissionForm } from "@/components/ApplicationSubmissionForm";
+import { ViewApplicationsDialog } from "@/components/ViewApplicationsDialog";
 
 interface LostFoundItem {
-  id: string
-  title: string
-  description: string
-  location: string
-  date: string
-  contact_name: string
-  contact_email?: string
-  contact_phone?: string
-  category: string
-  item_type: "lost" | "found"
-  image_url?: string
-  status: string
-  created_at: string
-  updated_at: string
-  user_id?: string
-  marked_complete_at?: string
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  contact_name: string;
+  contact_email?: string;
+  contact_phone?: string;
+  category: string;
+  item_type: "lost" | "found";
+  image_url?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
+  marked_complete_at?: string;
 }
 
 interface FormData {
-  title: string
-  description: string
-  location: string
-  date: string
-  contact_name: string
-  contact_email: string
-  contact_phone: string
-  category: string
-  item_type: "lost" | "found"
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string;
+  category: string;
+  item_type: "lost" | "found";
 }
 
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 
-
 const testimonials = [
-  { text: "Lost my AirPods near Food Court — got them back in 2 hours!", author: "Rahul, CSE 3rd Year", icon: "🎧" },
-  { text: "Someone found my file near Block 5. Thank you so much 💗", author: "Sneha, IT 2nd Year", icon: "📁" },
+  {
+    text: "Lost my AirPods near Food Court — got them back in 2 hours!",
+    author: "Rahul, CSE 3rd Year",
+    icon: "🎧",
+  },
+  {
+    text: "Someone found my file near Block 5. Thank you so much 💗",
+    author: "Sneha, IT 2nd Year",
+    icon: "📁",
+  },
   {
     text: "This platform is amazing! Got my wallet back with everything intact.",
     author: "Arjun, ETC 4th Year",
     icon: "👛",
   },
-]
+];
 
-const categories = ["Electronics", "ID Card", "Books & Stationery", "Accessories", "Miscellaneous"]
+const categories = [
+  "Electronics",
+  "ID Card",
+  "Books & Stationery",
+  "Accessories",
+  "Miscellaneous",
+];
 
 export default function LostAndFound() {
-  const { user, accessToken } = useAuth()
-  const { items, loading, error, addItem, refreshItems } = useSecureLostAndFound()
-  const { toast } = useToast()
+  const { user, accessToken } = useAuth();
+  const { items, loading, error, addItem, refreshItems } =
+    useSecureLostAndFound();
+  const { toast } = useToast();
 
-  const [filteredItems, setFilteredItems] = useState<LostFoundItem[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedType, setSelectedType] = useState("all")
-  const [showUploadForm, setShowUploadForm] = useState(false)
-  const [activeTab, setActiveTab] = useState("all")
-  const [uploading, setUploading] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [showPayment, setShowPayment] = useState<{ item: LostFoundItem | null; open: boolean }>({
+  const [filteredItems, setFilteredItems] = useState<LostFoundItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+  const [uploading, setUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState<{
+    item: LostFoundItem | null;
+    open: boolean;
+  }>({
     item: null,
     open: false,
-  })
-  const [paidItems, setPaidItems] = useState<{ [id: string]: boolean }>({})
-  const [showApplicationForm, setShowApplicationForm] = useState<{ item: LostFoundItem | null; open: boolean }>({
+  });
+  const [paidItems, setPaidItems] = useState<{ [id: string]: boolean }>({});
+  const [showApplicationForm, setShowApplicationForm] = useState<{
+    item: LostFoundItem | null;
+    open: boolean;
+  }>({
     item: null,
     open: false,
-  })
-  const [applicationCounts, setApplicationCounts] = useState<{ [itemId: string]: number }>({})
-  const [showViewApplications, setShowViewApplications] = useState<{ item: LostFoundItem | null; open: boolean }>({
+  });
+  const [applicationCounts, setApplicationCounts] = useState<{
+    [itemId: string]: number;
+  }>({});
+  const [showViewApplications, setShowViewApplications] = useState<{
+    item: LostFoundItem | null;
+    open: boolean;
+  }>({
     item: null,
     open: false,
-  })
-  const [userAppliedItems, setUserAppliedItems] = useState<{ [itemId: string]: boolean }>({})
+  });
+  const [userAppliedItems, setUserAppliedItems] = useState<{
+    [itemId: string]: boolean;
+  }>({});
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -109,17 +158,17 @@ export default function LostAndFound() {
     contact_phone: "",
     category: "",
     item_type: "lost",
-  })
+  });
 
   // Auto-fill contact email when user logs in
   useEffect(() => {
     if (user?.email && !formData.contact_email) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        contact_email: user.email
-      }))
+        contact_email: user.email,
+      }));
     }
-  }, [user?.email])
+  }, [user?.email]);
 
   useEffect(() => {
     const filtered = items.filter((item) => {
@@ -127,67 +176,70 @@ export default function LostAndFound() {
         ? item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.location.toLowerCase().includes(searchTerm.toLowerCase())
-        : true
-      const categoryMatch = selectedCategory !== "all" ? item.category === selectedCategory : true
-      const typeMatch = selectedType !== "all" ? item.item_type === selectedType : true
-      const tabMatch = activeTab !== "all" ? item.item_type === activeTab : true
-      return searchTermMatch && categoryMatch && typeMatch && tabMatch
-    })
-    setFilteredItems(filtered)
-  }, [items, searchTerm, selectedCategory, selectedType, activeTab])
+        : true;
+      const categoryMatch =
+        selectedCategory !== "all" ? item.category === selectedCategory : true;
+      const typeMatch =
+        selectedType !== "all" ? item.item_type === selectedType : true;
+      const tabMatch =
+        activeTab !== "all" ? item.item_type === activeTab : true;
+      return searchTermMatch && categoryMatch && typeMatch && tabMatch;
+    });
+    setFilteredItems(filtered);
+  }, [items, searchTerm, selectedCategory, selectedType, activeTab]);
 
   useEffect(() => {
     const checkPaidItems = async () => {
       if (!user?.id) {
-        setPaidItems({})
-        return
+        setPaidItems({});
+        return;
       }
       if (items.length > 0) {
-        const paidItemsCheck: { [id: string]: boolean } = {}
+        const paidItemsCheck: { [id: string]: boolean } = {};
         for (const item of items) {
           try {
             const headers: HeadersInit = {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             };
             if (accessToken) {
-              headers['Authorization'] = `Bearer ${accessToken}`;
+              headers["Authorization"] = `Bearer ${accessToken}`;
             }
-            
+
             const res = await fetch(
               `${HOSTED_URL}/api/lostfound/has-paid-lost-found-contact?user_id=${user.id}&item_id=${item.id}`,
               { headers }
-            )
-            const result = await res.json()
+            );
+            const result = await res.json();
             if (result.paid) {
-              paidItemsCheck[item.id] = true
+              paidItemsCheck[item.id] = true;
             }
           } catch (err) {
-            console.error(`Error checking payment for item ${item.id}:`, err)
+            
           }
         }
-        setPaidItems(paidItemsCheck)
+        setPaidItems(paidItemsCheck);
       }
-    }
-    checkPaidItems()
-  }, [user?.id, items, accessToken])
+    };
+    checkPaidItems();
+  }, [user?.id, items, accessToken]);
 
   // Fetch application counts for lost items
   useEffect(() => {
     const fetchApplicationCounts = async () => {
       if (items.length > 0) {
-        const counts: { [itemId: string]: number } = {}
-        for (const item of items.filter(i => i.item_type === 'lost')) {
+        const counts: { [itemId: string]: number } = {};
+        for (const item of items.filter((i) => i.item_type === "lost")) {
           try {
             const { data, error } = await supabase
-              .from('lost_found_applications')
-              .select('id', { count: 'exact' })
-              .eq('lost_item_id', item.id);
-            
+              .from("lost_found_applications")
+              .select("id", { count: "exact" })
+              .eq("lost_item_id", item.id);
+
             if (!error && data) {
               counts[item.id] = data.length;
             }
           } catch (err) {
-            console.error(`Error fetching applications for item ${item.id}:`, err);
+            
           }
         }
         setApplicationCounts(counts);
@@ -206,30 +258,30 @@ export default function LostAndFound() {
 
       if (items.length > 0) {
         const appliedItems: { [itemId: string]: boolean } = {};
-        
+
         try {
-          console.log('🔍 Checking user applications for user:', user.id);
+          
           // Fetch all applications by this user
           const { data, error } = await supabase
-            .from('lost_found_applications')
-            .select('lost_item_id')
-            .eq('applicant_user_id', user.id);
-          
+            .from("lost_found_applications")
+            .select("lost_item_id")
+            .eq("applicant_user_id", user.id);
+
           if (error) {
-            console.error('Error fetching user applications:', error);
+            
           } else if (data) {
-            console.log('✅ Found', data.length, 'applications by user');
-            data.forEach(application => {
+            
+            data.forEach((application) => {
               appliedItems[application.lost_item_id] = true;
-              console.log('  - Applied to item:', application.lost_item_id);
+              
             });
           }
         } catch (err) {
-          console.error('Error checking user applications:', err);
+          
         }
-        
+
         setUserAppliedItems(appliedItems);
-        console.log('📊 User applied items state:', appliedItems);
+        
       }
     };
 
@@ -260,12 +312,16 @@ export default function LostAndFound() {
   };
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast({ title: "Invalid file type", description: "Please select a JPG or PNG image.", variant: "destructive" })
-      return
+      toast({
+        title: "Invalid file type",
+        description: "Please select a JPG or PNG image.",
+        variant: "destructive",
+      });
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
@@ -273,46 +329,50 @@ export default function LostAndFound() {
         title: "File too large",
         description: "Please select an image smaller than 5MB.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setSelectedImage(file)
-    const reader = new FileReader()
-    reader.onload = (e) => setImagePreview(e.target?.result as string)
-    reader.readAsDataURL(file)
-  }
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split(".").pop()
-    const fileName = `${Date.now()}.${fileExt}`
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+
     
-    console.log('📤 Uploading image:', fileName);
-    const { error: uploadError } = await supabase.storage.from("lost-and-found-images").upload(fileName, file)
-    
+    const { error: uploadError } = await supabase.storage
+      .from("lost-and-found-images")
+      .upload(fileName, file);
+
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError);
+      
       throw uploadError;
     }
+
+    const { data } = supabase.storage
+      .from("lost-and-found-images")
+      .getPublicUrl(fileName);
     
-    const { data } = supabase.storage.from("lost-and-found-images").getPublicUrl(fileName)
-    console.log('✅ Image uploaded successfully:', data.publicUrl);
-    
-    return data.publicUrl
-  }
+
+    return data.publicUrl;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please sign in to post an item.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setUploading(true)
+    setUploading(true);
     try {
       if (
         !formData.title ||
@@ -324,35 +384,31 @@ export default function LostAndFound() {
         !formData.contact_phone ||
         !formData.category
       ) {
-        throw new Error("Please fill in all required fields")
+        throw new Error("Please fill in all required fields");
       }
+
+      const imageUrl = selectedImage
+        ? await uploadImage(selectedImage)
+        : undefined;
+
       
-      const imageUrl = selectedImage ? await uploadImage(selectedImage) : undefined
-      
-      console.log('📋 Submitting Lost & Found request:', {
-        title: formData.title,
-        item_type: formData.item_type,
-        has_image: !!imageUrl,
-        image_url: imageUrl
-      });
-      
+
       // Submit to pending requests table instead of direct publication
-      const { error } = await supabase
-        .from('lost_found_requests')
-        .insert({
-          ...formData,
-          image_url: imageUrl,
-          requester_email: user.email,
-          user_id: user.id,
-          status: 'pending'
-        });
+      const { error } = await supabase.from("lost_found_requests").insert({
+        ...formData,
+        image_url: imageUrl,
+        requester_email: user.email,
+        user_id: user.id,
+        status: "pending",
+      });
 
       if (error) throw error;
 
       toast({
         title: "✅ Submitted Successfully!",
-        description: "Your submission is under review. You'll be notified once it's approved.",
-      })
+        description:
+          "Your submission is under review. You'll be notified once it's approved.",
+      });
       setFormData({
         title: "",
         description: "",
@@ -363,21 +419,22 @@ export default function LostAndFound() {
         contact_phone: "",
         category: "",
         item_type: "lost",
-      })
-      setSelectedImage(null)
-      setImagePreview(null)
-      setShowUploadForm(false)
+      });
+      setSelectedImage(null);
+      setImagePreview(null);
+      setShowUploadForm(false);
     } catch (error: any) {
-      console.error("Error submitting item:", error)
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to submit item. Please try again.",
+        description:
+          error.message || "Failed to submit item. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   const handleContactClick = async (item: LostFoundItem) => {
     if (!user) {
@@ -385,18 +442,19 @@ export default function LostAndFound() {
         title: "Sign in required",
         description: "Please sign in to view contact details.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Prevent users from paying for their own uploaded items
     if (user.email === item.contact_email) {
       toast({
         title: "Cannot unlock own item",
-        description: "You cannot pay for contact details of an item you posted yourself. Other users pay you to get your contact details.",
+        description:
+          "You cannot pay for contact details of an item you posted yourself. Other users pay you to get your contact details.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (paidItems[item.id]) {
@@ -404,31 +462,32 @@ export default function LostAndFound() {
         title: "Contact Details Available!",
         description: `Contact details are shown below the item description.`,
         duration: 3000,
-      })
-      const itemElement = document.getElementById(`item-${item.id}`)
+      });
+      const itemElement = document.getElementById(`item-${item.id}`);
       if (itemElement) {
-        itemElement.scrollIntoView({ behavior: "smooth", block: "center" })
-        itemElement.classList.add("ring-2", "ring-blue-500")
+        itemElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        itemElement.classList.add("ring-2", "ring-blue-500");
         setTimeout(() => {
-          itemElement.classList.remove("ring-2", "ring-blue-500")
-        }, 3000)
+          itemElement.classList.remove("ring-2", "ring-blue-500");
+        }, 3000);
       }
-      return
+      return;
     }
-    setShowPayment({ item, open: true })
-  }
+    setShowPayment({ item, open: true });
+  };
 
   const handlePaymentSuccess = async () => {
     if (showPayment.item && user?.id) {
       try {
-        setPaidItems((prev) => ({ ...prev, [showPayment.item!.id]: true }))
-        setShowPayment({ item: null, open: false })
+        setPaidItems((prev) => ({ ...prev, [showPayment.item!.id]: true }));
+        setShowPayment({ item: null, open: false });
 
         toast({
           title: "Payment Successful! 🎉",
-          description: "Contact details are now visible below. Check your email for a copy.",
+          description:
+            "Contact details are now visible below. Check your email for a copy.",
           duration: 6000,
-        })
+        });
 
         try {
           await fetch(`${HOSTED_URL}/api/payments/send-contact-details`, {
@@ -444,70 +503,74 @@ export default function LostAndFound() {
                 phone: showPayment.item.contact_phone,
               },
             }),
-          })
+          });
         } catch (emailError) {
-          console.warn("Failed to send email backup:", emailError)
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Something went wrong while fetching data.",
+          });
         }
       } catch (err) {
-        console.error("Error in payment success handler:", err)
         toast({
           title: "Error",
-          description: "Payment successful but there was an issue. Please contact support.",
+          description:
+            "Payment successful but there was an issue. Please contact support.",
           variant: "destructive",
-        })
+        });
       }
     }
-  }
+  };
 
   const removeImage = () => {
-    setSelectedImage(null)
-    setImagePreview(null)
-  }
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
 
   const handleMarkComplete = async (itemId: string) => {
     if (!user) {
-      toast({ 
-        title: "Authentication required", 
-        description: "Please sign in to mark items as complete.", 
-        variant: "destructive" 
-      })
-      return
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to mark items as complete.",
+        variant: "destructive",
+      });
+      return;
     }
 
     try {
-      const { data, error } = await supabase.rpc('mark_lost_found_complete', { 
-        item_id: itemId 
-      })
+      const { data, error } = await supabase.rpc("mark_lost_found_complete", {
+        item_id: itemId,
+      });
 
-      if (error) throw error
-      
+      if (error) throw error;
+
       if (data) {
-        toast({ 
-          title: "✅ Item Marked Complete!", 
-          description: "Your contact information has been anonymized and the item is now marked as resolved." 
-        })
-        refreshItems()
+        toast({
+          title: "✅ Item Marked Complete!",
+          description:
+            "Your contact information has been anonymized and the item is now marked as resolved.",
+        });
+        refreshItems();
       } else {
-        toast({ 
-          title: "Unable to complete", 
-          description: "You can only mark your own items as complete.", 
-          variant: "destructive" 
-        })
+        toast({
+          title: "Unable to complete",
+          description: "You can only mark your own items as complete.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
-      console.error('Error marking item complete:', error)
-      toast({ 
-        title: "Error", 
-        description: "Failed to mark item as complete. Please try again.", 
-        variant: "destructive" 
-      })
+      toast({
+        title: "Error",
+        description: "Failed to mark item as complete. Please try again.",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       <Navbar />
-      
+
       <section className="relative py-24 lg:py-32 bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground overflow-hidden">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:60px_60px]"></div>
@@ -515,11 +578,15 @@ export default function LostAndFound() {
 
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl lg:text-7xl font-bold mb-8 tracking-tight">🎒 Lost & Found</h1>
+            <h1 className="text-5xl lg:text-7xl font-bold mb-8 tracking-tight">
+              🎒 Lost & Found
+            </h1>
             <p className="text-xl lg:text-2xl mb-12 opacity-95 leading-relaxed font-medium">
               One campus. Thousands of students. Things get lost.
               <br />
-              <span className="font-bold text-secondary-foreground/90">Let's help them find their way back.</span>
+              <span className="font-bold text-secondary-foreground/90">
+                Let's help them find their way back.
+              </span>
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button
@@ -532,11 +599,11 @@ export default function LostAndFound() {
                       title: "Sign in required",
                       description: "Please sign in to post a lost item.",
                       variant: "destructive",
-                    })
-                    return
+                    });
+                    return;
                   }
-                  setFormData((prev) => ({ ...prev, item_type: "lost" }))
-                  setShowUploadForm(true)
+                  setFormData((prev) => ({ ...prev, item_type: "lost" }));
+                  setShowUploadForm(true);
                 }}
               >
                 <Plus className="mr-3 w-6 h-6" /> Post Lost Item
@@ -551,11 +618,11 @@ export default function LostAndFound() {
                       title: "Sign in required",
                       description: "Please sign in to post a found item.",
                       variant: "destructive",
-                    })
-                    return
+                    });
+                    return;
                   }
-                  setFormData((prev) => ({ ...prev, item_type: "found" }))
-                  setShowUploadForm(true)
+                  setFormData((prev) => ({ ...prev, item_type: "found" }));
+                  setShowUploadForm(true);
                 }}
               >
                 <Camera className="mr-3 w-6 h-6" /> Post Found Item
@@ -564,8 +631,6 @@ export default function LostAndFound() {
           </div>
         </div>
       </section>
-
-
 
       <section className="py-12 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
@@ -577,7 +642,10 @@ export default function LostAndFound() {
           <Card className="p-8 shadow-lg border-0 bg-card/80 backdrop-blur-sm">
             <div className="flex flex-col lg:flex-row gap-6 items-end">
               <div className="flex-1">
-                <Label htmlFor="search" className="text-base font-semibold mb-3 block">
+                <Label
+                  htmlFor="search"
+                  className="text-base font-semibold mb-3 block"
+                >
                   🔍 Search Items
                 </Label>
                 <Input
@@ -589,8 +657,13 @@ export default function LostAndFound() {
                 />
               </div>
               <div className="w-full lg:w-56">
-                <Label className="text-base font-semibold mb-3 block">Category</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Label className="text-base font-semibold mb-3 block">
+                  Category
+                </Label>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <SelectTrigger className="h-12 text-base shadow-sm border-2 focus:border-primary/50">
                     <SelectValue />
                   </SelectTrigger>
@@ -605,7 +678,9 @@ export default function LostAndFound() {
                 </Select>
               </div>
               <div className="w-full lg:w-56">
-                <Label className="text-base font-semibold mb-3 block">Type</Label>
+                <Label className="text-base font-semibold mb-3 block">
+                  Type
+                </Label>
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger className="h-12 text-base shadow-sm border-2 focus:border-primary/50">
                     <SelectValue />
@@ -624,19 +699,32 @@ export default function LostAndFound() {
 
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-12 h-14 p-1 bg-muted/50 shadow-lg">
-              <TabsTrigger value="all" className="text-base font-semibold data-[state=active]:shadow-md">
+              <TabsTrigger
+                value="all"
+                className="text-base font-semibold data-[state=active]:shadow-md"
+              >
                 All ({items.length})
               </TabsTrigger>
-              <TabsTrigger value="lost" className="text-base font-semibold data-[state=active]:shadow-md">
+              <TabsTrigger
+                value="lost"
+                className="text-base font-semibold data-[state=active]:shadow-md"
+              >
                 Lost ({items.filter((i) => i.item_type === "lost").length})
               </TabsTrigger>
-              <TabsTrigger value="found" className="text-base font-semibold data-[state=active]:shadow-md">
+              <TabsTrigger
+                value="found"
+                className="text-base font-semibold data-[state=active]:shadow-md"
+              >
                 Found ({items.filter((i) => i.item_type === "found").length})
               </TabsTrigger>
             </TabsList>
-            
+
             {/* All Items Tab - Shows both LOST and FOUND with different buttons */}
             <TabsContent value="all">
               {error ? (
@@ -644,13 +732,17 @@ export default function LostAndFound() {
               ) : loading ? (
                 <div className="text-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-lg text-muted-foreground">Loading items...</p>
+                  <p className="text-lg text-muted-foreground">
+                    Loading items...
+                  </p>
                 </div>
               ) : filteredItems.length === 0 ? (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-6">🔍</div>
                   <h3 className="text-2xl font-bold mb-2">No items found</h3>
-                  <p className="text-muted-foreground text-lg">Try adjusting your search filters</p>
+                  <p className="text-muted-foreground text-lg">
+                    Try adjusting your search filters
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -663,28 +755,34 @@ export default function LostAndFound() {
                       <div className="relative overflow-hidden">
                         <img
                           src={
-                            item.image_url && 
-                            !item.image_url.includes('example.com') && 
-                            !item.image_url.includes('placeholder') &&
-                            item.image_url.startsWith('http')
-                              ? item.image_url 
+                            item.image_url &&
+                            !item.image_url.includes("example.com") &&
+                            !item.image_url.includes("placeholder") &&
+                            item.image_url.startsWith("http")
+                              ? item.image_url
                               : "/placeholder.svg?height=200&width=400&query=lost+and+found+item"
                           }
                           alt={item.title}
                           className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
                           onError={(e) => {
-                            console.error('Image failed to load:', item.image_url);
-                            e.currentTarget.src = "/placeholder.svg?height=200&width=400&query=lost+and+found+item";
+                            e.currentTarget.src =
+                              "/placeholder.svg?height=200&width=400&query=lost+and+found+item";
                           }}
                           onLoad={() => {
-                            if (item.image_url && !item.image_url.includes('placeholder')) {
-                              console.log('Image loaded successfully:', item.image_url);
+                            if (
+                              item.image_url &&
+                              !item.image_url.includes("placeholder")
+                            ) {
                             }
                           }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <Badge
-                          className={`absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg ${item.item_type === "lost" ? "bg-destructive hover:bg-destructive/90" : "bg-green-500 hover:bg-green-600"}`}
+                          className={`absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg ${
+                            item.item_type === "lost"
+                              ? "bg-destructive hover:bg-destructive/90"
+                              : "bg-green-500 hover:bg-green-600"
+                          }`}
                         >
                           {item.item_type === "lost" ? "Lost" : "Found"}
                         </Badge>
@@ -695,7 +793,7 @@ export default function LostAndFound() {
                           {item.category}
                         </Badge>
                       </div>
-                      
+
                       <CardContent className="p-6 space-y-4">
                         <div>
                           <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
@@ -713,11 +811,16 @@ export default function LostAndFound() {
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Calendar className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">{new Date(item.date).toLocaleDateString()}</span>
+                            <span className="font-medium">
+                              {new Date(item.date).toLocaleDateString()}
+                            </span>
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">Posted {new Date(item.created_at).toLocaleDateString()}</span>
+                            <span className="font-medium">
+                              Posted{" "}
+                              {new Date(item.created_at).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
 
@@ -730,13 +833,16 @@ export default function LostAndFound() {
                               <Button
                                 variant="outline"
                                 className="w-full h-12 text-base font-semibold border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-                                onClick={() => setShowViewApplications({ item, open: true })}
+                                onClick={() =>
+                                  setShowViewApplications({ item, open: true })
+                                }
                               >
-                                📋 View Applications ({applicationCounts[item.id] || 0})
+                                📋 View Applications (
+                                {applicationCounts[item.id] || 0})
                               </Button>
                               {!item.marked_complete_at && (
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   className="w-full border-green-500 text-green-600 hover:bg-green-50"
                                   onClick={() => handleMarkComplete(item.id)}
                                 >
@@ -758,51 +864,69 @@ export default function LostAndFound() {
                                   Already Applied
                                 </>
                               ) : (
-                                '📝 Apply if You Found This'
+                                "📝 Apply if You Found This"
                               )}
                             </Button>
                           )
-                        ) : (
-                          /* FOUND ITEMS - Old Payment Flow */
-                          paidItems[item.id] ? (
-                            <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
-                              <div className="flex items-center mb-3">
-                                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                                <span className="font-bold text-green-800 dark:text-green-200">Contact Details:</span>
+                        ) : /* FOUND ITEMS - Old Payment Flow */
+                        paidItems[item.id] ? (
+                          <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
+                            <div className="flex items-center mb-3">
+                              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                              <span className="font-bold text-green-800 dark:text-green-200">
+                                Contact Details:
+                              </span>
+                            </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">
+                                  Name:
+                                </span>
+                                <span className="text-green-800 dark:text-green-200">
+                                  {item.contact_name}
+                                </span>
                               </div>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center">
-                                  <span className="font-semibold w-16">Name:</span>
-                                  <span className="text-green-800 dark:text-green-200">{item.contact_name}</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <span className="font-semibold w-16">Email:</span>
-                                  <span className="text-green-800 dark:text-green-200">{item.contact_email}</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <span className="font-semibold w-16">Phone:</span>
-                                  <span className="text-green-800 dark:text-green-200">{item.contact_phone}</span>
-                                </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">
+                                  Email:
+                                </span>
+                                <span className="text-green-800 dark:text-green-200">
+                                  {item.contact_email}
+                                </span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">
+                                  Phone:
+                                </span>
+                                <span className="text-green-800 dark:text-green-200">
+                                  {item.contact_phone}
+                                </span>
                               </div>
                             </div>
-                          ) : (
-                            <Button
-                              className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-                              onClick={() => handleContactClick(item)}
-                              disabled={user?.email === item.contact_email}
-                            >
-                              <Phone className="w-5 h-5 mr-3" />
-                              {user?.email === item.contact_email
-                                ? "Your Item"
-                                : `Contact ${item.contact_name} (₹5)`}
-                            </Button>
-                          )
+                          </div>
+                        ) : (
+                          <Button
+                            className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                            onClick={() => handleContactClick(item)}
+                            disabled={user?.email === item.contact_email}
+                          >
+                            <Phone className="w-5 h-5 mr-3" />
+                            {user?.email === item.contact_email
+                              ? "Your Item"
+                              : `Contact ${item.contact_name} (₹5)`}
+                          </Button>
                         )}
-                        
+
                         {/* Completed Status */}
                         {item.marked_complete_at && (
-                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
-                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                          <Badge
+                            variant="secondary"
+                            className="w-full mt-2 bg-green-100 text-green-700"
+                          >
+                            ✅ Completed on{" "}
+                            {new Date(
+                              item.marked_complete_at
+                            ).toLocaleDateString()}
                           </Badge>
                         )}
                       </CardContent>
@@ -819,116 +943,142 @@ export default function LostAndFound() {
               ) : loading ? (
                 <div className="text-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-lg text-muted-foreground">Loading items...</p>
+                  <p className="text-lg text-muted-foreground">
+                    Loading items...
+                  </p>
                 </div>
-              ) : filteredItems.filter(item => item.item_type === "lost").length === 0 ? (
+              ) : filteredItems.filter((item) => item.item_type === "lost")
+                  .length === 0 ? (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-6">🔍</div>
-                  <h3 className="text-2xl font-bold mb-2">No lost items found</h3>
-                  <p className="text-muted-foreground text-lg">Be the first to post a lost item</p>
+                  <h3 className="text-2xl font-bold mb-2">
+                    No lost items found
+                  </h3>
+                  <p className="text-muted-foreground text-lg">
+                    Be the first to post a lost item
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredItems.filter(item => item.item_type === "lost").map((item) => (
-                    <Card
-                      key={item.id}
-                      id={`item-${item.id}`}
-                      className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-card/90 backdrop-blur-sm"
-                    >
-                      <div className="relative overflow-hidden">
-                        <img
-                          src={item.image_url || "/placeholder.svg?height=200&width=400&query=lost+and+found+item"}
-                          alt={item.title}
-                          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <Badge
-                          className="absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg bg-destructive hover:bg-destructive/90"
-                        >
-                          Lost
-                        </Badge>
-                        <Badge
-                          variant="secondary"
-                          className="absolute top-3 right-3 px-3 py-1 text-sm font-medium shadow-lg bg-background/90 text-foreground"
-                        >
-                          {item.category}
-                        </Badge>
-                      </div>
-                      
-                      <CardContent className="p-6 space-y-4">
-                        <div>
-                          <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
-                            {item.title}
-                          </h3>
-                          <p className="text-muted-foreground text-base mb-4 line-clamp-2 leading-relaxed">
-                            {item.description}
-                          </p>
-                        </div>
-
-                        <div className="space-y-3 py-2 border-t border-border/50">
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">{item.location}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">{new Date(item.date).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Clock className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">Posted {new Date(item.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-
-                        {/* For LOST items - Different flow than FOUND items */}
-                        {user?.id === item.user_id ? (
-                          /* Owner View - Show View Applications button */
-                          <div className="space-y-2">
-                            <Button
-                              variant="outline"
-                              className="w-full h-12 text-base font-semibold border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-                              onClick={() => setShowViewApplications({ item, open: true })}
-                            >
-                              📋 View Applications ({applicationCounts[item.id] || 0})
-                            </Button>
-                            {!item.marked_complete_at && (
-                              <Button 
-                                variant="outline" 
-                                className="w-full border-green-500 text-green-600 hover:bg-green-50"
-                                onClick={() => handleMarkComplete(item.id)}
-                              >
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Mark as Complete
-                              </Button>
-                            )}
-                          </div>
-                        ) : (
-                          /* Non-owner View - Show Apply button */
-                          <Button
-                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                            onClick={() => handleApplyClick(item)}
-                            disabled={userAppliedItems[item.id]}
-                          >
-                            {userAppliedItems[item.id] ? (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Already Applied
-                              </>
-                            ) : (
-                              '📝 Apply if You Found This'
-                            )}
-                          </Button>
-                        )}
-                        
-                        {/* Completed Status */}
-                        {item.marked_complete_at && (
-                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
-                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                  {filteredItems
+                    .filter((item) => item.item_type === "lost")
+                    .map((item) => (
+                      <Card
+                        key={item.id}
+                        id={`item-${item.id}`}
+                        className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-card/90 backdrop-blur-sm"
+                      >
+                        <div className="relative overflow-hidden">
+                          <img
+                            src={
+                              item.image_url ||
+                              "/placeholder.svg?height=200&width=400&query=lost+and+found+item"
+                            }
+                            alt={item.title}
+                            className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <Badge className="absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg bg-destructive hover:bg-destructive/90">
+                            Lost
                           </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <Badge
+                            variant="secondary"
+                            className="absolute top-3 right-3 px-3 py-1 text-sm font-medium shadow-lg bg-background/90 text-foreground"
+                          >
+                            {item.category}
+                          </Badge>
+                        </div>
+
+                        <CardContent className="p-6 space-y-4">
+                          <div>
+                            <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
+                              {item.title}
+                            </h3>
+                            <p className="text-muted-foreground text-base mb-4 line-clamp-2 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+
+                          <div className="space-y-3 py-2 border-t border-border/50">
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4 mr-3 text-primary/70" />
+                              <span className="font-medium">
+                                {item.location}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4 mr-3 text-primary/70" />
+                              <span className="font-medium">
+                                {new Date(item.date).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4 mr-3 text-primary/70" />
+                              <span className="font-medium">
+                                Posted{" "}
+                                {new Date(item.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* For LOST items - Different flow than FOUND items */}
+                          {user?.id === item.user_id ? (
+                            /* Owner View - Show View Applications button */
+                            <div className="space-y-2">
+                              <Button
+                                variant="outline"
+                                className="w-full h-12 text-base font-semibold border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+                                onClick={() =>
+                                  setShowViewApplications({ item, open: true })
+                                }
+                              >
+                                📋 View Applications (
+                                {applicationCounts[item.id] || 0})
+                              </Button>
+                              {!item.marked_complete_at && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full border-green-500 text-green-600 hover:bg-green-50"
+                                  onClick={() => handleMarkComplete(item.id)}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Mark as Complete
+                                </Button>
+                              )}
+                            </div>
+                          ) : (
+                            /* Non-owner View - Show Apply button */
+                            <Button
+                              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                              onClick={() => handleApplyClick(item)}
+                              disabled={userAppliedItems[item.id]}
+                            >
+                              {userAppliedItems[item.id] ? (
+                                <>
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Already Applied
+                                </>
+                              ) : (
+                                "📝 Apply if You Found This"
+                              )}
+                            </Button>
+                          )}
+
+                          {/* Completed Status */}
+                          {item.marked_complete_at && (
+                            <Badge
+                              variant="secondary"
+                              className="w-full mt-2 bg-green-100 text-green-700"
+                            >
+                              ✅ Completed on{" "}
+                              {new Date(
+                                item.marked_complete_at
+                              ).toLocaleDateString()}
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
                 </div>
               )}
             </TabsContent>
@@ -940,127 +1090,163 @@ export default function LostAndFound() {
               ) : loading ? (
                 <div className="text-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-lg text-muted-foreground">Loading items...</p>
+                  <p className="text-lg text-muted-foreground">
+                    Loading items...
+                  </p>
                 </div>
-              ) : filteredItems.filter(item => item.item_type === "found").length === 0 ? (
+              ) : filteredItems.filter((item) => item.item_type === "found")
+                  .length === 0 ? (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-6">🎉</div>
-                  <h3 className="text-2xl font-bold mb-2">No found items yet</h3>
-                  <p className="text-muted-foreground text-lg">Be the first to post a found item</p>
+                  <h3 className="text-2xl font-bold mb-2">
+                    No found items yet
+                  </h3>
+                  <p className="text-muted-foreground text-lg">
+                    Be the first to post a found item
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredItems.filter(item => item.item_type === "found").map((item) => (
-                    <Card
-                      key={item.id}
-                      id={`item-${item.id}`}
-                      className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-card/90 backdrop-blur-sm"
-                    >
-                      <div className="relative overflow-hidden">
-                        <img
-                          src={item.image_url || "/placeholder.svg?height=200&width=400&query=lost+and+found+item"}
-                          alt={item.title}
-                          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <Badge
-                          className="absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg bg-green-500 hover:bg-green-600"
-                        >
-                          Found
-                        </Badge>
-                        <Badge
-                          variant="secondary"
-                          className="absolute top-3 right-3 px-3 py-1 text-sm font-medium shadow-lg bg-background/90 text-foreground"
-                        >
-                          {item.category}
-                        </Badge>
-                      </div>
-                      
-                      <CardContent className="p-6 space-y-4">
-                        <div>
-                          <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
-                            {item.title}
-                          </h3>
-                          <p className="text-muted-foreground text-base mb-4 line-clamp-2 leading-relaxed">
-                            {item.description}
-                          </p>
-                        </div>
-
-                        <div className="space-y-3 py-2 border-t border-border/50">
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">{item.location}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">{new Date(item.date).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Clock className="w-4 h-4 mr-3 text-primary/70" />
-                            <span className="font-medium">Posted {new Date(item.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-
-                        {paidItems[item.id] ? (
-                          <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
-                            <div className="flex items-center mb-3">
-                              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                              <span className="font-bold text-green-800 dark:text-green-200">Contact Details:</span>
-                            </div>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">Name:</span>
-                                <span className="text-green-800 dark:text-green-200">{item.contact_name}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">Email:</span>
-                                <span className="text-green-800 dark:text-green-200">{item.contact_email}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">Phone:</span>
-                                <span className="text-green-800 dark:text-green-200">{item.contact_phone}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <Button
-                            className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-                            onClick={() => handleContactClick(item)}
-                            disabled={user?.email === item.contact_email}
-                          >
-                            <Phone className="w-5 h-5 mr-3" />
-                            {user?.email === item.contact_email
-                              ? "Your Item"
-                              : `Contact ${item.contact_name} (₹15)`}
-                          </Button>
-                        )}
-
-                        {/* Mark as Complete Button - Only show for item owner */}
-                        {user?.id === item.user_id && !item.marked_complete_at && (
-                          <Button 
-                            variant="outline" 
-                            className="w-full mt-2 border-green-500 text-green-600 hover:bg-green-50"
-                            onClick={() => handleMarkComplete(item.id)}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Mark as Complete
-                          </Button>
-                        )}
-                        
-                        {/* Completed Status */}
-                        {item.marked_complete_at && (
-                          <Badge variant="secondary" className="w-full mt-2 bg-green-100 text-green-700">
-                            ✅ Completed on {new Date(item.marked_complete_at).toLocaleDateString()}
+                  {filteredItems
+                    .filter((item) => item.item_type === "found")
+                    .map((item) => (
+                      <Card
+                        key={item.id}
+                        id={`item-${item.id}`}
+                        className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-card/90 backdrop-blur-sm"
+                      >
+                        <div className="relative overflow-hidden">
+                          <img
+                            src={
+                              item.image_url ||
+                              "/placeholder.svg?height=200&width=400&query=lost+and+found+item"
+                            }
+                            alt={item.title}
+                            className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <Badge className="absolute top-3 left-3 px-3 py-1 text-sm font-semibold shadow-lg bg-green-500 hover:bg-green-600">
+                            Found
                           </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <Badge
+                            variant="secondary"
+                            className="absolute top-3 right-3 px-3 py-1 text-sm font-medium shadow-lg bg-background/90 text-foreground"
+                          >
+                            {item.category}
+                          </Badge>
+                        </div>
+
+                        <CardContent className="p-6 space-y-4">
+                          <div>
+                            <h3 className="font-bold text-xl mb-3 line-clamp-1 group-hover:text-primary transition-colors">
+                              {item.title}
+                            </h3>
+                            <p className="text-muted-foreground text-base mb-4 line-clamp-2 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+
+                          <div className="space-y-3 py-2 border-t border-border/50">
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4 mr-3 text-primary/70" />
+                              <span className="font-medium">
+                                {item.location}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4 mr-3 text-primary/70" />
+                              <span className="font-medium">
+                                {new Date(item.date).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4 mr-3 text-primary/70" />
+                              <span className="font-medium">
+                                Posted{" "}
+                                {new Date(item.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {paidItems[item.id] ? (
+                            <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
+                              <div className="flex items-center mb-3">
+                                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                                <span className="font-bold text-green-800 dark:text-green-200">
+                                  Contact Details:
+                                </span>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center">
+                                  <span className="font-semibold w-16">
+                                    Name:
+                                  </span>
+                                  <span className="text-green-800 dark:text-green-200">
+                                    {item.contact_name}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="font-semibold w-16">
+                                    Email:
+                                  </span>
+                                  <span className="text-green-800 dark:text-green-200">
+                                    {item.contact_email}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="font-semibold w-16">
+                                    Phone:
+                                  </span>
+                                  <span className="text-green-800 dark:text-green-200">
+                                    {item.contact_phone}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <Button
+                              className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                              onClick={() => handleContactClick(item)}
+                              disabled={user?.email === item.contact_email}
+                            >
+                              <Phone className="w-5 h-5 mr-3" />
+                              {user?.email === item.contact_email
+                                ? "Your Item"
+                                : `Contact ${item.contact_name} (₹15)`}
+                            </Button>
+                          )}
+
+                          {/* Mark as Complete Button - Only show for item owner */}
+                          {user?.id === item.user_id &&
+                            !item.marked_complete_at && (
+                              <Button
+                                variant="outline"
+                                className="w-full mt-2 border-green-500 text-green-600 hover:bg-green-50"
+                                onClick={() => handleMarkComplete(item.id)}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Mark as Complete
+                              </Button>
+                            )}
+
+                          {/* Completed Status */}
+                          {item.marked_complete_at && (
+                            <Badge
+                              variant="secondary"
+                              className="w-full mt-2 bg-green-100 text-green-700"
+                            >
+                              ✅ Completed on{" "}
+                              {new Date(
+                                item.marked_complete_at
+                              ).toLocaleDateString()}
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
                 </div>
               )}
             </TabsContent>
-
-
           </Tabs>
         </div>
       </section>
@@ -1076,7 +1262,9 @@ export default function LostAndFound() {
               itemPosterEmail={showPayment.item.contact_email || ""}
               payerUserId={user?.id || ""}
               onPaymentSuccess={handlePaymentSuccess}
-              onPaymentCancel={() => setShowPayment({ item: null, open: false })}
+              onPaymentCancel={() =>
+                setShowPayment({ item: null, open: false })
+              }
             />
           </div>
         </div>
@@ -1087,22 +1275,29 @@ export default function LostAndFound() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto border-0 shadow-2xl">
           <DialogHeader className="pb-6 border-b border-border/50">
             <DialogTitle className="text-2xl font-bold">
-              {formData.item_type === "lost" ? "📋 Post Lost Item" : "📷 Post Found Item"}
+              {formData.item_type === "lost"
+                ? "📋 Post Lost Item"
+                : "📷 Post Found Item"}
             </DialogTitle>
             <DialogDescription className="text-base text-muted-foreground">
               Fill in the details to help reunite items with their owners.
             </DialogDescription>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6 pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="item_type" className="text-base font-semibold mb-3 block">
+                <Label
+                  htmlFor="item_type"
+                  className="text-base font-semibold mb-3 block"
+                >
                   Type *
                 </Label>
                 <Select
                   value={formData.item_type}
-                  onValueChange={(value: "lost" | "found") => setFormData((prev) => ({ ...prev, item_type: value }))}
+                  onValueChange={(value: "lost" | "found") =>
+                    setFormData((prev) => ({ ...prev, item_type: value }))
+                  }
                 >
                   <SelectTrigger className="h-12 text-base border-2 focus:border-primary/50">
                     <SelectValue />
@@ -1113,14 +1308,19 @@ export default function LostAndFound() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
-                <Label htmlFor="category" className="text-base font-semibold mb-3 block">
+                <Label
+                  htmlFor="category"
+                  className="text-base font-semibold mb-3 block"
+                >
                   Category *
                 </Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, category: value }))
+                  }
                 >
                   <SelectTrigger className="h-12 text-base border-2 focus:border-primary/50">
                     <SelectValue placeholder="Select category" />
@@ -1135,72 +1335,104 @@ export default function LostAndFound() {
                 </Select>
               </div>
             </div>
-            
+
             <div>
-              <Label htmlFor="title" className="text-base font-semibold mb-3 block">
+              <Label
+                htmlFor="title"
+                className="text-base font-semibold mb-3 block"
+              >
                 Item Name *
               </Label>
               <Input
                 id="title"
                 placeholder="e.g., Black JBL Earbuds, Blue Water Bottle"
                 value={formData.title}
-                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
                 required
                 className="h-12 text-base border-2 focus:border-primary/50"
               />
             </div>
-            
+
             <div>
-              <Label htmlFor="description" className="text-base font-semibold mb-3 block">
+              <Label
+                htmlFor="description"
+                className="text-base font-semibold mb-3 block"
+              >
                 Description *
               </Label>
               <Textarea
                 id="description"
                 placeholder="Describe the item in detail..."
                 value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 required
                 rows={4}
                 className="text-base border-2 focus:border-primary/50 resize-none"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="location" className="text-base font-semibold mb-3 block">
+                <Label
+                  htmlFor="location"
+                  className="text-base font-semibold mb-3 block"
+                >
                   Location *
                 </Label>
                 <Input
                   id="location"
                   placeholder="e.g., Food Court, Library 2nd Floor"
                   value={formData.location}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                   required
                   className="h-12 text-base border-2 focus:border-primary/50"
                 />
               </div>
-              
+
               <div>
-                <Label htmlFor="date" className="text-base font-semibold mb-3 block">
+                <Label
+                  htmlFor="date"
+                  className="text-base font-semibold mb-3 block"
+                >
                   Date *
                 </Label>
                 <Input
                   id="date"
                   type="date"
                   value={formData.date}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, date: e.target.value }))
+                  }
                   required
                   className="h-12 text-base border-2 focus:border-primary/50"
                 />
               </div>
             </div>
-            
+
             <div>
-              <Label className="text-base font-semibold mb-3 block">Photo (Optional)</Label>
+              <Label className="text-base font-semibold mb-3 block">
+                Photo (Optional)
+              </Label>
               <div className="mt-2">
                 {imagePreview ? (
                   <div className="relative rounded-xl overflow-hidden shadow-lg">
-                    <img src={imagePreview} alt="Preview" className="w-full h-56 object-cover" />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-56 object-cover"
+                    />
                     <Button
                       type="button"
                       variant="destructive"
@@ -1222,34 +1454,49 @@ export default function LostAndFound() {
                     />
                     <label htmlFor="image-upload" className="cursor-pointer">
                       <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-base text-muted-foreground font-medium">Click to upload image</p>
-                      <p className="text-sm text-muted-foreground mt-1">(JPG/PNG, max 5MB)</p>
+                      <p className="text-base text-muted-foreground font-medium">
+                        Click to upload image
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        (JPG/PNG, max 5MB)
+                      </p>
                     </label>
                   </div>
                 )}
               </div>
             </div>
-            
+
             <div className="space-y-6 border-t border-border/50 pt-6">
               <h4 className="font-bold text-lg">Contact Information</h4>
-              
+
               <div>
-                <Label htmlFor="contact_name" className="text-base font-semibold mb-3 block">
+                <Label
+                  htmlFor="contact_name"
+                  className="text-base font-semibold mb-3 block"
+                >
                   Your Name *
                 </Label>
                 <Input
                   id="contact_name"
                   placeholder="Your full name"
                   value={formData.contact_name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, contact_name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      contact_name: e.target.value,
+                    }))
+                  }
                   required
                   className="h-12 text-base border-2 focus:border-primary/50"
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="contact_email" className="text-base font-semibold mb-3 block">
+                  <Label
+                    htmlFor="contact_email"
+                    className="text-base font-semibold mb-3 block"
+                  >
                     Email *
                   </Label>
                   <Input
@@ -1257,28 +1504,41 @@ export default function LostAndFound() {
                     type="email"
                     placeholder="your.email@kiit.ac.in"
                     value={formData.contact_email}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, contact_email: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        contact_email: e.target.value,
+                      }))
+                    }
                     required
                     className="h-12 text-base border-2 focus:border-primary/50"
                   />
                 </div>
-                
+
                 <div>
-                  <Label htmlFor="contact_phone" className="text-base font-semibold mb-3 block">
+                  <Label
+                    htmlFor="contact_phone"
+                    className="text-base font-semibold mb-3 block"
+                  >
                     Phone *
                   </Label>
                   <Input
                     id="contact_phone"
                     placeholder="Your phone number"
                     value={formData.contact_phone}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, contact_phone: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        contact_phone: e.target.value,
+                      }))
+                    }
                     required
                     className="h-12 text-base border-2 focus:border-primary/50"
                   />
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-4 pt-6 border-t border-border/50">
               <Button
                 type="button"
@@ -1313,29 +1573,29 @@ export default function LostAndFound() {
           currentUserId={user.id}
           lostItemId={showApplicationForm.item.id}
           lostItemTitle={showApplicationForm.item.title}
-          lostItemOwnerEmail={showApplicationForm.item.contact_email || ''}
-          currentUserEmail={user.email || ''}
+          lostItemOwnerEmail={showApplicationForm.item.contact_email || ""}
+          currentUserEmail={user.email || ""}
           onClose={() => setShowApplicationForm({ item: null, open: false })}
           onSuccess={() => {
             // Mark item as applied and refresh application counts
             const itemId = showApplicationForm.item!.id;
-            
+
             // Update userAppliedItems to disable the button
-            setUserAppliedItems(prev => ({
+            setUserAppliedItems((prev) => ({
               ...prev,
-              [itemId]: true
+              [itemId]: true,
             }));
-            
+
             // Refresh application counts
             const fetchCount = async () => {
               const { data } = await supabase
-                .from('lost_found_applications')
-                .select('id', { count: 'exact' })
-                .eq('lost_item_id', itemId);
+                .from("lost_found_applications")
+                .select("id", { count: "exact" })
+                .eq("lost_item_id", itemId);
               if (data) {
-                setApplicationCounts(prev => ({
+                setApplicationCounts((prev) => ({
                   ...prev,
-                  [itemId]: data.length
+                  [itemId]: data.length,
                 }));
               }
             };
@@ -1355,5 +1615,5 @@ export default function LostAndFound() {
         />
       )}
     </div>
-  )
+  );
 }

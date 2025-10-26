@@ -65,7 +65,7 @@ export default function ResetPassword() {
         navigate('/auth');
       }, 2000);
     } catch (error: any) {
-      console.error('Password reset error:', error);
+      
       setError(error.message || 'Failed to reset password. Please try again.');
       toast.error(error.message || 'Failed to reset password');
     } finally {
