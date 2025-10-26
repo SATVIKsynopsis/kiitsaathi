@@ -26,6 +26,7 @@ const allowedOrigins = [
   "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app",
   "https://ksaathi.vercel.app",
   "https://kiitsaathi.in",
+  "https://www.kiitsaathi.in",
   "https://kiitsaathi-hosted.onrender.com",
   "http://localhost:3000",
   "http://localhost:3001"
