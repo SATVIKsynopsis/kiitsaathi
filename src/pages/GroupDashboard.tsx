@@ -32,6 +32,8 @@ import { ExportSummary } from "@/components/ExportSummary";
 import { GroupSettings } from "@/components/GroupSettings";
 import { useGroupAutoLink } from "@/hooks/useGroupAutoLink";
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
 interface Group {
   id: string;
   name: string;
@@ -59,7 +61,7 @@ const GroupDashboard = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   
   // Auto-link groups based on roll number
   useGroupAutoLink();
@@ -115,19 +117,23 @@ const GroupDashboard = () => {
 
 
   const loadGroupData = async () => {
-  if (!user) return;
+  if (!user || !session?.access_token) return;
   try {
     setLoading(true);
 
-    const res = await fetch(`/api/group/${groupId}?user_id=${user.id}`);
+    const res = await fetch(`${HOSTED_URL}/api/group/${groupId}`, {
+      headers: {
+        "Authorization": `Bearer ${session.access_token}`
+      }
+    });
     const data = await res.json();
 
-    if (!data.success) throw new Error(data.message);
+    if (!res.ok) throw new Error(data.error || "Failed to load group data");
 
     setGroup(data.group);
     setMembers(data.members);
     setExpenses(data.expenses);
-  } catch (err) {
+  } catch (err: any) {
     toast({
       title: "Error",
       description: err.message,
