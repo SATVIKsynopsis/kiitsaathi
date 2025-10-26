@@ -37,7 +37,7 @@ const services = [
     id: "kiit-saathi-ai-assistant",
     icon: Bot,
     title: "KIIT Saathi (AI Assistant)",
-    description: "Lost? Hungry? Confused? Ask our chatbot — 24x7 KIIT help.",
+    description: "Lost? Hungry? Confused? Ask our chatbot - 24x7 KIIT help.",
     price: "Free",
     gradient: "from-ecell-cyan to-campus-blue",
   },
@@ -45,7 +45,7 @@ const services = [
     id: "study-material",
     icon: BookOpen,
     title: "Study Material (PYQs, Notes, YouTube Videos)",
-    description: "Seniors' notes, solved papers, lab manuals, and curated YouTube playlists — all in one place.",
+    description: "Seniors' notes, solved papers, lab manuals, and curated YouTube playlists - all in one place.",
     price: "Free",
     gradient: "from-kiit-green to-fedkiit-green",
   },
@@ -118,7 +118,7 @@ const services = [
     id: "donation-saathi",
     icon: Heart,
     title: "Donation Saathi",
-    description: "Extend a helping hand — donate books, food, and essentials to those in need through the KIIT community.",
+    description: "Extend a helping hand - donate books, food, and essentials to those in need through the KIIT community.",
     price: "Coming Soon",
     gradient: "from-kiit-green to-campus-orange",
   },
@@ -126,7 +126,7 @@ const services = [
     id: "student-mental-wellness",
     icon: Brain,
     title: "Student Mental Wellness",
-    description: "Because your mind matters — find support and guidance for emotional and mental well-being.",
+    description: "Because your mind matters - find support and guidance for emotional and mental well-being.",
     price: "Coming Soon",
     gradient: "from-campus-blue to-ecell-cyan",
   },
@@ -190,7 +190,7 @@ const services = [
     id: "book-buyback-resale",
     icon: BookOpen,
     title: "Book Buyback & Resale",
-    description: "Sell your old semester books for a better price and help juniors save money — by students, for students.",
+    description: "Sell your old semester books for a better price and help juniors save money - by students, for students.",
     price: "Fair Price",
     gradient: "from-usc-green to-kiit-green",
   },
@@ -198,7 +198,7 @@ const services = [
     id: "kiit-saathi-celebrations",
     icon: PartyPopper,
     title: "KIIT Saathi Celebrations",
-    description: "From surprise birthday parties to last-minute cake deliveries, decorations, and fun party combos — all planned & delivered for you.",
+    description: "From surprise birthday parties to last-minute cake deliveries, decorations, and fun party combos - all planned & delivered for you.",
     price: "₹299+",
     gradient: "from-campus-purple to-campus-orange",
   },
@@ -235,9 +235,9 @@ export const ServicesGrid = () => {
   // Log admin status (only when data is ready)
   if (isDataReady) {
     if (isAdmin) {
-      console.log('✅ Admin mode activated — all hidden services visible.');
+      console.log('✅ Admin mode activated - all hidden services visible.');
     } else {
-      console.log('🚫 Non-admin mode — hidden services completely hidden.');
+      console.log('🚫 Non-admin mode - hidden services completely hidden.');
     }
   }
 
@@ -397,7 +397,7 @@ export const ServicesGrid = () => {
                       </h3>
                       {isAdmin && isHidden && (
                         <Badge variant="secondary" className="bg-muted/80 text-muted-foreground text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
-                          🏷️ Hidden Service — Admin Only
+                          🏷️ Hidden Service - Admin Only
                         </Badge>
                       )}
                     </div>

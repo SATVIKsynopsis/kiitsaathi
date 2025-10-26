@@ -209,10 +209,13 @@ export default function StudyMaterial() {
       setError("");
       return;
     }
-    if(activeSection === "ppt" || activeSection === "notes" || activeSection==="ebooks"){
+    if (
+      activeSection === "ppt" ||
+      activeSection === "notes" ||
+      activeSection === "ebooks"
+    ) {
       setLoading(false);
       setError("");
-      
     }
     try {
       const params = new URLSearchParams();
@@ -445,13 +448,19 @@ export default function StudyMaterial() {
                   onClick={() =>
                     window.open("https://forms.gle/5d89iETDeefruKSX9", "_blank")
                   }
-                  className="group bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-kiit-secondary/90 hover:to-kiit-secondary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  className="group h-[40px] bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white hover:opacity-90 transition-opacity px-6 py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   Request Resource
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
+
+              {/* Disclaimer below the buttons */}
+              <p className="text-md text-gray-500 text-center mt-4">
+                ⚠️ If you receive a notification saying “Files not found,”
+                please reload the site and try again.
+              </p>
             </div>
           </div>
         </div>
