@@ -1940,9 +1940,7 @@ const PORT = process.env.PORT || 7001;
 app.listen(PORT, () => {
   console.log('🚀 KIIT Saathi Backend Server Running!');
   console.log(`📡 Server listening on port ${PORT}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-  console.log(`📄 PDF Analysis endpoint: http://localhost:${PORT}/analyze-resume-ats`);
-  console.log('✅ Server initialization complete!');
+ 
 });
 
 // Graceful shutdown handling
@@ -1954,9 +1952,4 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   console.log('🛑 SIGINT received, shutting down gracefully...');
   process.exit(0);
-});
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Resume ATS Analyzer ready!`);
-  console.log(`💳 Payment system ${razorpay ? '✅ Ready' : '❌ Not available'}`);
 });
