@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Users,
   Plus,
@@ -33,7 +32,7 @@ import { useGroupAutoLink } from "@/hooks/useGroupAutoLink";
 const SplitSaathi = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, accessToken } = useAuth();
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
@@ -84,74 +83,40 @@ const SplitSaathi = () => {
 
   try {
     setLoadingGroups(true);
-    const session = await supabase.auth.getSession();
-    const accessToken = session?.data?.session?.access_token;
 
-    if (!accessToken) {
-      console.error('No access token available');
-      toast({
-        title: "Error",
-        description: "Please sign in again.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
     }
-
-    console.log('Request URL:', `${HOSTED_URL}/api/user-groups`);
-    console.log('Token (first 10 chars):', accessToken.substring(0, 10));
-    console.log('Request Payload:', { userId: user.id, email: user.email });
-
     const res = await fetch(`${HOSTED_URL}/api/user-groups`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers,
       body: JSON.stringify({ userId: user.id, email: user.email }),
     });
 
-    if (!res.ok) {
-      console.error('Response status:', res.status, await res.text());
-      throw new Error("Failed to fetch user groups");
-    }
+    if (!res.ok) throw new Error("Failed to fetch user groups");
 
     const text = await res.text();
     let data: any = [];
     try {
       data = text ? JSON.parse(text) : [];
     } catch {
-      console.error('Failed to parse response:', text);
       data = [];
     }
 
-    const uniqueGroups = Array.isArray(data)
-      ? data
-      : data?.groups || data?.data || [];
+    const uniqueGroups = Array.isArray(data) ? data : data?.groups || data?.data || [];
     setGroups(uniqueGroups || []);
   } catch (error) {
-    console.error('Load groups error:', error);
+    // Gracefully handle with empty state
     setGroups([]);
   } finally {
     setLoadingGroups(false);
   }
 };
 
+
  const createGroup = async () => {
   if (!user) {
-    navigate("/auth");
-    return;
-  }
-  const session = await supabase.auth.getSession();
-  const accessToken = session?.data?.session?.access_token;
-
-  if (!accessToken) {
-    console.error('No access token available');
-    toast({
-      title: "Error",
-      description: "Please sign in again.",
-      variant: "destructive",
-    });
     navigate("/auth");
     return;
   }
@@ -176,24 +141,14 @@ const SplitSaathi = () => {
   }
 
   try {
-    const payload = {
-      userId: user.id, // Include userId
-      groupForm: {
-        ...groupForm,
-        currency: groupForm.currency || '₹', // Ensure valid currency
-      },
-    };
-    console.log('Request URL:', `${HOSTED_URL}/api/create-group`);
-    console.log('Token (first 10 chars):', accessToken.substring(0, 10));
-    console.log('Request Payload:', payload);
-
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
     const res = await fetch(`${HOSTED_URL}/api/create-group`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(payload),
+      headers,
+      body: JSON.stringify({ userId: user.id, groupForm }),
     });
 
     const raw = await res.text();
@@ -201,11 +156,8 @@ const SplitSaathi = () => {
     try {
       data = raw ? JSON.parse(raw) : {};
     } catch {
-      console.error('Failed to parse response:', raw);
       data = {};
     }
-
-    console.log('Response:', data);
 
     if (!res.ok) throw new Error(data?.error || "Failed to create group");
 
@@ -213,7 +165,9 @@ const SplitSaathi = () => {
 
     toast({
       title: "Group Created! 🎉",
-      description: `${groupForm.name} is ready with ${memberCount} member${memberCount !== 1 ? "s" : ""}.`,
+      description: `${groupForm.name} is ready with ${memberCount} member${
+        memberCount !== 1 ? "s" : ""
+      }.`,
     });
 
     setGroupForm({
@@ -224,12 +178,12 @@ const SplitSaathi = () => {
     });
     setIsCreatingGroup(false);
 
+    // Reload groups and navigate if group id is returned
     await loadUserGroups();
     if (data?.group?.id) {
       navigate(`/split-saathi/group/${data.group.id}`);
     }
   } catch (error: any) {
-    console.error('Create group error:', error);
     toast({
       title: "Error",
       description: error?.message || "Unable to create group",
@@ -237,6 +191,7 @@ const SplitSaathi = () => {
     });
   }
 };
+
 
   const handleCreateGroup = () => {
     if (!user) {
