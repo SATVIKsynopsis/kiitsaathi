@@ -92,10 +92,19 @@ const SplitSaathi = () => {
 
     if (!res.ok) throw new Error("Failed to fetch user groups");
 
-    const uniqueGroups = await res.json();
-    setGroups(uniqueGroups);
+    const text = await res.text();
+    let data: any = [];
+    try {
+      data = text ? JSON.parse(text) : [];
+    } catch {
+      data = [];
+    }
+
+    const uniqueGroups = Array.isArray(data) ? data : data?.groups || data?.data || [];
+    setGroups(uniqueGroups || []);
   } catch (error) {
-    alert("Error loading groups:");
+    // Gracefully handle with empty state
+    setGroups([]);
   } finally {
     setLoadingGroups(false);
   }
@@ -134,13 +143,22 @@ const SplitSaathi = () => {
       body: JSON.stringify({ userId: user.id, groupForm }),
     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to create group");
+    const raw = await res.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = {};
+    }
+
+    if (!res.ok) throw new Error(data?.error || "Failed to create group");
+
+    const memberCount = data?.memberCount ?? validMembers.length;
 
     toast({
       title: "Group Created! 🎉",
-      description: `${groupForm.name} is ready with ${data.memberCount} member${
-        data.memberCount !== 1 ? "s" : ""
+      description: `${groupForm.name} is ready with ${memberCount} member${
+        memberCount !== 1 ? "s" : ""
       }.`,
     });
 
@@ -152,13 +170,15 @@ const SplitSaathi = () => {
     });
     setIsCreatingGroup(false);
 
-    // Reload groups and navigate
-    loadUserGroups();
-    navigate(`/split-saathi/group/${data.group.id}`);
-  } catch (error) {
+    // Reload groups and navigate if group id is returned
+    await loadUserGroups();
+    if (data?.group?.id) {
+      navigate(`/split-saathi/group/${data.group.id}`);
+    }
+  } catch (error: any) {
     toast({
       title: "Error",
-      description: error.message,
+      description: error?.message || "Unable to create group",
       variant: "destructive",
     });
   }

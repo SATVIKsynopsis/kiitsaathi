@@ -411,7 +411,7 @@ const handleInterviewSubmit = async (e: React.FormEvent) => {
               </Button>
               <Button
                 onClick={() => setAddInterviewOpen(true)}
-                className=" mx-4 bg-green-600 hover:bg-blue-700"
+                className="hidden mx-4 bg-green-600 hover:bg-blue-700"
               >
                 + Create Interview
               </Button>

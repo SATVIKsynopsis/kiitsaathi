@@ -429,7 +429,7 @@ useEffect(() => {
         </div>
 
         {/* Enhanced Error Display */}
-        {error && (
+        {error && activeSection !== "playlists" && activeSection !== "groups" && (
           <div className="mb-8 p-6 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive shadow-lg">
             <div className="flex-shrink-0 w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5" />
