@@ -32,14 +32,14 @@ import { useGroupAutoLink } from "@/hooks/useGroupAutoLink";
 const SplitSaathi = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, accessToken } = useAuth();
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
 
   // Auto-link groups based on roll number when user logs in
   useGroupAutoLink();
-  const HOSTED_URL =import.meta.env.VITE_HOSTED_URL;
+  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
   const groupFormRef = useRef<HTMLDivElement>(null);
 
   const [groupForm, setGroupForm] = useState({
@@ -84,9 +84,13 @@ const SplitSaathi = () => {
   try {
     setLoadingGroups(true);
 
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
     const res = await fetch(`${HOSTED_URL}/api/user-groups`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ userId: user.id, email: user.email }),
     });
 
@@ -137,9 +141,13 @@ const SplitSaathi = () => {
   }
 
   try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
     const res = await fetch(`${HOSTED_URL}/api/create-group`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ userId: user.id, groupForm }),
     });
 
