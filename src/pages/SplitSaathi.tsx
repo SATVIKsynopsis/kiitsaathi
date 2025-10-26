@@ -84,7 +84,7 @@ const SplitSaathi = () => {
   try {
     setLoadingGroups(true);
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user-groups`, {
+    const res = await fetch("/api/user-groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id, email: user.email }),
@@ -137,7 +137,7 @@ const SplitSaathi = () => {
   }
 
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/create-group`, {
+    const res = await fetch("/api/create-group", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id, groupForm }),
