@@ -317,39 +317,30 @@ const App = () => {
 
   // ✅ Existing security + UI logic
 
-  useEffect(() => {
+    useEffect(() => {
     document.body.style.margin = "0";
-
     document.body.style.padding = "0";
-
     document.documentElement.style.margin = "0";
-
     document.documentElement.style.padding = "0";
-
-
-
-
 
     const checkDevTools = () => {
       const start = performance.now();
-
       debugger;
-
       const end = performance.now();
 
       if (end - start > 100) {
         alert("Developer Tools detected! Please close it to continue.");
-
         window.location.reload();
       }
     };
-
+    
+    // (OPTIONAL) If you intended to call or attach checkDevTools, do it here
 
     return () => {
-      
-
+      // cleanup if needed
     };
   }, []);
+
 
   // ✅ Main return (unchanged)
 
