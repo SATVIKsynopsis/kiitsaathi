@@ -13,7 +13,11 @@ interface StudyMaterialUploadDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+<<<<<<< HEAD
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+=======
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL
+>>>>>>> origin/main
 
 export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialUploadDialogProps) {
   const [uploading, setUploading] = useState(false);

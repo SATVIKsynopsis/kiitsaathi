@@ -29,7 +29,7 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
   onSuccess
 }) => {
   const { toast } = useToast();
-  const { accessToken } = useAuth();
+  const { session, accessToken, loading: authLoading } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -94,6 +94,15 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (authLoading) {
+      toast({
+        title: "Please Wait",
+        description: "Loading authentication...",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!selectedImage) {
       toast({
         title: "Photo Required",
@@ -113,9 +122,29 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
       };
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
+      
+      // Use accessToken or session.access_token
+      const token = accessToken || session?.access_token;
+      if (!token) {
+        console.error('❌ No access token available for authentication');
+        console.log('Auth state:', { 
+          hasAccessToken: !!accessToken, 
+          hasSession: !!session,
+          hasSessionToken: !!session?.access_token,
+          authLoading
+        });
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to submit an application. Please refresh the page and try again.",
+          variant: "destructive"
+        });
+        return;
       }
+      
+      console.log('✅ Using auth token for request:', token.substring(0, 20) + '...');
+      headers['Authorization'] = `Bearer ${token}`;
+
+      console.log('🔄 Submitting application to:', `${import.meta.env.VITE_HOSTED_URL}/api/lostfound/submit-lost-item-application`);
 
       const response = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/lostfound/submit-lost-item-application`, {
         method: 'POST',
