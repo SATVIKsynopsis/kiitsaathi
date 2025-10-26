@@ -2193,11 +2193,76 @@ app.get('/api/admin/study-material-preview-url', async (req, res) => {
 app.post('/api/admin/study-material-approve', async (req, res) => {
   try {
     const { request_id, adminUserId } = req.body;
-    const { error } = await supabase
+
+    // 1️⃣ Fetch request details from central table
+    const { data: requestData, error: fetchError } = await supabase
       .from('study_material_requests')
-      .update({ status: 'approved', updated_at: new Date().toISOString() })
+      .select('*')
+      .eq('id', request_id)
+      .single();
+
+    if (fetchError || !requestData) {
+      throw new Error('Request not found');
+    }
+
+    const {
+      folder_type,
+      filename,
+      storage_path,
+      title,
+      subject,
+      semester,
+      branch,
+      year,
+      uploader_id,
+      uploader_name,
+      filesize,
+      mime_type
+    } = requestData;
+
+    // 2️⃣ Move file from pending/{filename} → {filename}
+    const currentPath = `${folder_type}/pending/${filename}`;
+    const newPath = `${folder_type}/${filename}`;
+
+    const { error: moveError } = await supabase.storage
+      .from('study-materials')
+      .move(currentPath, newPath);
+
+    if (moveError) throw moveError;
+
+    // 3️⃣ Insert approved material into final folder-specific table
+    const { error: insertError } = await supabase
+      .from(folder_type) // pyqs, notes, ebooks, or ppts
+      .insert({
+        title,
+        subject,
+        semester,
+        branch,
+        year,
+        uploaded_by: uploader_name,
+        pdf_url: filename,
+        filesize,
+        mime_type,
+        status: 'approved',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        ...(uploader_id ? { user_id: uploader_id } : {})
+      });
+
+    if (insertError) throw insertError;
+
+    // 4️⃣ Update original request as approved
+    const { error: updateError } = await supabase
+      .from('study_material_requests')
+      .update({
+        status: 'approved',
+        admin_id: adminUserId,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', request_id);
-    if (error) throw error;
+
+    if (updateError) throw updateError;
+
     res.json({ success: true });
   } catch (error) {
     console.error('Error approving material:', error);
@@ -2205,41 +2270,40 @@ app.post('/api/admin/study-material-approve', async (req, res) => {
   }
 });
 
+
 // Reject study material (Admin)
 app.post('/api/admin/study-material-reject', async (req, res) => {
   try {
-    const { request_id, folder_type, admin_comment } = req.body;
+    const { request_id, adminUserId, admin_comment } = req.body;
 
-    // Validate folder_type
-    const validTypes = ['pyqs', 'notes', 'ebooks', 'ppts'];
-    if (!request_id || !folder_type || !validTypes.includes(folder_type)) {
-      return res.status(400).json({ error: 'Missing or invalid required fields' });
-    }
-
-    // Fetch the request
-    const tableName = folder_type;
-    const { data: request, error: fetchError } = await supabase
-      .from(tableName)
-      .select('pdf_url')
+    // 1️⃣ Fetch request from central table
+    const { data: requestData, error: fetchError } = await supabase
+      .from('study_material_requests')
+      .select('folder_type, filename')
       .eq('id', request_id)
       .single();
 
-    if (fetchError || !request) throw new Error('Request not found');
+    if (fetchError || !requestData) {
+      throw new Error('Request not found');
+    }
 
-    // Remove file from storage
-    const storagePath = `${folder_type}/pending/${request.pdf_url}`;
+    const { folder_type, filename } = requestData;
+
+    // 2️⃣ Remove file from storage (pending folder)
+    const storagePath = `${folder_type}/pending/${filename}`;
     const { error: removeError } = await supabase.storage
       .from('study-materials')
       .remove([storagePath]);
 
     if (removeError) throw removeError;
 
-    // Update request status
+    // 3️⃣ Update request status to rejected
     const { error: updateError } = await supabase
-      .from(tableName)
+      .from('study_material_requests')
       .update({
         status: 'rejected',
         admin_comment,
+        admin_id: adminUserId,
         updated_at: new Date().toISOString()
       })
       .eq('id', request_id);
@@ -2252,6 +2316,7 @@ app.post('/api/admin/study-material-reject', async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to reject material' });
   }
 });
+
 
 
 
