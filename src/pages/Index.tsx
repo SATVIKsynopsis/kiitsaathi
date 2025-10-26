@@ -180,17 +180,7 @@ const Index = () => {
                   <p className="text-sm sm:text-base text-muted-foreground break-all">official@kiitsaathi.in</p>
                 </div>
               </div>
-
-              <div className="flex items-start sm:items-center gap-4 px-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-base sm:text-lg">Call Us</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">+91 9717008778</p>
-                </div>
-              </div>
-
+              
               <div className="flex items-start sm:items-center gap-4 px-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
