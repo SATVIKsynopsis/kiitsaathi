@@ -1935,7 +1935,7 @@ function enhanceResumeDataFallback(originalData) {
 
 /* ==================== SERVER START ==================== */
 
-const PORT = 5001;
+const PORT = 7001;
 
 app.listen(PORT, () => {
   console.log('🚀 KIIT Saathi Backend Server Running!');
