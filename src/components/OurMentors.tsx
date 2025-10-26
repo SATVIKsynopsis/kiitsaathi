@@ -8,11 +8,6 @@ interface Mentor {
 
 const mentors: Mentor[] = [
   {
-    name: "",
-    designation: "",
-    photo: "",
-  },
-  {
     name: "Dr. Vikas Hassija",
     designation: "Associate Professor,SCE",
     photo: "/mentors/vikas.jpg",
@@ -44,7 +39,7 @@ const OurMentors = () => {
         </div>
 
         {/* Mentor Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {mentors.map((mentor, index) => (
             <Card
               key={index}

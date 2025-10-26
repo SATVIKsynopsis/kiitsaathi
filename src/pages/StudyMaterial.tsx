@@ -213,8 +213,7 @@ export default function StudyMaterial() {
       }
 
       const finalUrl = `${HOSTED_URL}/api/study-materials?${params.toString()}`;
-      console.log('🌐 Making request to:', finalUrl);
-      console.log('📦 Query params:', Object.fromEntries(params));
+      // console.log(' Query params:', Object.fromEntries(params));
 
       const response = await fetch(finalUrl, {
         headers: {
@@ -307,16 +306,16 @@ const handleView = async (id: number) => {
 };
 
 const handleDownload = async (material: StudyMaterialItem) => {
-  console.log('⬇️ handleDownload called with material:', JSON.stringify(material, null, 2));
+  console.log('⬇ handleDownload called with material:', JSON.stringify(material, null, 2));
   try {
     if (!material || !material.pdf_url) {
-      console.error('❌ No valid material or pdf_url:', JSON.stringify(material, null, 2));
+      console.error(' No valid material or pdf_url:', JSON.stringify(material, null, 2));
       toast.error("No file available to download");
       return;
     }
 
     const loadingToast = toast.loading(`Downloading ${material.title}...`);
-    console.log('📥 Attempting to download from URL:', material.pdf_url);
+    console.log(' Attempting to download from URL:', material.pdf_url);
     
     const response = await fetch(material.pdf_url, {
       headers: {

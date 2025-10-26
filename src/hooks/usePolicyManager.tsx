@@ -45,7 +45,6 @@ export function usePolicyManager() {
         // ✅ Handle 401/403 errors gracefully
         if (response.status === 401 || response.status === 403) {
           console.error('Authentication failed - token may be invalid');
-          toast.error('Session expired. Please sign in again.');
           // ✅ Optionally trigger logout here
           return;
         }
