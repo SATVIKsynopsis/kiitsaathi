@@ -174,7 +174,34 @@ app.get('/health', async (req, res) => {
 
 // ✅ NOW register route files (AFTER middleware and supabase initialization)
 
+app.post("/api/contact", async (req, res) => {
+  const { name, email, message } = req.body;
 
+  if (!name || !email || !message) {
+    console.error("Missing required fields:", { name, email, message });
+    return res.status(400).json({ message: "Name, email, and message are required" });
+  }
+
+  try {
+    const { error } = await supabase.from("contact_messages").insert({
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
+      created_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return res.status(500).json({ message: "Database error", details: error.message });
+    }
+
+    console.log("Contact message saved:", { name, email });
+    return res.status(200).json({ message: "Contact message saved successfully" });
+  } catch (err) {
+    console.error("Error saving contact message:", err.message);
+    return res.status(500).json({ message: "Failed to save contact message" });
+  }
+});
 
 // ============================================
 // ADMIN ROUTES

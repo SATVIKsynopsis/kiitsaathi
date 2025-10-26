@@ -49,35 +49,46 @@ const Index = () => {
     },
   });
 
- const handleContactSubmit = async (data: ContactFormData) => {
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
+const handleContactSubmit = async (data: ContactFormData) => {
   setIsSubmitting(true);
   try {
-    const res = await fetch("/api/contact", {
+    const res = await fetch(`${HOSTED_URL}/api/contact`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.message);
+    if (!res.ok) {
+      let errorMessage = `Server error: ${res.status}`;
+      try {
+        const errorData = await res.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        errorMessage = res.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
 
     toast({
       title: "Message Sent!",
-      description: "Thank you for reaching out. We'll get back to you within 24 hours.",
+      description: `Thanks, we'll get back to you soon.`,
     });
 
     form.reset();
   } catch (error) {
-    
+    console.error("Contact form error:", error);
     toast({
       title: "Error",
-      description: "Failed to send message. Please try again later.",
+      description: error instanceof Error ? error.message : "Failed to send message.",
       variant: "destructive",
     });
   } finally {
     setIsSubmitting(false);
   }
 };
+
 
 
   return (
