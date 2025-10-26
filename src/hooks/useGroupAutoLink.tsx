@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 
 /**
  * Hook to automatically link users to groups based on their roll number.
- * Now calls backend endpoint /api/groups/auto-link
+ * Calls backend endpoint /api/groups/auto-link (secured with authenticateToken)
  */
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 
@@ -21,21 +21,18 @@ export function useGroupAutoLink() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // 🔒 Temporary: manually sending user info
-            // Later: replace with token-only (Authorization)
-            Authorization: `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${session.access_token}`
           },
-          body: JSON.stringify({
-            user_id: user.id, // TEMPORARY: will be removed later
-            email: user.email // TEMPORARY: will be removed later
-          })
+          // ✅ No body needed - backend extracts user_id from token
         });
 
-        const result = await response.json();
-        if (!response.ok || result.error) {
-          console.error('Failed to auto-link groups:', result.error);
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to auto-link groups:', errorData.error);
           return;
         }
+
+        const result = await response.json();
 
         // Show notifications from backend response
         if (result.newGroups && result.newGroups.length > 0) {
