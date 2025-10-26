@@ -18,20 +18,18 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(fileUpload());
 
-const allowedOrigins = [
+const allowedOrigins = [  
   "http://localhost:8080",
   "http://10.5.83.177:8080",
   "http://localhost:5173",
   "https://kiitsaathi.vercel.app",
   "https://kiitsaathi-git-satvik-aditya-sharmas-projects-3c0e452b.vercel.app",
   "https://ksaathi.vercel.app",
-  "https://kiitsaathi.in",          // ✅ already here
-  "https://www.kiitsaathi.in",      // ✅ ADD THIS
+  "https://kiitsaathi.in",
   "https://kiitsaathi-hosted.onrender.com",
   "http://localhost:3000",
   "http://localhost:3001"
 ];
-
 
 // ✅ MIDDLEWARE MUST COME FIRST (before any routes)
 
