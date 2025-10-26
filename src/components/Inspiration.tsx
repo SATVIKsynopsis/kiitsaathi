@@ -87,10 +87,10 @@ const FounderCard: React.FC = () => {
           He is the founder of KIIT & KISS, both educational institutions of global repute and recognition.
         </p>
       </div>
-      <div className="mt-auto p-4">
+      <div className="mt-auto">
           <a
             href="https://achyutasamanta.com/"
-            className="inline-flex items-center text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors duration-300"
+            className="inline-flex items-left pb-3 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors duration-300"
             target="_blank"
           >
             Learn More
@@ -131,7 +131,7 @@ const InspirationSection: React.FC = () => {
       {/* Our Inspiration as the heading, then the following divs (cards) */}
       <div className="w-full max-w-full mx-auto px-6">
         <header className="mb-6 text-center">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-poppins font-bold text-gradient">
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-5xl font-poppins font-bold text-gradient">
             Our Inspiration
           </h2>
         </header>

@@ -171,7 +171,7 @@ const SkillEnhancingSessions = () => {
               Learn from industry experts and level up your skills
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8 text-sm md:text-base text-gray-600">
-              <span>Figma, AI tools, Excel, freelancing — from your peers</span>
+              <span>Figma, AI tools, Excel, freelancing - from your peers</span>
               <span className="hidden md:inline">•</span>
               <span>Hands-on workshops with real projects</span>
             </div>

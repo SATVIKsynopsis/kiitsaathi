@@ -341,7 +341,7 @@ const ResumeSaathi = () => {
       <div className="container mx-auto px-4 pt-24 pb-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl lg:text-5xl font-poppins font-bold text-gradient mb-4">
-            Resume Saathi — AI Resume Builder
+            Resume Saathi - AI Resume Builder
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Create ATS-optimized resumes with AI-powered suggestions and professional templates

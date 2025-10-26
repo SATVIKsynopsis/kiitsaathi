@@ -4,31 +4,31 @@ import { Bot, ChevronDown, HelpCircle } from "lucide-react";
 const faqs = [
   {
     "question": "Is this legal? Are you officially affiliated with KIIT?",
-    "answer": "We’re an independent, student-built platform made to serve the KIIT community. While not officially affiliated with the university, we operate within all legal and ethical guidelines. Our goal is to make campus life smoother — built by students, for students!"
+    "answer": "We’re an independent, student-built platform made to serve the KIIT community. While not officially affiliated with the university, we operate within all legal and ethical guidelines. Our goal is to make campus life smoother - built by students, for students!"
   },
   {
     "question": "How much does it cost to use KIIT Saathi?",
-    "answer": "Almost everything is completely free! Access study materials, course details, AI chat support, the campus map, and more — all without paying a single rupee. Some upcoming features may have optional paid upgrades later, but for now, KIIT Saathi is 100% free to use."
+    "answer": "Almost everything is completely free! Access study materials, course details, AI chat support, the campus map, and more - all without paying a single rupee. Some upcoming features may have optional paid upgrades later, but for now, KIIT Saathi is 100% free to use."
   },
   {
     "question": "Who are you? Can I trust you with my data and services?",
-    "answer": "Absolutely! KIIT Saathi is created and managed by a team of current KIIT students who faced the same everyday struggles — from finding lost items to managing notes and grades. We respect privacy, ensure transparency, and never collect unnecessary information."
+    "answer": "Absolutely! KIIT Saathi is created and managed by a team of current KIIT students who faced the same everyday struggles - from finding lost items to managing notes and grades. We respect privacy, ensure transparency, and never collect unnecessary information."
   },
   {
     "question": "How does the KIIT Saathi (AI Assistant) work?",
-    "answer": "Our AI chatbot is available 24×7 to guide you with campus help, lost & found, society events, study resources, and more. Just ask — whether you’re confused, curious, or need quick answers, KIIT Saathi is here for you."
+    "answer": "Our AI chatbot is available 24×7 to guide you with campus help, lost & found, society events, study resources, and more. Just ask - whether you’re confused, curious, or need quick answers, KIIT Saathi is here for you."
   },
   {
     "question": "How do I use the Study Material section?",
-    "answer": "Simply browse your branch and semester to access curated notes, PYQs, lab manuals, and YouTube playlists shared by seniors. If you ever see a “file not found” error, just reload the page — the content will reappear automatically."
+    "answer": "Simply browse your branch and semester to access curated notes, PYQs, lab manuals, and YouTube playlists shared by seniors. If you ever see a “file not found” error, just reload the page - the content will reappear automatically."
   },
   {
     "question": "What should I do if I lose something on campus?",
-    "answer": "Visit our Lost & Found Portal, enter the item details, and we’ll help you report or claim it safely. Found someone’s AirPods, ID card, or bag? You can easily report those too — we handle it anonymously and securely."
+    "answer": "Visit our Lost & Found Portal, enter the item details, and we’ll help you report or claim it safely. Found someone’s AirPods, ID card, or bag? You can easily report those too - we handle it anonymously and securely."
   },
   {
     "question": "What can I find in KIIT Societies, Fests & Sports?",
-    "answer": "Stay updated with all ongoing and upcoming university events! From society recruitments and interviews to fests and tournaments — we bring every official and student-led event to one shared calendar so you never miss an opportunity again."
+    "answer": "Stay updated with all ongoing and upcoming university events! From society recruitments and interviews to fests and tournaments - we bring every official and student-led event to one shared calendar so you never miss an opportunity again."
   },
   {
     "question": "What’s included under Course & Faculty Details?",
@@ -36,11 +36,11 @@ const faqs = [
   },
   {
     "question": "How does the Campus Map help me?",
-    "answer": "Explore KIIT like never before — find your way around academic blocks, hostels, food spots, and hangout places. The map is interactive and designed specially for new students navigating campus life."
+    "answer": "Explore KIIT like never before - find your way around academic blocks, hostels, food spots, and hangout places. The map is interactive and designed specially for new students navigating campus life."
   },
   {
     "question": "How does the SGPA & CGPA Calculator work?",
-    "answer": "Just enter your grades according to KIIT’s official credit system, and our calculator gives you accurate semester-wise (SGPA) and overall (CGPA) results instantly — no manual math needed!"
+    "answer": "Just enter your grades according to KIIT’s official credit system, and our calculator gives you accurate semester-wise (SGPA) and overall (CGPA) results instantly - no manual math needed!"
   },
   {
     "question": "What is Resume Saathi?",
@@ -48,11 +48,11 @@ const faqs = [
   },
   {
     "question": "What is SplitSaathi and how does it work?",
-    "answer": "SplitSaathi helps you and your friends manage shared expenses during café visits, trips, or fests. Add your group’s expenses, and it automatically calculates who owes what — making money management stress-free and transparent."
+    "answer": "SplitSaathi helps you and your friends manage shared expenses during café visits, trips, or fests. Add your group’s expenses, and it automatically calculates who owes what - making money management stress-free and transparent."
   },
   {
     "question": "What is Donation Saathi?",
-    "answer": "Donation Saathi allows you to give back to the community. You can donate food, books, clothes, and essentials to fellow students in need — fostering a spirit of care and kindness across KIIT."
+    "answer": "Donation Saathi allows you to give back to the community. You can donate food, books, clothes, and essentials to fellow students in need - fostering a spirit of care and kindness across KIIT."
   },
   {
     "question": "What is Student Mental Wellness?",
@@ -60,7 +60,7 @@ const faqs = [
   },
   {
     "question": "Is my data safe?",
-    "answer": "Yes — your privacy is our top priority. All data is encrypted and stored securely. We don’t share personal details or activity logs with anyone. You can delete your data anytime through the app settings."
+    "answer": "Yes - your privacy is our top priority. All data is encrypted and stored securely. We don’t share personal details or activity logs with anyone. You can delete your data anytime through the app settings."
   }
 ]
 
