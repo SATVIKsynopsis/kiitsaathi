@@ -72,12 +72,13 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests from localhost, Vercel, and Render preview URLs
       if (
-        !origin ||
+        !origin || // allow server-to-server and local tools
         origin.includes("localhost") ||
         origin.endsWith(".vercel.app") ||
-        origin.endsWith(".onrender.com")
+        origin.endsWith(".onrender.com") ||
+        origin === "https://kiitsaathi.in" ||
+        origin === "https://www.kiitsaathi.in"
       ) {
         callback(null, true);
       } else {
@@ -88,6 +89,7 @@ app.use(
     credentials: true,
   })
 );
+
 
 app.use(express.json({ limit: '10mb' }));
 
