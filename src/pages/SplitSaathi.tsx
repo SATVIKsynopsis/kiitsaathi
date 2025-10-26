@@ -80,116 +80,163 @@ const SplitSaathi = () => {
   }, [user]);
 
   const loadUserGroups = async () => {
-    if (!user) return;
+  if (!user) return;
 
-    try {
-      setLoadingGroups(true);
+  try {
+    setLoadingGroups(true);
+    const session = await supabase.auth.getSession();
+    const accessToken = session?.data?.session?.access_token;
 
-      const res = await fetch(`${HOSTED_URL}/api/user-groups`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, email: user.email }),
+    if (!accessToken) {
+      console.error('No access token available');
+      toast({
+        title: "Error",
+        description: "Please sign in again.",
+        variant: "destructive",
       });
-
-      if (!res.ok) throw new Error("Failed to fetch user groups");
-
-      const text = await res.text();
-      let data: any = [];
-      try {
-        data = text ? JSON.parse(text) : [];
-      } catch {
-        data = [];
-      }
-
-      const uniqueGroups = Array.isArray(data)
-        ? data
-        : data?.groups || data?.data || [];
-      setGroups(uniqueGroups || []);
-    } catch (error) {
-      // Gracefully handle with empty state
-      setGroups([]);
-    } finally {
-      setLoadingGroups(false);
-    }
-  };
-
-  const createGroup = async () => {
-    if (!user) {
       navigate("/auth");
       return;
     }
-    const session = await supabase.auth.getSession(); // or supabase.auth.session()
-    const accessToken = session?.data?.session?.access_token;
 
-    if (!groupForm.name.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide a group name.",
-        variant: "destructive",
-      });
-      return;
+    console.log('Request URL:', `${HOSTED_URL}/api/user-groups`);
+    console.log('Token (first 10 chars):', accessToken.substring(0, 10));
+    console.log('Request Payload:', { userId: user.id, email: user.email });
+
+    const res = await fetch(`${HOSTED_URL}/api/user-groups`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ userId: user.id, email: user.email }),
+    });
+
+    if (!res.ok) {
+      console.error('Response status:', res.status, await res.text());
+      throw new Error("Failed to fetch user groups");
     }
 
-    const validMembers = groupForm.members.filter((m) => m.name.trim());
-    if (validMembers.length === 0) {
-      toast({
-        title: "Missing Members",
-        description: "Please add at least one member with a name.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    const text = await res.text();
+    let data: any = [];
     try {
-      const res = await fetch(`${HOSTED_URL}/api/create-group`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ groupForm }),
-      });
-
-      const raw = await res.text();
-      let data: any = {};
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch {
-        data = {};
-      }
-
-      if (!res.ok) throw new Error(data?.error || "Failed to create group");
-
-      const memberCount = data?.memberCount ?? validMembers.length;
-
-      toast({
-        title: "Group Created! 🎉",
-        description: `${groupForm.name} is ready with ${memberCount} member${
-          memberCount !== 1 ? "s" : ""
-        }.`,
-      });
-
-      setGroupForm({
-        name: "",
-        description: "",
-        currency: "₹",
-        members: [{ name: "", rollNumber: "" }],
-      });
-      setIsCreatingGroup(false);
-
-      // Reload groups and navigate if group id is returned
-      await loadUserGroups();
-      if (data?.group?.id) {
-        navigate(`/split-saathi/group/${data.group.id}`);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Unable to create group",
-        variant: "destructive",
-      });
+      data = text ? JSON.parse(text) : [];
+    } catch {
+      console.error('Failed to parse response:', text);
+      data = [];
     }
-  };
+
+    const uniqueGroups = Array.isArray(data)
+      ? data
+      : data?.groups || data?.data || [];
+    setGroups(uniqueGroups || []);
+  } catch (error) {
+    console.error('Load groups error:', error);
+    setGroups([]);
+  } finally {
+    setLoadingGroups(false);
+  }
+};
+
+ const createGroup = async () => {
+  if (!user) {
+    navigate("/auth");
+    return;
+  }
+  const session = await supabase.auth.getSession();
+  const accessToken = session?.data?.session?.access_token;
+
+  if (!accessToken) {
+    console.error('No access token available');
+    toast({
+      title: "Error",
+      description: "Please sign in again.",
+      variant: "destructive",
+    });
+    navigate("/auth");
+    return;
+  }
+
+  if (!groupForm.name.trim()) {
+    toast({
+      title: "Missing Information",
+      description: "Please provide a group name.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const validMembers = groupForm.members.filter((m) => m.name.trim());
+  if (validMembers.length === 0) {
+    toast({
+      title: "Missing Members",
+      description: "Please add at least one member with a name.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    const payload = {
+      userId: user.id, // Include userId
+      groupForm: {
+        ...groupForm,
+        currency: groupForm.currency || '₹', // Ensure valid currency
+      },
+    };
+    console.log('Request URL:', `${HOSTED_URL}/api/create-group`);
+    console.log('Token (first 10 chars):', accessToken.substring(0, 10));
+    console.log('Request Payload:', payload);
+
+    const res = await fetch(`${HOSTED_URL}/api/create-group`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const raw = await res.text();
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      console.error('Failed to parse response:', raw);
+      data = {};
+    }
+
+    console.log('Response:', data);
+
+    if (!res.ok) throw new Error(data?.error || "Failed to create group");
+
+    const memberCount = data?.memberCount ?? validMembers.length;
+
+    toast({
+      title: "Group Created! 🎉",
+      description: `${groupForm.name} is ready with ${memberCount} member${memberCount !== 1 ? "s" : ""}.`,
+    });
+
+    setGroupForm({
+      name: "",
+      description: "",
+      currency: "₹",
+      members: [{ name: "", rollNumber: "" }],
+    });
+    setIsCreatingGroup(false);
+
+    await loadUserGroups();
+    if (data?.group?.id) {
+      navigate(`/split-saathi/group/${data.group.id}`);
+    }
+  } catch (error: any) {
+    console.error('Create group error:', error);
+    toast({
+      title: "Error",
+      description: error?.message || "Unable to create group",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleCreateGroup = () => {
     if (!user) {
