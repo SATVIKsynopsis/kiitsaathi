@@ -683,35 +683,59 @@ const KiitSocieties = () => {
   ];
 
   // Fetch events for all societies
-  useEffect(() => {
-    const fetchSocietyEvents = async () => {
-      try {
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        };
+useEffect(() => {
+  const fetchSocietyEvents = async () => {
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
 
-        if (accessToken) {
-          headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        const res = await fetch(`${HOSTED_URL}/api/events`, {
-          headers,
-          credentials: 'include'
-        });
-
-        const eventsBySociety = await res.json();
-        setSocietyEvents(eventsBySociety);
-        
-      } catch (error) {
-       
-        toast.error("Failed to load events");
-      } finally {
-        setLoading(false);
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
-    };
 
-    fetchSocietyEvents();
-  }, [accessToken]);
+      const res = await fetch(`${HOSTED_URL}/api/events`, {
+        headers,
+        credentials: 'include'
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const response = await res.json();
+      const events = response.events || [];
+      
+      // Group events by society name (normalized to lowercase)
+      const groupedEvents: Record<string, any[]> = {};
+      
+      events.forEach((event: any) => {
+        // Normalize society name: lowercase and trim
+        const societyKey = event.society_name?.toLowerCase().trim();
+        
+        if (societyKey) {
+          if (!groupedEvents[societyKey]) {
+            groupedEvents[societyKey] = [];
+          }
+          groupedEvents[societyKey].push(event);
+        }
+      });
+      
+      console.log('Grouped Events by Society:', groupedEvents);
+      console.log('Available Society Keys:', Object.keys(groupedEvents));
+      
+      setSocietyEvents(groupedEvents);
+      
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast.error("Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchSocietyEvents();
+}, [accessToken]);
 
   const handleServiceClick = (route: string) => {
     if (route) {

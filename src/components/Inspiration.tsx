@@ -27,10 +27,10 @@ const InspirationCard: React.FC<InspirationCardProps> = ({ title, description, i
 
       {/* Text section */}
       <div className="p-3 flex flex-col flex-1">
-        <h3 className="text-lg font-bold text-gray-900 mb-1 font-poppins group-hover:text-blue-600 transition-colors duration-300">
+        <h3 className="text-md font-bold text-gray-900 mb-1 font-poppins group-hover:text-blue-600 transition-colors duration-300">
           {title}
         </h3>
-        <p className="text-gray-600 text-md mb-2 leading-relaxed flex-1 font-poppins">
+        <p className="text-gray-600 text-sm mb-2 leading-relaxed flex-1 font-poppins">
           {description}
         </p>
 
@@ -82,7 +82,7 @@ const FounderCard: React.FC = () => {
           Founder KIIT, KISS, KIMS & Art of Giving
         </p>
         <div className="w-12 h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mb-3" />
-        <p className="text-gray-700 leading-relaxed text-md font-poppins text-center">
+        <p className="text-gray-700 leading-relaxed text-xs font-poppins text-center">
           Dr. Achyuta Samanta is an educationalist, philanthropist, humanitarian, social worker, and writer.
           He is the founder of KIIT & KISS, both educational institutions of global repute and recognition.
         </p>
@@ -131,7 +131,7 @@ const InspirationSection: React.FC = () => {
       {/* Our Inspiration as the heading, then the following divs (cards) */}
       <div className="w-full max-w-full mx-auto px-6">
         <header className="mb-6 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-poppins font-bold text-gradient">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-poppins font-bold text-gradient">
             Our Inspiration
           </h2>
         </header>
