@@ -69,7 +69,14 @@ async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader?.split(' ')[1];
 
+  console.log('🔐 Auth attempt:', { 
+    hasAuthHeader: !!authHeader, 
+    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+    path: req.path 
+  });
+
   if (!token) {
+    console.error('❌ No token provided');
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
@@ -78,23 +85,19 @@ async function authenticateToken(req, res, next) {
     const { data: { user }, error } = await supabase.auth.getUser(token);
     
     if (error || !user) {
-      console.error('Token verification failed:', error);
+      console.error('❌ Token verification failed:', error?.message || 'No user found');
       return res.status(403).json({ error: 'Invalid or expired token.' });
     }
 
+    console.log('✅ Token verified for user:', user.email);
+    
     // ✅ Attach user data to request
     req.user = user;
     req.user_id = user.id;
-
-    if (error || !data?.user) {
-      return res.status(403).json({ error: 'Invalid or expired token.' });
-    }
-
-    // ✅ Attach user ID (same as before with JWT 'sub')
-    req.user_id = data.user.id;
+    
     next();
   } catch (err) {
-    console.error('Token verification failed:', err);
+    console.error('❌ Token verification exception:', err);
     return res.status(403).json({ error: 'Invalid or expired token.' });
   }
 }
@@ -1471,11 +1474,7 @@ app.patch('/api/lostfound/items/:id', authenticateToken, async (req, res) => {
 });
 
 
-// ============================================
-// PAYMENT ROUTES (LOST & FOUND SPECIFIC)
-// ============================================
 
-// Create order for Lost & Found contact unlock
 app.post('/api/payments/create-lost-found-order', async (req, res) => {
   try {
     const { amount, itemId, itemTitle, itemPosterEmail, payerUserId, receipt } = req.body;
@@ -2069,10 +2068,10 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(400).json({ error: 'File size exceeds 50MB limit', success: false });
     }
 
-    const userId = req.user?.id || 'anonymous';
-    const timestamp = Date.now();
-    const filename = `${userId}_${timestamp}_${file.name}`;
-    const storagePath = `${folder_type}/pending/${filename}`; // Store in pending subfolder
+  const userId = req.user?.id || null;
+  const timestamp = Date.now();
+  const filename = `${userId ? userId : 'guest'}_${timestamp}_${file.name}`;
+  const storagePath = `${folder_type}/pending/${filename}`; // Store in pending subfolder
 
     // Upload to study-materials bucket
     const { error: uploadError } = await supabase.storage
@@ -2101,7 +2100,8 @@ app.post('/api/study-materials/upload', async (req, res) => {
         pdf_url: filename, // Store just the filename, folder is implied
         filesize: file.size,
         mime_type: file.mimetype,
-        user_id: userId,
+        // Only include user_id if present (authenticated)
+        ...(userId ? { user_id: userId } : {}),
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -2429,9 +2429,9 @@ app.post('/verify-payment', authenticateToken, async (req, res) => {
 
 
 
-app.get("/api/group/:groupId", async (req, res) => {
+app.get("/api/group/:groupId", authenticateToken, async (req, res) => {
   const { groupId } = req.params;
-  const { user_id } = req.query;
+  const user_id = req.user_id; // ✅ From authenticated token
 
   try {
     // Fetch group details
@@ -2851,12 +2851,14 @@ app.get("/api/society-events", async (req, res) => {
 });
 
 
-//SplitSaathi
-app.post("/api/user-groups", async (req, res) => {
+//SplitSaathi - ✅ SECURED
+app.post("/api/user-groups", authenticateToken, async (req, res) => {
   try {
-    const { userId, email } = req.body;
+    const userId = req.user_id; // ✅ From token
+    const email = req.user.email; // ✅ From token
+    
     if (!userId || !email) {
-      return res.status(400).json({ error: "Missing userId or email" });
+      return res.status(400).json({ error: "Missing user information" });
     }
 
     // Extract roll number from email (e.g., "2105555@kiit.ac.in")
@@ -2900,11 +2902,12 @@ app.post("/api/user-groups", async (req, res) => {
     res.status(500).json({ error: "Failed to load user groups" });
   }
 });
-app.post("/api/create-group", async (req, res) => {
+app.post("/api/create-group", authenticateToken, async (req, res) => {
   try {
-    const { userId, groupForm } = req.body;
+    const userId = req.user_id; // ✅ From token
+    const { groupForm } = req.body;
 
-    if (!userId || !groupForm?.name?.trim()) {
+    if (!groupForm?.name?.trim()) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
