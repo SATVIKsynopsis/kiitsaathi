@@ -190,7 +190,13 @@ export default function StudyMaterial() {
   const fetchMaterials = useCallback(async () => {
     setLoading(true);
     setError('');
-
+  
+    // Don't fetch for playlists and groups - they're static data
+if (activeSection === 'playlists' || activeSection === 'groups') {
+  setLoading(false);
+  setError('');
+  return;
+}
     try {
       const params = new URLSearchParams();
       
