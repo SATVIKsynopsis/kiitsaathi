@@ -29,11 +29,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔐 Auth state changed:', event, { 
-          hasSession: !!session, 
-          hasToken: !!session?.access_token 
-        });
-        
         setAccessToken(session?.access_token ?? null);
         setSession(session);
         setUser(session?.user ?? null);
@@ -43,12 +38,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('📋 Initial session check:', { 
-        hasSession: !!session, 
-        hasToken: !!session?.access_token,
-        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'
-      });
-      
       setAccessToken(session?.access_token ?? null);
       setSession(session);
       setUser(session?.user ?? null);
@@ -65,21 +54,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setSession(null);
       setAccessToken(null);
-      
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Error signing out:', error);
         throw error;
       }
-      
       // Clear any remaining local storage
       localStorage.clear();
       sessionStorage.clear();
-      
-      console.log('✅ Successfully signed out');
     } catch (error) {
-      console.error('❌ Sign out error:', error);
       throw error;
     } finally {
       setLoading(false);

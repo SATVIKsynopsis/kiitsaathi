@@ -17,6 +17,9 @@ interface DeleteAllDataButtonProps {
   onDataDeleted?: () => void;
 }
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
+
 export function DeleteAllDataButton({ onDataDeleted }: DeleteAllDataButtonProps) {
   const { user, accessToken } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -34,14 +37,14 @@ export function DeleteAllDataButton({ onDataDeleted }: DeleteAllDataButtonProps)
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/delete-all-data`,
+        `${HOSTED_URL}/delete-all-resume-data`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify({ user_id: user.id }),
+          body: JSON.stringify({ target_user_id: user.id }),
         }
       );
 

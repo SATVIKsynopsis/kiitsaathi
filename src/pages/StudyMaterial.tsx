@@ -13,7 +13,7 @@ import {
   File,
   BookOpen,
   Bot,
-  Search
+  Search,
 } from "lucide-react";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { semesters, years, semesterSubjects } from "@/data/studyMaterials";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/hooks/useAuth";
 
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 // Types
@@ -36,7 +36,7 @@ interface StudyMaterialItem {
   semester: string;
   branch?: string;
   year?: string;
-  type?: 'note' | 'pyq' | 'ppt' | 'ebook';
+  type?: "note" | "pyq" | "ppt" | "ebook";
   views: number;
   uploadedBy: string;
   uploadDate?: string;
@@ -57,303 +57,332 @@ export default function StudyMaterial() {
   const [error, setError] = useState("");
   const { user, loading: authLoading } = useAuth();
 
-  //playlist from youtube 
+  //playlist from youtube
   const playlistYoutube = [
     {
-      "course_name": "Data Structures & Algorithms (DSA)",
-      "playlist_name": "Master Data Structures & Algorithms: DSA Bootcamp 2025",
-      "channel_name": "HelloWorld by Prince",
-      "videos": "60+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLA3GkZPtsafYzRj2lk6OyquJtRXoDLR_S"
+      course_name: "Data Structures & Algorithms (DSA)",
+      playlist_name: "Master Data Structures & Algorithms: DSA Bootcamp 2025",
+      channel_name: "HelloWorld by Prince",
+      videos: "60+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLA3GkZPtsafYzRj2lk6OyquJtRXoDLR_S",
     },
     {
-      "course_name": "Data Structures & Algorithms (DSA)",
-      "playlist_name": "Ultimate Playlist - Master DSA for Free",
-      "channel_name": "Take U Forward",
-      "videos": "90+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLKtofb3HgEyygy1CDrP17k2xKfvETIMr5"
+      course_name: "Data Structures & Algorithms (DSA)",
+      playlist_name: "Ultimate Playlist - Master DSA for Free",
+      channel_name: "Take U Forward",
+      videos: "90+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLKtofb3HgEyygy1CDrP17k2xKfvETIMr5",
     },
     {
-      "course_name": "Object Oriented Programming (OOPS)",
-      "playlist_name": "Object Oriented Programming (OOP) in Java Course",
-      "channel_name": "Kunal Kushwaha",
-      "videos": "28+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PL9gnSGHSqcno1G3XjUbwzXHL8_EttOuKk"
+      course_name: "Object Oriented Programming (OOPS)",
+      playlist_name: "Object Oriented Programming (OOP) in Java Course",
+      channel_name: "Kunal Kushwaha",
+      videos: "28+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PL9gnSGHSqcno1G3XjUbwzXHL8_EttOuKk",
     },
     {
-      "course_name": "Design and Analysis of Algorithms (DAA)",
-      "playlist_name": "Design and Analysis of Algorithms (DAA)",
-      "channel_name": "Gate Smashers",
-      "videos": "45+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLxCzCOWd7aiHcmS4i14bI0VrMbZTUvlTa"
+      course_name: "Design and Analysis of Algorithms (DAA)",
+      playlist_name: "Design and Analysis of Algorithms (DAA)",
+      channel_name: "Gate Smashers",
+      videos: "45+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLxCzCOWd7aiHcmS4i14bI0VrMbZTUvlTa",
     },
     {
-      "course_name": "Java (Full Course)",
-      "playlist_name": "Java Full Course for free ☕ (2025)",
-      "channel_name": "Bro Code",
-      "videos": "1 (full course)",
-      "playlist_link": "https://www.youtube.com/watch?v=xTtL8E4LzTQ"
+      course_name: "Java (Full Course)",
+      playlist_name: "Java Full Course for free ☕ (2025)",
+      channel_name: "Bro Code",
+      videos: "1 (full course)",
+      playlist_link: "https://www.youtube.com/watch?v=xTtL8E4LzTQ",
     },
     {
-      "course_name": "Java (Beginner to Advanced)",
-      "playlist_name": "Java Tutorial for Beginners",
-      "channel_name": "CodeWithHarry",
-      "videos": "75+",
-      "playlist_link": "https://www.youtube.com/watch?v=BGTx91t8q50"
+      course_name: "Java (Beginner to Advanced)",
+      playlist_name: "Java Tutorial for Beginners",
+      channel_name: "CodeWithHarry",
+      videos: "75+",
+      playlist_link: "https://www.youtube.com/watch?v=BGTx91t8q50",
     },
     {
-      "course_name": "SQL (Complete Course)",
-      "playlist_name": "Complete SQL Course For Beginners",
-      "channel_name": "Edureka",
-      "videos": "1 (full course)",
-      "playlist_link": "https://www.youtube.com/watch?v=q_JsgpiuY98"
+      course_name: "SQL (Complete Course)",
+      playlist_name: "Complete SQL Course For Beginners",
+      channel_name: "Edureka",
+      videos: "1 (full course)",
+      playlist_link: "https://www.youtube.com/watch?v=q_JsgpiuY98",
     },
     {
-      "course_name": "SQL (Hindi, Full Tutorial)",
-      "playlist_name": "SQL Tutorial for Beginners | Full SQL Course In Hindi",
-      "channel_name": "Rishabh Mishra",
-      "videos": "1 (full course)",
-      "playlist_link": "https://www.youtube.com/watch?v=On9eSN3F8w0"
+      course_name: "SQL (Hindi, Full Tutorial)",
+      playlist_name: "SQL Tutorial for Beginners | Full SQL Course In Hindi",
+      channel_name: "Rishabh Mishra",
+      videos: "1 (full course)",
+      playlist_link: "https://www.youtube.com/watch?v=On9eSN3F8w0",
     },
     {
-      "course_name": "SQL for Beginners",
-      "playlist_name": "SQL Playlist 2025 | SQL Tutorial For Beginners | SQL Course",
-      "channel_name": "Simplilearn",
-      "videos": "25+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z"
+      course_name: "SQL for Beginners",
+      playlist_name:
+        "SQL Playlist 2025 | SQL Tutorial For Beginners | SQL Course",
+      channel_name: "Simplilearn",
+      videos: "25+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z",
     },
     {
-      "course_name": "Data Structures & Algorithms (DSA)",
-      "playlist_name": "Master Data Structures & Algorithms: DSA Bootcamp 2025",
-      "channel_name": "HelloWorld by Prince",
-      "videos": "60+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLA3GkZPtsafYzRj2lk6OyquJtRXoDLR_S"
+      course_name: "Data Structures & Algorithms (DSA)",
+      playlist_name: "Master Data Structures & Algorithms: DSA Bootcamp 2025",
+      channel_name: "HelloWorld by Prince",
+      videos: "60+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLA3GkZPtsafYzRj2lk6OyquJtRXoDLR_S",
     },
     {
-      "course_name": "Data Structures & Algorithms (DSA)",
-      "playlist_name": "Ultimate Playlist - Master DSA for Free",
-      "channel_name": "Take U Forward",
-      "videos": "90+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLKtofb3HgEyygy1CDrP17k2xKfvETIMr5"
+      course_name: "Data Structures & Algorithms (DSA)",
+      playlist_name: "Ultimate Playlist - Master DSA for Free",
+      channel_name: "Take U Forward",
+      videos: "90+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLKtofb3HgEyygy1CDrP17k2xKfvETIMr5",
     },
     {
-      "course_name": "Object Oriented Programming (OOPS)",
-      "playlist_name": "Object Oriented Programming (OOP) in Java Course",
-      "channel_name": "Kunal Kushwaha",
-      "videos": "28+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PL9gnSGHSqcno1G3XjUbwzXHL8_EttOuKk"
+      course_name: "Object Oriented Programming (OOPS)",
+      playlist_name: "Object Oriented Programming (OOP) in Java Course",
+      channel_name: "Kunal Kushwaha",
+      videos: "28+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PL9gnSGHSqcno1G3XjUbwzXHL8_EttOuKk",
     },
     {
-      "course_name": "Design and Analysis of Algorithms (DAA)",
-      "playlist_name": "Design and Analysis of Algorithms (DAA)",
-      "channel_name": "Gate Smashers",
-      "videos": "45+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLxCzCOWd7aiHcmS4i14bI0VrMbZTUvlTa"
+      course_name: "Design and Analysis of Algorithms (DAA)",
+      playlist_name: "Design and Analysis of Algorithms (DAA)",
+      channel_name: "Gate Smashers",
+      videos: "45+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLxCzCOWd7aiHcmS4i14bI0VrMbZTUvlTa",
     },
     {
-      "course_name": "Java (Full Course)",
-      "playlist_name": "Java Full Course for free ☕ (2025)",
-      "channel_name": "Bro Code",
-      "videos": "1 (full course)",
-      "playlist_link": "https://www.youtube.com/watch?v=xTtL8E4LzTQ"
+      course_name: "Java (Full Course)",
+      playlist_name: "Java Full Course for free ☕ (2025)",
+      channel_name: "Bro Code",
+      videos: "1 (full course)",
+      playlist_link: "https://www.youtube.com/watch?v=xTtL8E4LzTQ",
     },
     {
-      "course_name": "Java (Beginner to Advanced)",
-      "playlist_name": "Java Tutorial for Beginners",
-      "channel_name": "CodeWithHarry",
-      "videos": "75+",
-      "playlist_link": "https://www.youtube.com/watch?v=BGTx91t8q50"
+      course_name: "Java (Beginner to Advanced)",
+      playlist_name: "Java Tutorial for Beginners",
+      channel_name: "CodeWithHarry",
+      videos: "75+",
+      playlist_link: "https://www.youtube.com/watch?v=BGTx91t8q50",
     },
     {
-      "course_name": "SQL (Complete Course)",
-      "playlist_name": "Complete SQL Course For Beginners",
-      "channel_name": "Edureka",
-      "videos": "1 (full course)",
-      "playlist_link": "https://www.youtube.com/watch?v=q_JsgpiuY98"
+      course_name: "SQL (Complete Course)",
+      playlist_name: "Complete SQL Course For Beginners",
+      channel_name: "Edureka",
+      videos: "1 (full course)",
+      playlist_link: "https://www.youtube.com/watch?v=q_JsgpiuY98",
     },
     {
-      "course_name": "SQL (Hindi, Full Tutorial)",
-      "playlist_name": "SQL Tutorial for Beginners | Full SQL Course In Hindi",
-      "channel_name": "Rishabh Mishra",
-      "videos": "1 (full course)",
-      "playlist_link": "https://www.youtube.com/watch?v=On9eSN3F8w0"
+      course_name: "SQL (Hindi, Full Tutorial)",
+      playlist_name: "SQL Tutorial for Beginners | Full SQL Course In Hindi",
+      channel_name: "Rishabh Mishra",
+      videos: "1 (full course)",
+      playlist_link: "https://www.youtube.com/watch?v=On9eSN3F8w0",
     },
     {
-      "course_name": "SQL for Beginners",
-      "playlist_name": "SQL Playlist 2025 | SQL Tutorial For Beginners | SQL Course",
-      "channel_name": "Simplilearn",
-      "videos": "25+",
-      "playlist_link": "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z"
-    }
-  ]
+      course_name: "SQL for Beginners",
+      playlist_name:
+        "SQL Playlist 2025 | SQL Tutorial For Beginners | SQL Course",
+      channel_name: "Simplilearn",
+      videos: "25+",
+      playlist_link:
+        "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z",
+    },
+  ];
 
   const fetchMaterials = useCallback(async () => {
     setLoading(true);
-    setError('');
-  
+    setError("");
+
     // Don't fetch for playlists and groups - they're static data
-if (activeSection === 'playlists' || activeSection === 'groups') {
-  setLoading(false);
-  setError('');
-  return;
-}
+    if (activeSection === "playlists" || activeSection === "groups") {
+      setLoading(false);
+      setError("");
+      return;
+    }
+    if (
+      activeSection === "ppt" ||
+      activeSection === "notes" ||
+      activeSection === "ebooks"
+    ) {
+      setLoading(false);
+      setError("");
+    }
     try {
       const params = new URLSearchParams();
-      
+
       // Always include type
-     
-      params.append('type', activeSection); // pyqs, notes, ebooks, ppts
-      
+
+      params.append("type", activeSection); // pyqs, notes, ebooks, ppts
+
       // Only add other params if they have values
-      if (selectedSubject !== 'all' && selectedSubject) {
-        params.append('subject', selectedSubject);
+      if (selectedSubject !== "all" && selectedSubject) {
+        params.append("subject", selectedSubject);
       }
-      if (selectedSemester !== 'all' && selectedSemester) {
-        params.append('semester', selectedSemester);
+      if (selectedSemester !== "all" && selectedSemester) {
+        params.append("semester", selectedSemester);
       }
-      if (selectedYear !== 'all' && selectedYear) {
-        params.append('year', selectedYear);
+      if (selectedYear !== "all" && selectedYear) {
+        params.append("year", selectedYear);
       }
       if (searchQuery && searchQuery.trim()) {
-        params.append('search', searchQuery);
+        params.append("search", searchQuery);
       }
 
       const finalUrl = `${HOSTED_URL}/api/study-materials?${params.toString()}`;
-      
 
       const response = await fetch(finalUrl, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
         },
-        credentials: 'include'
+        credentials: "include",
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to fetch materials: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Failed to fetch materials: ${response.status} - ${errorText}`
+        );
       }
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
-        throw new Error(`Invalid response: Expected JSON, got ${contentType} - ${text.slice(0, 100)}...`);
+        throw new Error(
+          `Invalid response: Expected JSON, got ${contentType} - ${text.slice(
+            0,
+            100
+          )}...`
+        );
       }
 
       const { data } = await response.json();
       setMaterials(data || []);
     } catch (err: any) {
       setError(err.message);
-      toast.error('Failed to load materials');
+      toast.error("Failed to load materials");
     } finally {
       setLoading(false);
     }
-  }, [activeSection, selectedSubject, selectedSemester, selectedYear, searchQuery]);
+  }, [
+    activeSection,
+    selectedSubject,
+    selectedSemester,
+    selectedYear,
+    searchQuery,
+  ]);
 
   useEffect(() => {
     if (user) {
       fetchMaterials();
     }
   }, [user, fetchMaterials]);
-  
+
   const availableSubjects =
     selectedSemester === "all"
-      ? semesterSubjects.flatMap(s => s.subjects) // all subjects
-      : semesterSubjects.find(s => s.semester === selectedSemester)?.subjects || [];
+      ? semesterSubjects.flatMap((s) => s.subjects) // all subjects
+      : semesterSubjects.find((s) => s.semester === selectedSemester)
+          ?.subjects || [];
 
   // Filter function for study materials
   const filterMaterials = (materials: StudyMaterialItem[]) => {
-    
-
-    return materials.filter(item => {
-      const matchesSearch = searchQuery === "" ||
+    return materials.filter((item) => {
+      const matchesSearch =
+        searchQuery === "" ||
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subject.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesSubject = selectedSubject === "all" || item.subject === selectedSubject;
-      const matchesSemester = selectedSemester === "all" || item.semester === selectedSemester;
-      const matchesYear = selectedYear === "all" || (item.year && item.year === selectedYear);
+      const matchesSubject =
+        selectedSubject === "all" || item.subject === selectedSubject;
+      const matchesSemester =
+        selectedSemester === "all" || item.semester === selectedSemester;
+      const matchesYear =
+        selectedYear === "all" || (item.year && item.year === selectedYear);
 
       return matchesSearch && matchesSubject && matchesSemester && matchesYear;
     });
   };
 
-// ✅ Enhanced handleView with better logging and feedback
-const handleView = async (id: number) => {
-  
-  try {
-    const material = materials.find((m) => m.id === id);
-    
-    if (!material || !material.pdf_url) {
-      
-      toast.error("No file available to view");
-      return;
-    }
-    setMaterials((prev) =>
-      prev.map((m) =>
-        m.id === id ? { ...m, views: (m.views || 0) + 1 } : m
-      )
-    );
-    const newWindow = window.open(material.pdf_url, "_blank", "noopener,noreferrer");
-    if (newWindow) {
-      toast.success(`Opening ${material.title}...`);
-    } else {
-      toast.error("Please allow pop-ups to preview files");
-    }
-  } catch (error) {
-   
-    toast.error("Failed to open file");
-  }
-};
+  // ✅ Enhanced handleView with better logging and feedback
+  const handleView = async (id: number) => {
+    try {
+      const material = materials.find((m) => m.id === id);
 
-const handleDownload = async (material: StudyMaterialItem) => {
-  
-  try {
-    if (!material || !material.pdf_url) {
-      
-      toast.error("No file available to download");
-      return;
+      if (!material || !material.pdf_url) {
+        toast.error("No file available to view");
+        return;
+      }
+      setMaterials((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, views: (m.views || 0) + 1 } : m))
+      );
+      const newWindow = window.open(
+        material.pdf_url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      if (newWindow) {
+        toast.success(`Opening ${material.title}...`);
+      } else {
+        toast.error("Please allow pop-ups to preview files");
+      }
+    } catch (error) {
+      toast.error("Failed to open file");
     }
+  };
 
-    const loadingToast = toast.loading(`Downloading ${material.title}...`);
-    
-    
-    const response = await fetch(material.pdf_url, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: Failed to fetch file`);
+  const handleDownload = async (material: StudyMaterialItem) => {
+    try {
+      if (!material || !material.pdf_url) {
+        toast.error("No file available to download");
+        return;
+      }
+
+      const loadingToast = toast.loading(`Downloading ${material.title}...`);
+
+      const response = await fetch(material.pdf_url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch file`);
+      }
+
+      const blob = await response.blob();
+      const fileURL = window.URL.createObjectURL(blob);
+      const fileName = material.title?.includes(".")
+        ? material.title
+        : `${material.title}.pdf`;
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(fileURL);
+      toast.dismiss(loadingToast);
+      toast.success(`Downloaded ${material.title}`);
+    } catch (error: any) {
+      toast.error("Failed to download file");
     }
-    
-    const blob = await response.blob();
-    const fileURL = window.URL.createObjectURL(blob);
-    const fileName = material.title?.includes(".")
-      ? material.title
-      : `${material.title}.pdf`;
-    const link = document.createElement("a");
-    link.href = fileURL;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(fileURL);
-    toast.dismiss(loadingToast);
-    toast.success(`Downloaded ${material.title}`);
-  } catch (error: any) {
-    
-    toast.error("Failed to download file");
-  }
-};
+  };
 
-// ✅ Add debugging on material load
-useEffect(() => {
-  if (materials.length > 0) {
+  // ✅ Add debugging on material load
+  useEffect(() => {
+    if (materials.length > 0) {
     }
-}, [materials]);
-
+  }, [materials]);
 
   if (authLoading) {
     return (
@@ -373,13 +402,14 @@ useEffect(() => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4">Authentication Required</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Authentication Required
+          </h2>
           <p>Please login to access study materials.</p>
         </div>
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -397,8 +427,9 @@ useEffect(() => {
                 Study Materials
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Access comprehensive notes, previous year questions, presentations, and curated study resources
-                to excel in your academic journey
+                Access comprehensive notes, previous year questions,
+                presentations, and curated study resources to excel in your
+                academic journey
               </p>
 
               {/* Action Buttons */}
@@ -414,14 +445,22 @@ useEffect(() => {
                   </Button>
                 )}
                 <button
-                  onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')}
-                  className="group bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-kiit-secondary/90 hover:to-kiit-secondary transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  onClick={() =>
+                    window.open("https://forms.gle/5d89iETDeefruKSX9", "_blank")
+                  }
+                  className="group h-[40px] bg-gradient-to-r from-kiit-secondary to-kiit-secondary/90 text-white hover:opacity-90 transition-opacity px-6 py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   Request Resource
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
+
+              {/* Disclaimer below the buttons */}
+              <p className="text-md text-gray-500 text-center mt-4">
+                ⚠️ If you receive a notification saying “Files not found,”
+                please reload the site and try again.
+              </p>
             </div>
           </div>
         </div>
@@ -435,26 +474,31 @@ useEffect(() => {
         </div>
 
         {/* Enhanced Error Display */}
-        {error && activeSection !== "playlists" && activeSection !== "groups" && (
-          <div className="mb-8 p-6 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive shadow-lg">
-            <div className="flex-shrink-0 w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5" />
+        {error &&
+          activeSection !== "playlists" &&
+          activeSection !== "groups" && (
+            <div className="mb-8 p-6 bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive shadow-lg">
+              <div className="flex-shrink-0 w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">Something went wrong</p>
+                <p className="text-sm opacity-80">{error}</p>
+              </div>
+              <button
+                onClick={() => setError("")}
+                className="flex-shrink-0 w-8 h-8 rounded-full hover:bg-destructive/20 flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <div className="flex-1">
-              <p className="font-medium">Something went wrong</p>
-              <p className="text-sm opacity-80">{error}</p>
-            </div>
-            <button
-              onClick={() => setError("")}
-              className="flex-shrink-0 w-8 h-8 rounded-full hover:bg-destructive/20 flex items-center justify-center transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+          )}
 
         {/* Content */}
-        {(activeSection === "notes" || activeSection === "pyqs" || activeSection === "ppts" || activeSection === "ebooks") && (
+        {(activeSection === "notes" ||
+          activeSection === "pyqs" ||
+          activeSection === "ppts" ||
+          activeSection === "ebooks") && (
           <>
             {/* Filter Bar */}
             <FilterBar
@@ -478,15 +522,19 @@ useEffect(() => {
                   <div className="w-16 h-16 border-4 border-kiit-primary/20 rounded-full"></div>
                   <div className="w-16 h-16 border-4 border-kiit-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
                 </div>
-                <p className="mt-4 text-muted-foreground animate-pulse">Loading study materials...</p>
+                <p className="mt-4 text-muted-foreground animate-pulse">
+                  Loading study materials...
+                </p>
               </div>
             ) : (
               <div className="glass-card rounded-2xl overflow-hidden border border-border/50 shadow-xl">
-                                <DataTable
+                <DataTable
                   materials={filterMaterials(materials)}
                   onViewPDF={handleView}
                   loading={loading}
-                  materialType={activeSection as "notes" | "pyqs" | "ppts" | "ebooks"}
+                  materialType={
+                    activeSection as "notes" | "pyqs" | "ppts" | "ebooks"
+                  }
                   onDownload={handleDownload}
                 />
               </div>
@@ -497,7 +545,6 @@ useEffect(() => {
         {/* Enhanced Playlists Section */}
         {activeSection === "playlists" && (
           <div className="glass-card p-12 rounded-2xl text-center border border-border/50 bg-gradient-to-br from-card/50 to-muted/20">
-
             <div className="relative group">
               <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-kiit-primary transition-colors">
                 <Search className="w-5 h-5" />
@@ -513,10 +560,17 @@ useEffect(() => {
 
             {/* Filter playlists based on search query */}
             {playlistYoutube
-              .filter((playlist) =>
-                playlist.course_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                playlist.playlist_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                playlist.channel_name.toLowerCase().includes(searchQuery.toLowerCase())
+              .filter(
+                (playlist) =>
+                  playlist.course_name
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                  playlist.playlist_name
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                  playlist.channel_name
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
               )
               .map((playlist, idx) => (
                 <div
@@ -527,10 +581,17 @@ useEffect(() => {
                     <Youtube className="w-8 h-8 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-lg mb-1">{playlist.course_name}</h4>
-                    <p className="text-md font-semibold mb-1">{playlist.playlist_name}</p>
+                    <h4 className="font-bold text-lg mb-1">
+                      {playlist.course_name}
+                    </h4>
+                    <p className="text-md font-semibold mb-1">
+                      {playlist.playlist_name}
+                    </p>
                     <p className="text-sm text-muted-foreground mb-1">
-                      Channel: <span className="font-medium">{playlist.channel_name}</span>
+                      Channel:{" "}
+                      <span className="font-medium">
+                        {playlist.channel_name}
+                      </span>
                     </p>
                     <p className="text-sm text-muted-foreground mb-2">
                       Videos: {playlist.videos}
@@ -560,7 +621,8 @@ useEffect(() => {
                 Study Groups & Resources
               </h3>
               <p className="text-muted-foreground text-lg max-w-md mx-auto leading-relaxed mb-6">
-                Join collaborative study groups and access shared resources from students
+                Join collaborative study groups and access shared resources from
+                students
               </p>
             </div>
 
@@ -573,10 +635,15 @@ useEffect(() => {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg">CSE Study Hub</h4>
-                    <p className="text-sm text-muted-foreground">Computer Science & Engineering</p>
+                    <p className="text-sm text-muted-foreground">
+                      Computer Science & Engineering
+                    </p>
                   </div>
                 </div>
-                <p className="text-muted-foreground mb-4">Comprehensive notes, assignments, and project resources for CSE students.</p>
+                <p className="text-muted-foreground mb-4">
+                  Comprehensive notes, assignments, and project resources for
+                  CSE students.
+                </p>
                 <div className="flex gap-3">
                   <a
                     href="https://t.me/kiit_cse_study"
@@ -604,10 +671,15 @@ useEffect(() => {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg">ETC Study Group</h4>
-                    <p className="text-sm text-muted-foreground">Electronics & Telecommunication</p>
+                    <p className="text-sm text-muted-foreground">
+                      Electronics & Telecommunication
+                    </p>
                   </div>
                 </div>
-                <p className="text-muted-foreground mb-4">Circuit diagrams, lab manuals, and electronics project resources.</p>
+                <p className="text-muted-foreground mb-4">
+                  Circuit diagrams, lab manuals, and electronics project
+                  resources.
+                </p>
                 <div className="flex gap-3">
                   <a
                     href="https://t.me/kiit_etc_study"
@@ -635,10 +707,14 @@ useEffect(() => {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg">Civil Engineering Hub</h4>
-                    <p className="text-sm text-muted-foreground">Civil Engineering Department</p>
+                    <p className="text-sm text-muted-foreground">
+                      Civil Engineering Department
+                    </p>
                   </div>
                 </div>
-                <p className="text-muted-foreground mb-4">Construction guides, AutoCAD files, and project documentation.</p>
+                <p className="text-muted-foreground mb-4">
+                  Construction guides, AutoCAD files, and project documentation.
+                </p>
                 <div className="flex gap-3">
                   <a
                     href="https://t.me/kiit_civil_study"
@@ -666,10 +742,14 @@ useEffect(() => {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg">Biotech Resources</h4>
-                    <p className="text-sm text-muted-foreground">Biotechnology Department</p>
+                    <p className="text-sm text-muted-foreground">
+                      Biotechnology Department
+                    </p>
                   </div>
                 </div>
-                <p className="text-muted-foreground mb-4">Lab protocols, research papers, and biotech project resources.</p>
+                <p className="text-muted-foreground mb-4">
+                  Lab protocols, research papers, and biotech project resources.
+                </p>
                 <div className="flex gap-3">
                   <a
                     href="https://t.me/kiit_biotech_study"
@@ -700,13 +780,15 @@ useEffect(() => {
               Still Need Help?
             </h3>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-              Can't find what you're looking for? Our AI assistant is here 24/7 to help, or submit a resource request and we'll add it to our collection.
+              Can't find what you're looking for? Our AI assistant is here 24/7
+              to help, or submit a resource request and we'll add it to our
+              collection.
             </p>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
               <button
-                onClick={() => window.location.href = '/chatbot'}
+                onClick={() => (window.location.href = "/chatbot")}
                 className="group w-full sm:w-auto bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 <Bot className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -715,7 +797,9 @@ useEffect(() => {
               </button>
 
               <button
-                onClick={() => window.open('https://forms.gle/5d89iETDeefruKSX9', '_blank')}
+                onClick={() =>
+                  window.open("https://forms.gle/5d89iETDeefruKSX9", "_blank")
+                }
                 aria-label="Request Resource Form"
                 className="group w-full sm:w-auto bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:from-blue-600 hover:via-cyan-600 hover:to-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
@@ -729,11 +813,11 @@ useEffect(() => {
       </div>
 
       <Footer />
-      
+
       {/* Upload Dialog */}
-      <StudyMaterialUploadDialog 
-        open={uploadDialogOpen} 
-        onOpenChange={setUploadDialogOpen} 
+      <StudyMaterialUploadDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
       />
     </div>
   );

@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
-import { FileText, History, Plus, Star, Zap, Search } from "lucide-react";
+import { FileText, History, Plus, Star, Zap, Search, Menu, X, Edit, Download, Trash2 } from "lucide-react";
 
 export interface ResumeData {
   personalInfo: {
@@ -65,6 +65,7 @@ const ResumeSaathi = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast: useToastHook } = useToast();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [viewMode, setViewMode] = useState<ViewMode>("form");
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
@@ -87,29 +88,27 @@ const ResumeSaathi = () => {
   }, [user]);
 
   const fetchDailyDownloads = async () => {
-  if (!user) return;
-  try {
-    const today = new Date().toISOString().split("T")[0];
-    const { data, error } = await supabase
-      .from("resume_downloads_daily")
-      .select("downloads")
-      .eq("user_id", user.id)
-      .eq("day", today)
-      .maybeSingle();
+    if (!user) return;
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("resume_downloads_daily")
+        .select("downloads")
+        .eq("user_id", user.id)
+        .eq("day", today)
+        .maybeSingle();
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error fetching downloads:", error);
-      return;
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching downloads:", error);
+        return;
+      }
+
+      setDailyDownloads(data?.downloads || 0);
+    } catch (error) {
+      console.error("Error fetching daily downloads:", error);
     }
+  };
 
-    setDailyDownloads(data?.downloads || 0);
-  } catch (error) {
-    console.error("Error fetching daily downloads:", error);
-  }
-};
-
-
-  // Fetch monthly quota usages from backend
   const fetchMonthlyUsage = async () => {
     try {
       const API_BASE_URL = "https://kiitsaathi-5-resume.onrender.com";
@@ -122,7 +121,6 @@ const ResumeSaathi = () => {
     }
   };
 
-  // ✅ Updated handleFormSubmit with safe merge logic
   const handleFormSubmit = async (data: ResumeData, template: string) => {
     console.log("🧠 handleFormSubmit called with:", { data, template });
     setFormError(null);
@@ -157,18 +155,15 @@ const ResumeSaathi = () => {
       const atsScore = result.atsScore || 87;
       await minDelay;
 
-      // ✅ Deep merge: preserves user data and merges AI-enhanced summary safely
       const mergedData: ResumeData = {
         personalInfo: {
           ...data.personalInfo,
           ...enhancedData.personalInfo,
         },
         summary:
-  // Keep the longer summary (either user or AI)
-  [enhancedData.summary, enhancedData.professional_summary, enhancedData.profile_summary, data.summary]
-    .filter(Boolean)
-    .sort((a, b) => b.length - a.length)[0] || "",
-
+          [enhancedData.summary, enhancedData.professional_summary, enhancedData.profile_summary, data.summary]
+            .filter(Boolean)
+            .sort((a, b) => b.length - a.length)[0] || "",
 
         education: Array.isArray(enhancedData.education)
           ? enhancedData.education.map((edu: any, i: number) => ({
@@ -250,7 +245,6 @@ const ResumeSaathi = () => {
       setAtsScore(atsScore);
       setViewMode("preview");
       
-      // Refresh monthly usage counters after a successful generation
       console.log('🔄 Refreshing monthly usage after generation...');
       await fetchMonthlyUsage();
       console.log('✅ Monthly usage refreshed, new count:', monthlyUsage);
@@ -259,7 +253,7 @@ const ResumeSaathi = () => {
     } catch (error: any) {
       console.error("❌ Error in handleFormSubmit:", error);
       setViewMode("form");
-    const message = error?.message || "Error generating high-ATS resume. Please try again. If the issue persists, please contact support.";
+      const message = error?.message || "Error generating high-ATS resume. Please try again. If the issue persists, please contact support.";
       setFormError(message);
       toast.error(message);
     }
@@ -300,7 +294,6 @@ const ResumeSaathi = () => {
   };
 
   const handleDownload = async () => {
-    // No download limits - users can download unlimited times
     useToastHook({ title: "Resume downloaded successfully!" });
   };
 
@@ -318,8 +311,7 @@ const ResumeSaathi = () => {
       setResumeData(null);
       setViewMode("form");
       setEditingResumeId(null);
-      // Do not reset monthly usage - it persists in DB
-      fetchMonthlyUsage(); // Refresh to show correct remaining count
+      fetchMonthlyUsage();
     } catch (error) {
       console.error("Error deleting data:", error);
       useToastHook({
@@ -330,6 +322,11 @@ const ResumeSaathi = () => {
     }
   };
 
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    setIsMobileMenuOpen(false);
+  };
+
   if (authLoading)
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!user) return null;
@@ -338,29 +335,82 @@ const ResumeSaathi = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <Navbar />
 
-      <div className="container mx-auto px-4 pt-24 pb-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl lg:text-5xl font-poppins font-bold text-gradient mb-4">
-            Resume Saathi — AI Resume Builder
+      <div className="container mx-auto px-3 sm:px-4 pt-20 sm:pt-24 pb-6 sm:pb-8">
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden fixed top-20 right-4 z-40">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="bg-white/90 backdrop-blur-sm border-purple-200 shadow-lg"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-30 pt-20 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl m-4 p-6 shadow-2xl border border-purple-100">
+              <div className="space-y-3">
+                <Button 
+                  variant={viewMode === "form" ? "default" : "outline"} 
+                  onClick={() => handleViewModeChange("form")}
+                  disabled={(monthlyUsage.generation?.remaining ?? 2) <= 0}
+                  className="w-full justify-start text-base py-3 h-auto"
+                >
+                  <Plus className="w-5 h-5 mr-3" /> Create New
+                </Button>
+                <Button 
+                  variant={viewMode === "analyzer" ? "default" : "outline"} 
+                  onClick={() => handleViewModeChange("analyzer")}
+                  className="w-full justify-start text-base py-3 h-auto"
+                >
+                  <Search className="w-5 h-5 mr-3" /> Analyze Resume
+                </Button>
+                <Button 
+                  variant={viewMode === "history" ? "default" : "outline"} 
+                  onClick={() => handleViewModeChange("history")}
+                  className="w-full justify-start text-base py-3 h-auto"
+                >
+                  <History className="w-5 h-5 mr-3" /> My Resumes
+                </Button>
+                <DeleteAllDataButton
+                  onDataDeleted={() => {
+                    setResumeData(null);
+                    setViewMode("form");
+                    setEditingResumeId(null);
+                    fetchMonthlyUsage();
+                  }}
+                  className="w-full justify-start text-base py-3 h-auto"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-poppins font-bold text-gradient mb-3 sm:mb-4 px-2">
+            Resume Saathi
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Create ATS-optimized resumes with AI-powered suggestions and professional templates
+          <p className="text-sm sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto px-2 sm:px-4">
+            Create ATS-optimized resumes with AI-powered suggestions
           </p>
-          <div className="flex items-center justify-center gap-4 mt-6">
-            <Badge variant="secondary" className="text-sm">
-              <Zap className="w-4 h-4 mr-1" /> ATS Optimized
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-4 sm:mt-6 px-2">
+            <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> ATS Optimized
             </Badge>
-            <Badge variant="secondary" className="text-sm">
-              <Star className="w-4 h-4 mr-1" /> Classic Template
+            <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1">
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Classic Template
             </Badge>
-            <Badge variant="secondary" className="text-sm">
-              Resumes remaining this month: {Math.max(0, (monthlyUsage.generation?.remaining ?? 2))}
+            <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1">
+              Remaining: {Math.max(0, (monthlyUsage.generation?.remaining ?? 2))}
             </Badge>
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-center gap-4 mb-8 flex-wrap">
+        {/* Desktop Buttons */}
+        <div className="hidden lg:flex justify-center gap-4 mb-6 sm:mb-8 flex-wrap">
           <Button 
             variant={viewMode === "form" ? "default" : "outline"} 
             onClick={() => setViewMode("form")}
@@ -380,18 +430,18 @@ const ResumeSaathi = () => {
               setResumeData(null);
               setViewMode("form");
               setEditingResumeId(null);
-              fetchMonthlyUsage(); // Refresh quota
+              fetchMonthlyUsage();
             }}
           />
         </div>
 
         {/* Main Views */}
         {viewMode === "form" && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {(monthlyUsage.generation?.remaining ?? 2) <= 0 && (
-              <Card className="bg-red-50 border-red-200">
-                <CardContent className="pt-6">
-                  <p className="text-red-800 font-semibold text-center">
+              <Card className="bg-red-50 border-red-200 mx-2 sm:mx-0">
+                <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+                  <p className="text-red-800 font-semibold text-center text-sm sm:text-base">
                     ⚠️ Monthly limit reached: You have used all 2 resume generations for this month. 
                     Please wait until next month to create or edit resumes.
                   </p>
@@ -411,37 +461,38 @@ const ResumeSaathi = () => {
         {viewMode === "loading" && <Loader3D />}
 
         {viewMode === "preview" && resumeData && (
-          <div className="flex justify-center animate-fade-in">
+          <div className="flex justify-center animate-fade-in px-2 sm:px-0">
             <div className="w-full max-w-5xl">
               {/* Clean Preview Header */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-purple-100 shadow-lg">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Resume Preview</h2>
-                    <p className="text-gray-600 mt-1">Template: {selectedTemplate.replace('-', ' ').toUpperCase()}</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 border border-purple-100 shadow-lg">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+                  <div className="text-center sm:text-left">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Resume Preview</h2>
+                    <p className="text-gray-600 mt-1 text-sm sm:text-base">Template: {selectedTemplate.replace('-', ' ').toUpperCase()}</p>
                   </div>
                 </div>
               </div>
 
               {/* Preview Content */}
-              <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl border border-gray-200 overflow-hidden">
                 <TemplatePreview data={resumeData} template={selectedTemplate} atsScore={atsScore} />
               </div>
 
               {/* Enhanced Action Buttons */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mt-6 border border-purple-100 shadow-lg">
-                <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Resume Actions</h3>
-                  <p className="text-gray-600 text-sm">Manage your resume</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6 border border-purple-100 shadow-lg">
+                <div className="text-center mb-3 sm:mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">Resume Actions</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm">Manage your resume</p>
                 </div>
                 
-                <div className="flex flex-wrap gap-4 justify-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3 sm:gap-4 justify-center">
                   <Button 
                     onClick={handleSaveResume}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg transition-all duration-300 w-full sm:w-auto"
+                    size="sm"
                   >
                     <FileText className="w-4 h-4 mr-2" />
-                    Save Resume
+                    Save
                   </Button>
                   
                   <PdfGenerator
@@ -466,33 +517,31 @@ const ResumeSaathi = () => {
                       setViewMode("form");
                     }}
                     disabled={(monthlyUsage.generation?.remaining ?? 2) <= 0}
-                    className={`border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-all duration-300 ${(monthlyUsage.generation?.remaining ?? 2) <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-all duration-300 w-full sm:w-auto ${(monthlyUsage.generation?.remaining ?? 2) <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    size="sm"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit Resume
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
                   </Button>
                   
                   <Button
                     variant="destructive"
                     onClick={handleDeleteAllData}
-                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg transition-all duration-300 w-full sm:w-auto"
+                    size="sm"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete All Data
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete All
                   </Button>
                 </div>
 
                 {/* Download Status */}
                 {dailyDownloads >= 5 && (
-                  <div className="text-center mt-4">
-                    <Badge variant="destructive" className="animate-pulse">
+                  <div className="text-center mt-3 sm:mt-4">
+                    <Badge variant="destructive" className="animate-pulse text-xs">
                       ⚠️ Daily download limit reached (5/5)
                     </Badge>
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-xs text-gray-600 mt-2">
                       You can download more resumes tomorrow
                     </p>
                   </div>
@@ -500,18 +549,20 @@ const ResumeSaathi = () => {
               </div>
 
               {/* Quick Navigation */}
-              <div className="flex justify-center gap-4 mt-6">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
                 <Button 
                   variant="outline" 
                   onClick={() => setViewMode("form")}
-                  className="text-sm"
+                  className="text-sm w-full sm:w-auto"
+                  size="sm"
                 >
                   ← Back to Form
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => setViewMode("history")}
-                  className="text-sm"
+                  className="text-sm w-full sm:w-auto"
+                  size="sm"
                 >
                   View History →
                 </Button>

@@ -48,9 +48,9 @@ const FloatingText = ({ text, position }: { text: string; position: [number, num
 
 const motivationalQuotes = [
   "Your future job is one resume away.",
-  "We're shaping your story — almost there.",
+  "We're shaping your story - almost there.",
   "Great resumes open doors. Yours will too.",
-  "Polishing your profile — hold tight!",
+  "Polishing your profile - hold tight!",
   "Success starts with a perfect resume.",
   "Crafting your professional identity...",
   "Building your career foundation...",

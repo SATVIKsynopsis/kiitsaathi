@@ -50,7 +50,7 @@ export const Footer = () => {
             <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
               <div className="flex items-center gap-3 justify-center sm:justify-start">
                 <Phone className="w-4 h-4 text-campus-orange flex-shrink-0" />
-                <span className="text-white/80">+91 9717008778</span>
+                <span className="text-white/80">To be added later</span>
               </div>
               <div className="flex items-center gap-3 justify-center sm:justify-start">
                 <Mail className="w-4 h-4 text-campus-orange flex-shrink-0" />
