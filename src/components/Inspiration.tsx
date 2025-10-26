@@ -16,7 +16,7 @@ const InspirationCard: React.FC<InspirationCardProps> = ({ title, description, i
   return (
     <div className="group w-full bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 h-full flex flex-col transform hover:-translate-y-2 ring-2 ring-green-400/20 hover:ring-green-400/40 hover:ring-offset-2 hover:ring-offset-green-100">
       {/* Image section with zoom + overlay */}
-      <div className="relative overflow-hidden h-36">
+      <div className="relative overflow-hidden h-32">
         <img
           src={imageUrl}
           alt={title}
@@ -72,7 +72,7 @@ const FounderCard: React.FC = () => {
         <img
           src={founderImg}
           alt="Prof. (Dr.) Achyuta Samanta"
-          className="relative w-32 h-32 object-cover rounded-full shadow-lg border-4 border-blue-100 mb-2 group-hover:scale-105 transition-transform duration-500"
+          className="relative w-28 h-28 object-cover rounded-full shadow-lg border-4 border-blue-100 mb-2 group-hover:scale-105 transition-transform duration-500"
         />
 
         <h2 className="text-lg font-bold text-gray-900 text-center mb-1">
