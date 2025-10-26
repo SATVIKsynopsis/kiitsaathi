@@ -80,7 +80,7 @@ const HOSTED_URL = import.meta.env.VITE_NEW_HOSTED_URL;
 
 const testimonials = [
   {
-    text: "Lost my AirPods near Food Court - got them back in 2 hours!",
+    text: "Lost my AirPods near Food Court — got them back in 2 hours!",
     author: "Rahul, CSE 3rd Year",
     icon: "🎧",
   },
