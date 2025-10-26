@@ -65,6 +65,9 @@ const allowedOrigins = [
   "http://localhost:3001"
 ];
 
+
+
+
 // CORS configuration
 app.use(
   cors({
