@@ -1,3 +1,5 @@
+// Use the correct backend URL for admin study material requests
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL || "https://kiitsaathi-hosted.onrender.com";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,13 +50,15 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const url = statusFilter === 'all'
-        ? '/api/admin/study-material-requests'
-        : `/api/admin/study-material-requests?status=${statusFilter}`;
-      const response = await fetch(url, { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to fetch requests');
+      // Fetch all admin dashboard data and filter study material requests by status
+      const response = await fetch(`${HOSTED_URL}/api/admin/dashboard-data`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch admin dashboard data');
       const result = await response.json();
-      setRequests(result.data || []);
+      let allRequests = result.study_material_requests || [];
+      if (statusFilter !== 'all') {
+        allRequests = allRequests.filter((req: any) => req.status === statusFilter);
+      }
+      setRequests(allRequests);
     } catch (error) {
       console.error('Error fetching requests:', error);
       toast.error('Failed to load requests');
@@ -65,7 +69,7 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
 
   const handlePreview = async (request: StudyMaterialRequest) => {
     try {
-      const response = await fetch(`/api/admin/study-material-preview-url?path=${encodeURIComponent(request.storage_path)}`, { credentials: 'include' });
+  const response = await fetch(`${HOSTED_URL}/api/admin/study-material-preview-url?path=${encodeURIComponent(request.storage_path)}`, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to get preview URL');
       const result = await response.json();
       setPreviewUrl(result.signedUrl);
@@ -78,7 +82,7 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
   const handleApprove = async (requestId: string) => {
     setProcessing(true);
     try {
-      const response = await fetch('/api/admin/study-material-approve', {
+  const response = await fetch(`${HOSTED_URL}/api/admin/study-material-approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -106,7 +110,7 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
 
     setProcessing(true);
     try {
-      const response = await fetch('/api/admin/study-material-reject', {
+  const response = await fetch(`${HOSTED_URL}/api/admin/study-material-reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

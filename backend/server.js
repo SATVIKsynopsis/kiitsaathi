@@ -70,7 +70,14 @@ async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader?.split(' ')[1];
 
+  console.log('🔐 Auth attempt:', { 
+    hasAuthHeader: !!authHeader, 
+    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+    path: req.path 
+  });
+
   if (!token) {
+    console.error('❌ No token provided');
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
@@ -79,23 +86,19 @@ async function authenticateToken(req, res, next) {
     const { data: { user }, error } = await supabase.auth.getUser(token);
     
     if (error || !user) {
-      console.error('Token verification failed:', error);
+      console.error('❌ Token verification failed:', error?.message || 'No user found');
       return res.status(403).json({ error: 'Invalid or expired token.' });
     }
 
+    console.log('✅ Token verified for user:', user.email);
+    
     // ✅ Attach user data to request
     req.user = user;
     req.user_id = user.id;
-
-    if (error || !data?.user) {
-      return res.status(403).json({ error: 'Invalid or expired token.' });
-    }
-
-    // ✅ Attach user ID (same as before with JWT 'sub')
-    req.user_id = data.user.id;
+    
     next();
   } catch (err) {
-    console.error('Token verification failed:', err);
+    console.error('❌ Token verification exception:', err);
     return res.status(403).json({ error: 'Invalid or expired token.' });
   }
 }
@@ -215,6 +218,11 @@ app.get("/api/admin/dashboard-data", async (req, res) => {
       .order("created_at", { ascending: false })
       .limit(50);
 
+    const { data: studyMaterialRequests } = await supabase
+      .from("study_material_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+
     const { count: totalUsers } = await supabase
       .from("profiles")
       .select("*", { count: "exact", head: true });
@@ -246,6 +254,7 @@ app.get("/api/admin/dashboard-data", async (req, res) => {
       contactSubmissions: contacts || [],
       feedbacks: feedbackData || [],
       adminActions: actions || [],
+      study_material_requests: studyMaterialRequests || [],
       stats,
     });
   } catch (error) {
@@ -1472,11 +1481,7 @@ app.patch('/api/lostfound/items/:id', authenticateToken, async (req, res) => {
 });
 
 
-// ============================================
-// PAYMENT ROUTES (LOST & FOUND SPECIFIC)
-// ============================================
 
-// Create order for Lost & Found contact unlock
 app.post('/api/payments/create-lost-found-order', async (req, res) => {
   try {
     const { amount, itemId, itemTitle, itemPosterEmail, payerUserId, receipt } = req.body;
@@ -2070,10 +2075,10 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(400).json({ error: 'File size exceeds 50MB limit', success: false });
     }
 
-    const userId = req.user?.id || 'anonymous';
-    const timestamp = Date.now();
-    const filename = `${userId}_${timestamp}_${file.name}`;
-    const storagePath = `${folder_type}/pending/${filename}`; // Store in pending subfolder
+  const userId = req.user?.id || null;
+  const timestamp = Date.now();
+  const filename = `${userId ? userId : 'guest'}_${timestamp}_${file.name}`;
+  const storagePath = `${folder_type}/pending/${filename}`; // Store in pending subfolder
 
     // Upload to study-materials bucket
     const { error: uploadError } = await supabase.storage
@@ -2102,7 +2107,8 @@ app.post('/api/study-materials/upload', async (req, res) => {
         pdf_url: filename, // Store just the filename, folder is implied
         filesize: file.size,
         mime_type: file.mimetype,
-        user_id: userId,
+        // Only include user_id if present (authenticated)
+        ...(userId ? { user_id: userId } : {}),
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -2430,9 +2436,9 @@ app.post('/verify-payment', authenticateToken, async (req, res) => {
 
 
 
-app.get("/api/group/:groupId", async (req, res) => {
+app.get("/api/group/:groupId", authenticateToken, async (req, res) => {
   const { groupId } = req.params;
-  const { user_id } = req.query;
+  const user_id = req.user_id; // ✅ From authenticated token
 
   try {
     // Fetch group details
@@ -2852,19 +2858,25 @@ app.get("/api/society-events", async (req, res) => {
 });
 
 
-//SplitSaathi
+//SplitSaathi - ✅ SECURED
 app.post("/api/user-groups", async (req, res) => {
   try {
-    const { userId, email } = req.body;
-    if (!userId || !email) {
-      return res.status(400).json({ error: "Missing userId or email" });
-    }
+    // 1️⃣ Get the token from headers
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    // Extract roll number from email (e.g., "2105555@kiit.ac.in")
-    const rollNumberMatch = email.match(/^(\d+)@/);
+    // 2️⃣ Get user info from Supabase
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ error: "Invalid token" });
+
+    const userId = user.id; // ✅ always valid UUID
+
+    // 3️⃣ Extract roll number from email if needed
+    const email = req.body.email || user.email; // fallback to authenticated user's email
+    const rollNumberMatch = email?.match(/^(\d+)@/);
     const rollNumber = rollNumberMatch?.[1];
 
-    // Load groups created by user
+    // 4️⃣ Load groups created by user
     const { data: createdGroups, error: createdError } = await supabase
       .from("groups")
       .select("*")
@@ -2873,9 +2885,8 @@ app.post("/api/user-groups", async (req, res) => {
 
     if (createdError) throw createdError;
 
+    // 5️⃣ Load groups where user is a member
     let linkedGroups = [];
-
-    // If roll number found, load groups they're a member of
     if (rollNumber) {
       const { data: memberRecords, error: memberError } = await supabase
         .from("group_members")
@@ -2886,79 +2897,78 @@ app.post("/api/user-groups", async (req, res) => {
 
       linkedGroups = memberRecords
         .map((record) => record.groups)
-        .filter((group) => group.created_by !== userId); // Avoid duplicates
+        .filter((group) => group.created_by !== userId);
     }
 
-    // Merge & deduplicate
+    // 6️⃣ Combine and remove duplicates
     const allGroups = [...(createdGroups || []), ...linkedGroups];
-    const uniqueGroups = Array.from(
-      new Map(allGroups.map((g) => [g.id, g])).values()
-    );
+    const uniqueGroups = Array.from(new Map(allGroups.map((g) => [g.id, g])).values());
 
     res.status(200).json(uniqueGroups);
   } catch (error) {
-    console.error("Error loading user groups:", error.message);
+    console.error("💥 Error loading user groups:", error);
     res.status(500).json({ error: "Failed to load user groups" });
   }
 });
 app.post("/api/create-group", async (req, res) => {
   try {
-    const { userId, groupForm } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    if (!userId || !groupForm?.name?.trim()) {
+    // Get user from token
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ error: "Invalid token" });
+
+    const userId = user.id; // ✅ this is a valid UUID
+
+    const { groupForm } = req.body;
+    if (!groupForm?.name?.trim()) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Validate members
-    const validMembers = (groupForm.members || []).filter(
-      (m) => m.name && m.name.trim() !== ""
-    );
-
+    const validMembers = (groupForm.members || []).filter(m => m.name?.trim());
     if (validMembers.length === 0) {
-      return res
-        .status(400)
-        .json({ error: "At least one member with a name is required" });
+      return res.status(400).json({ error: "At least one member with a name is required" });
     }
 
-    // 1️⃣ Create the group
+    // Create the group
     const { data: group, error: groupError } = await supabase
       .from("groups")
       .insert({
         name: groupForm.name,
         description: groupForm.description,
         currency: groupForm.currency || "₹",
-        created_by: userId,
+        created_by: userId, // ✅ use the validated UUID
       })
       .select()
       .single();
 
     if (groupError) throw groupError;
 
-    // 2️⃣ Insert members
+    // Insert members
     const { error: membersError } = await supabase
       .from("group_members")
-      .insert(
-        validMembers.map((member) => ({
-          group_id: group.id,
-          name: member.name.trim(),
-          email_phone: "",
-          roll_number: member.rollNumber?.trim() || null,
-        }))
-      );
+      .insert(validMembers.map(member => ({
+        group_id: group.id,
+        name: member.name.trim(),
+        email_phone: "",
+        roll_number: member.rollNumber?.trim() || null,
+      })));
 
     if (membersError) throw membersError;
 
-    // Return the created group
     res.status(200).json({
       message: "Group created successfully",
       group,
       memberCount: validMembers.length,
     });
+
   } catch (error) {
-    console.error("❌ Error creating group:", error.message);
+    console.error("❌ Error creating group:", error);
     res.status(500).json({ error: "Failed to create group" });
   }
 });
+
 
 
 

@@ -76,7 +76,7 @@ interface FormData {
   item_type: "lost" | "found";
 }
 
-const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+const HOSTED_URL = import.meta.env.VITE_NEW_HOSTED_URL;
 
 const testimonials = [
   {
@@ -588,6 +588,19 @@ export default function LostAndFound() {
                 Let's help them find their way back.
               </span>
             </p>
+            {/* Under Development Banner - now below hero section */}
+            <div className="mt-6 mb-6 flex justify-center">
+              <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white py-4 px-6 rounded-2xl shadow-2xl w-full max-w-2xl border-4 border-white/20">
+                <p className="text-lg md:text-xl font-bold flex items-center justify-center gap-2">
+                  <span className="text-2xl">🚧</span>
+                  <span>UNDER DEVELOPMENT</span>
+                  <span className="text-2xl">🚧</span>
+                </p>
+                <p className="text-sm md:text-base mt-1 opacity-90 text-center">
+                  This portal is currently being updated. Some functions may not work as expected. Thank you for your patience!
+                </p>
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button
                 size="lg"
