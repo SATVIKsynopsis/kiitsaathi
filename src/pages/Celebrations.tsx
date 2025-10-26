@@ -175,7 +175,7 @@ export default function Celebrations() {
           
           <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-8">
             Whether it's a surprise birthday, a heartfelt celebration, or just an excuse to party, 
-            KIIT Saathi has you covered — from cakes & party sprays to full decoration setups. 
+            KIIT Saathi has you covered - from cakes & party sprays to full decoration setups. 
             <span className="font-semibold text-purple-600 block mt-2">You dream it, we deliver it.</span>
           </p>
 
@@ -425,7 +425,7 @@ export default function Celebrations() {
               <div className="text-6xl mb-4">🎈</div>
               <h3 className="text-2xl font-poppins font-bold mb-4">
                 <span className="bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent">
-                  Don't stress over last-minute birthdays — we've got your back!
+                  Don't stress over last-minute birthdays - we've got your back!
                 </span>
               </h3>
               <p className="text-lg text-muted-foreground">

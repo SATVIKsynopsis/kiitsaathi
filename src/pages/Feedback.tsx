@@ -86,7 +86,7 @@ export default function Feedback() {
                 <p className="text-lg text-gray-700 font-normal leading-relaxed mb-4">
                   Please give us your feedback! Our team would love to see your thoughts.
                   <br />
-                  If you find anything missing, incorrect, or want to share ideas — please tell us.
+                  If you find anything missing, incorrect, or want to share ideas - please tell us.
                   <br />
                   <span className="font-semibold text-green-600">
                     Our team will review and act within 24 hours ❤

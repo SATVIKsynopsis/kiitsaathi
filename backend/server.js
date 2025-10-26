@@ -174,34 +174,7 @@ app.get('/health', async (req, res) => {
 
 // ✅ NOW register route files (AFTER middleware and supabase initialization)
 
-app.post("/api/contact", async (req, res) => {
-  const { name, email, message } = req.body;
 
-  if (!name || !email || !message) {
-    console.error("Missing required fields:", { name, email, message });
-    return res.status(400).json({ message: "Name, email, and message are required" });
-  }
-
-  try {
-    const { error } = await supabase.from("contact_messages").insert({
-      name: name.trim(),
-      email: email.trim(),
-      message: message.trim(),
-      created_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      console.error("Supabase insert error:", error);
-      return res.status(500).json({ message: "Database error", details: error.message });
-    }
-
-    console.log("Contact message saved:", { name, email });
-    return res.status(200).json({ message: "Contact message saved successfully" });
-  } catch (err) {
-    console.error("Error saving contact message:", err.message);
-    return res.status(500).json({ message: "Failed to save contact message" });
-  }
-});
 
 // ============================================
 // ADMIN ROUTES
@@ -1829,6 +1802,58 @@ app.post('/api/policy/privacy', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/delete-all-resume-data', async (req, res) => {
+  try {
+    const { target_user_id } = req.body;
+
+    if (!target_user_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing target_user_id',
+      });
+    }
+
+    console.log('🗑️ Initiating Delete All Data Request...');
+    console.log('👤 Target User ID:', target_user_id);
+
+    // Call Supabase RPC function
+    const { data, error } = await supabase.rpc('delete_all_resume_data', {
+      target_user_id,
+    });
+
+    if (error) {
+      console.error('❌ Supabase RPC Error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to delete user data',
+      });
+    }
+
+    if (!data) {
+      console.error('⚠️ RPC returned no data');
+      return res.status(500).json({
+        success: false,
+        error: 'Delete operation returned null or undefined',
+      });
+    }
+
+    console.log('✅ Data deleted successfully for user:', target_user_id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'All personal data permanently deleted from our servers',
+    });
+
+  } catch (err) {
+    console.error('💥 Unexpected API Error:', err);
+    return res.status(500).json({
+      success: false,
+      error: 'Unexpected server error occurred',
+    });
+  }
+});
+
+
 // ✅ Accept Terms & Conditions (SECURED)
 app.post('/api/policy/terms', authenticateToken, async (req, res) => {
   try {
@@ -2886,24 +2911,20 @@ app.get("/api/society-events", async (req, res) => {
 
 
 //SplitSaathi - ✅ SECURED
-app.post("/api/user-groups", async (req, res) => {
+app.post("/api/user-groups", authenticateToken, async (req, res) => {
   try {
-    // 1️⃣ Get the token from headers
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
+    const userId = req.user_id; // ✅ From token
+    const email = req.user.email; // ✅ From token
+    
+    if (!userId || !email) {
+      return res.status(400).json({ error: "Missing user information" });
+    }
 
-    // 2️⃣ Get user info from Supabase
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) return res.status(401).json({ error: "Invalid token" });
-
-    const userId = user.id; // ✅ always valid UUID
-
-    // 3️⃣ Extract roll number from email if needed
-    const email = req.body.email || user.email; // fallback to authenticated user's email
-    const rollNumberMatch = email?.match(/^(\d+)@/);
+    // Extract roll number from email (e.g., "2105555@kiit.ac.in")
+    const rollNumberMatch = email.match(/^(\d+)@/);
     const rollNumber = rollNumberMatch?.[1];
 
-    // 4️⃣ Load groups created by user
+    // Load groups created by user
     const { data: createdGroups, error: createdError } = await supabase
       .from("groups")
       .select("*")
@@ -2912,8 +2933,9 @@ app.post("/api/user-groups", async (req, res) => {
 
     if (createdError) throw createdError;
 
-    // 5️⃣ Load groups where user is a member
     let linkedGroups = [];
+
+    // If roll number found, load groups they're a member of
     if (rollNumber) {
       const { data: memberRecords, error: memberError } = await supabase
         .from("group_members")
@@ -2924,78 +2946,80 @@ app.post("/api/user-groups", async (req, res) => {
 
       linkedGroups = memberRecords
         .map((record) => record.groups)
-        .filter((group) => group.created_by !== userId);
+        .filter((group) => group.created_by !== userId); // Avoid duplicates
     }
 
-    // 6️⃣ Combine and remove duplicates
+    // Merge & deduplicate
     const allGroups = [...(createdGroups || []), ...linkedGroups];
-    const uniqueGroups = Array.from(new Map(allGroups.map((g) => [g.id, g])).values());
+    const uniqueGroups = Array.from(
+      new Map(allGroups.map((g) => [g.id, g])).values()
+    );
 
     res.status(200).json(uniqueGroups);
   } catch (error) {
-    console.error("💥 Error loading user groups:", error);
+    console.error("Error loading user groups:", error.message);
     res.status(500).json({ error: "Failed to load user groups" });
   }
 });
-app.post("/api/create-group", async (req, res) => {
+app.post("/api/create-group", authenticateToken, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
-
-    // Get user from token
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) return res.status(401).json({ error: "Invalid token" });
-
-    const userId = user.id; // ✅ this is a valid UUID
-
+    const userId = req.user_id; // ✅ From token
     const { groupForm } = req.body;
+
     if (!groupForm?.name?.trim()) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const validMembers = (groupForm.members || []).filter(m => m.name?.trim());
+    // Validate members
+    const validMembers = (groupForm.members || []).filter(
+      (m) => m.name && m.name.trim() !== ""
+    );
+
     if (validMembers.length === 0) {
-      return res.status(400).json({ error: "At least one member with a name is required" });
+      return res
+        .status(400)
+        .json({ error: "At least one member with a name is required" });
     }
 
-    // Create the group
+    // 1️⃣ Create the group
     const { data: group, error: groupError } = await supabase
       .from("groups")
       .insert({
         name: groupForm.name,
         description: groupForm.description,
         currency: groupForm.currency || "₹",
-        created_by: userId, // ✅ use the validated UUID
+        created_by: userId,
       })
       .select()
       .single();
 
     if (groupError) throw groupError;
 
-    // Insert members
+    // 2️⃣ Insert members
     const { error: membersError } = await supabase
       .from("group_members")
-      .insert(validMembers.map(member => ({
-        group_id: group.id,
-        name: member.name.trim(),
-        email_phone: "",
-        roll_number: member.rollNumber?.trim() || null,
-      })));
+      .insert(
+        validMembers.map((member) => ({
+          group_id: group.id,
+          name: member.name.trim(),
+          email_phone: "",
+          roll_number: member.rollNumber?.trim() || null,
+        }))
+      );
 
     if (membersError) throw membersError;
 
+    // Return the created group
     res.status(200).json({
       message: "Group created successfully",
       group,
       memberCount: validMembers.length,
     });
-
   } catch (error) {
-    console.error("❌ Error creating group:", error);
+    console.error("❌ Error creating group:", error.message);
     res.status(500).json({ error: "Failed to create group" });
   }
 });
-
 
 
 

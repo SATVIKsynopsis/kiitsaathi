@@ -307,7 +307,7 @@ export const Hero = () => {
               campus needs
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 font-inter leading-relaxed px-2 sm:px-0">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white font-inter leading-relaxed px-2 sm:px-0">
 Everything a KIITian needs - from academics to campus life, all in one smart platform.            </p>
 
             {/* CTA Buttons */}

@@ -114,7 +114,7 @@ const Meetups = () => {
           </div>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            From casual chats under the trees to career networking in the library — meetups make KIIT feel like home. 🌿✨
+            From casual chats under the trees to career networking in the library - meetups make KIIT feel like home. 🌿✨
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -147,8 +147,8 @@ const Meetups = () => {
             <p className="text-lg text-muted-foreground leading-relaxed">
               KIIT is big. Like… really big. And sometimes, that makes it hard to bump into the people you vibe with. 🤝
               <br /><br />
-              That's why we have <strong>Meetups</strong> — tiny pockets of fun, learning, and connection that bring students together. 
-              You can join one or host your own — whether it's about future plans, music jams, UNO battles, or career talks. 💛
+              That's why we have <strong>Meetups</strong> - tiny pockets of fun, learning, and connection that bring students together. 
+              You can join one or host your own - whether it's about future plans, music jams, UNO battles, or career talks. 💛
             </p>
           </div>
         </div>
@@ -357,7 +357,7 @@ const Meetups = () => {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-4">Keep It Kind, Keep It KIIT 💛</h2>
           <p className="text-muted-foreground">
-            All meetups follow KIIT Saathi's code of respect. No hate, no negativity — just positive vibes, 
+            All meetups follow KIIT Saathi's code of respect. No hate, no negativity - just positive vibes, 
             shared ideas, and good memories. ✨
           </p>
         </div>

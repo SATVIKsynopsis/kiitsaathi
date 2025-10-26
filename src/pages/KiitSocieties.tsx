@@ -52,7 +52,7 @@ const KiitSocieties = () => {
       icon: PartyPopper,
       title: "Fest Announcements",
       description:
-        "All fest updates, registrations, and event highlights — in one place.",
+        "All fest updates, registrations, and event highlights - in one place.",
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
       emoji: <PartyPopper className="w-6 h-6 text-white" />,

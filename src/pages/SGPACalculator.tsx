@@ -183,7 +183,7 @@ const SGPACalculator = () => {
     
     try {
       // Show progress notification
-      toast.info("Generating PDF — please wait...", { duration: 3000 });
+      toast.info("Generating PDF - please wait...", { duration: 3000 });
 
       // Wait a tick for UI to update
       await new Promise(resolve => setTimeout(resolve, 100));
