@@ -13,6 +13,8 @@ interface StudyMaterialUploadDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
 export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialUploadDialogProps) {
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
@@ -76,14 +78,22 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
       formData.append('folder_type', form.folder_type);
       formData.append('uploader_name', form.uploader_name);
 
-      const response = await fetch('/api/study-material/upload', {
+      const response = await fetch(`${HOSTED_URL}/api/study-materials/upload`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to submit material');
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonErr) {
+        console.error('Failed to parse JSON from upload response:', jsonErr);
+        result = null;
+      }
+      console.log('Upload response:', response);
+      console.log('Upload response body:', result);
+      if (!response.ok || !result || !result.success) {
+        throw new Error((result && result.error) || `Failed to submit material: ${response.status} ${response.statusText}`);
       }
 
       toast.success('Study material submitted for review!', {

@@ -2855,16 +2855,22 @@ app.get("/api/society-events", async (req, res) => {
 //SplitSaathi
 app.post("/api/user-groups", async (req, res) => {
   try {
-    const { userId, email } = req.body;
-    if (!userId || !email) {
-      return res.status(400).json({ error: "Missing userId or email" });
-    }
+    // 1️⃣ Get the token from headers
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    // Extract roll number from email (e.g., "2105555@kiit.ac.in")
-    const rollNumberMatch = email.match(/^(\d+)@/);
+    // 2️⃣ Get user info from Supabase
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ error: "Invalid token" });
+
+    const userId = user.id; // ✅ always valid UUID
+
+    // 3️⃣ Extract roll number from email if needed
+    const email = req.body.email || user.email; // fallback to authenticated user's email
+    const rollNumberMatch = email?.match(/^(\d+)@/);
     const rollNumber = rollNumberMatch?.[1];
 
-    // Load groups created by user
+    // 4️⃣ Load groups created by user
     const { data: createdGroups, error: createdError } = await supabase
       .from("groups")
       .select("*")
@@ -2873,9 +2879,8 @@ app.post("/api/user-groups", async (req, res) => {
 
     if (createdError) throw createdError;
 
+    // 5️⃣ Load groups where user is a member
     let linkedGroups = [];
-
-    // If roll number found, load groups they're a member of
     if (rollNumber) {
       const { data: memberRecords, error: memberError } = await supabase
         .from("group_members")
@@ -2886,79 +2891,78 @@ app.post("/api/user-groups", async (req, res) => {
 
       linkedGroups = memberRecords
         .map((record) => record.groups)
-        .filter((group) => group.created_by !== userId); // Avoid duplicates
+        .filter((group) => group.created_by !== userId);
     }
 
-    // Merge & deduplicate
+    // 6️⃣ Combine and remove duplicates
     const allGroups = [...(createdGroups || []), ...linkedGroups];
-    const uniqueGroups = Array.from(
-      new Map(allGroups.map((g) => [g.id, g])).values()
-    );
+    const uniqueGroups = Array.from(new Map(allGroups.map((g) => [g.id, g])).values());
 
     res.status(200).json(uniqueGroups);
   } catch (error) {
-    console.error("Error loading user groups:", error.message);
+    console.error("💥 Error loading user groups:", error);
     res.status(500).json({ error: "Failed to load user groups" });
   }
 });
 app.post("/api/create-group", async (req, res) => {
   try {
-    const { userId, groupForm } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    if (!userId || !groupForm?.name?.trim()) {
+    // Get user from token
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return res.status(401).json({ error: "Invalid token" });
+
+    const userId = user.id; // ✅ this is a valid UUID
+
+    const { groupForm } = req.body;
+    if (!groupForm?.name?.trim()) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Validate members
-    const validMembers = (groupForm.members || []).filter(
-      (m) => m.name && m.name.trim() !== ""
-    );
-
+    const validMembers = (groupForm.members || []).filter(m => m.name?.trim());
     if (validMembers.length === 0) {
-      return res
-        .status(400)
-        .json({ error: "At least one member with a name is required" });
+      return res.status(400).json({ error: "At least one member with a name is required" });
     }
 
-    // 1️⃣ Create the group
+    // Create the group
     const { data: group, error: groupError } = await supabase
       .from("groups")
       .insert({
         name: groupForm.name,
         description: groupForm.description,
         currency: groupForm.currency || "₹",
-        created_by: userId,
+        created_by: userId, // ✅ use the validated UUID
       })
       .select()
       .single();
 
     if (groupError) throw groupError;
 
-    // 2️⃣ Insert members
+    // Insert members
     const { error: membersError } = await supabase
       .from("group_members")
-      .insert(
-        validMembers.map((member) => ({
-          group_id: group.id,
-          name: member.name.trim(),
-          email_phone: "",
-          roll_number: member.rollNumber?.trim() || null,
-        }))
-      );
+      .insert(validMembers.map(member => ({
+        group_id: group.id,
+        name: member.name.trim(),
+        email_phone: "",
+        roll_number: member.rollNumber?.trim() || null,
+      })));
 
     if (membersError) throw membersError;
 
-    // Return the created group
     res.status(200).json({
       message: "Group created successfully",
       group,
       memberCount: validMembers.length,
     });
+
   } catch (error) {
-    console.error("❌ Error creating group:", error.message);
+    console.error("❌ Error creating group:", error);
     res.status(500).json({ error: "Failed to create group" });
   }
 });
+
 
 
 
