@@ -2,18 +2,18 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
+    name: "Enakshy Mondal",
+    year: "B.Tech CSE, 3rd Year",
+    content: "Found all my study materials in one place! PYQs, notes, and curated YouTube playlists - everything I need for exam prep.",
+    rating: 5,
+    avatar: "👸"
+  },
+  {
     name: "Abhishek Raj",
     year: "B.Tech CSE, 2nd Year",
     content: "The KIIT Saathi AI Assistant is incredible! Available 24/7 to answer any question about campus life, academics, or procedures. It's like having a personal guide!",
     rating: 5,
     avatar: "👩‍💻"
-  },
-  {
-    name: "Enakshy Mondal",
-    year: "B.Tech, 3rd Year",
-    content: "Found all my study materials in one place! PYQs, notes, and curated YouTube playlists - everything I need for exam prep.",
-    rating: 5,
-    avatar: "👨‍🎓"
   },
   {
     name: "Anushka Gupta",
