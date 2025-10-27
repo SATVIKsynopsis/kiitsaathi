@@ -2155,7 +2155,8 @@ app.post('/api/study-materials/upload', async (req, res) => {
         branch,
         year,
         folder_type,
-        uploaded_by: uploader_name,
+        // Use the column name expected by the DB schema
+        uploader_name: uploader_name,
         pdf_url: filename, // Store just the filename, folder is implied
         filesize: file.size,
         mime_type: file.mimetype,
