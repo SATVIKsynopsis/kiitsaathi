@@ -8,6 +8,11 @@ interface Mentor {
 
 const mentors: Mentor[] = [
   {
+    name: "Bhaskar Das",
+    designation: "Ph.D Manager, KIIT-Technology Business Incubator",
+    photo: "/mentors/bhaskar.jpg",
+  },
+  {
     name: "Dr. Vikas Hassija",
     designation: "Associate Professor,SCE",
     photo: "/mentors/vikas.jpg",

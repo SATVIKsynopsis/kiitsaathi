@@ -20,7 +20,7 @@ import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/study-materials/FilterBar";
 import { DataTable } from "@/components/study-materials/DataTable";
 import { TabNavigation } from "@/components/study-materials/TabNavigation";
-import { StudyMaterialUploadDialog } from "@/components/StudyMaterialUploadDialog";
+import  StudyMaterialUploadDialog  from "@/components/StudyMaterialUploadDialog";
 import { toast } from "sonner";
 import { semesters, years, semesterSubjects } from "@/data/studyMaterials";
 import { Input } from "@/components/ui/input";
@@ -198,6 +198,9 @@ export default function StudyMaterial() {
         "https://www.youtube.com/playlist?list=PLEiEAq2VkUUKL3yPbn8yWnatjUg0P0I-Z",
     },
   ];
+
+  const isAdmin = user?.email === 'adityash8997@gmail.com' || user?.email === '24155598@kiit.ac.in';
+
 
   const fetchMaterials = useCallback(async () => {
     setLoading(true);
@@ -434,7 +437,7 @@ export default function StudyMaterial() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                {user && (
+                {isAdmin && (
                   <Button
                     onClick={() => setUploadDialogOpen(true)}
                     className="group bg-gradient-to-r from-kiit-primary to-kiit-accent hover:opacity-90 transition-opacity px-6 py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"

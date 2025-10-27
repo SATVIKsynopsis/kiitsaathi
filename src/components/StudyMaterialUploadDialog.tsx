@@ -6,16 +6,26 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Upload, Loader, FileText } from "lucide-react";
+import { createClient } from '@supabase/supabase-js';
 import { semesters, semesterSubjects } from "@/data/studyMaterials";
+
+// Initialize Supabase client with validation
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''; // FIXED: Added VITE_ prefix
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY');
+}
+
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
 
 interface StudyMaterialUploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
-
-export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialUploadDialogProps) {
+export default function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialUploadDialogProps) {
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -39,14 +49,19 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const allowedTypes = [
+        'application/pdf', 
+        'application/vnd.ms-powerpoint', 
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation', 
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      
       if (!allowedTypes.includes(file.type)) {
         toast.error('Invalid file type. Only PDF, PPT, DOC, DOCX files are allowed.');
         return;
       }
 
-      // Validate file size (50MB)
       if (file.size > 50 * 1024 * 1024) {
         toast.error('File size exceeds 50MB limit');
         return;
@@ -56,48 +71,132 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!form.file || !form.title || !form.subject || !form.semester || !form.folder_type || !form.uploader_name) {
       toast.error('Please fill all required fields');
+      return;
+    }
+
+    // Additional validation for PYQs
+    if (form.folder_type === 'pyqs' && !form.year) {
+      toast.error('Year is required for Previous Year Questions');
+      return;
+    }
+
+    // Check if Supabase is initialized
+    if (!supabase) {
+      toast.error('Supabase configuration is missing. Please check your environment variables.');
       return;
     }
 
     setUploading(true);
 
     try {
-      // Upload file and submit request to backend
-      const formData = new FormData();
-      formData.append('file', form.file);
-      formData.append('title', form.title);
-      formData.append('subject', form.subject);
-      formData.append('semester', form.semester);
-      formData.append('branch', form.branch);
-      formData.append('year', form.year);
-      formData.append('folder_type', form.folder_type);
-      formData.append('uploader_name', form.uploader_name);
+      // Get current authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || null;
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const fileExtension = form.file.name.split('.').pop();
+      const sanitizedTitle = form.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const filename = `${sanitizedTitle}_${timestamp}.${fileExtension}`;
+      
+      // Storage path: folder_type/filename
+      const storagePath = `${form.folder_type}/${filename}`;
 
-      const response = await fetch(`${HOSTED_URL}/api/study-materials/upload`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-      let result;
-      try {
-        result = await response.json();
-      } catch (jsonErr) {
-        console.error('Failed to parse JSON from upload response:', jsonErr);
-        result = null;
-      }
-      console.log('Upload response:', response);
-      console.log('Upload response body:', result);
-      if (!response.ok || !result || !result.success) {
-        throw new Error((result && result.error) || `Failed to submit material: ${response.status} ${response.statusText}`);
+      // Upload file to Supabase Storage bucket "study-materials"
+      const { error: uploadError } = await supabase.storage
+        .from('study-materials')
+        .upload(storagePath, form.file, {
+          contentType: form.file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Failed to upload file: ${uploadError.message}`);
       }
 
-      toast.success('Study material submitted for review!', {
-        description: 'Admin will review and publish your material soon.'
+      // Get public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('study-materials')
+        .getPublicUrl(storagePath);
+
+      // Prepare common data
+      const filesizeInMB = `${(form.file.size / 1024 / 1024).toFixed(2)} MB`;
+      const commonData = {
+        title: form.title,
+        subject: form.subject,
+        semester: form.semester,
+        branch: form.branch,
+        uploaded_by: form.uploader_name,
+        user_id: userId,
+        filesize: filesizeInMB,
+        mime_type: form.file.type,
+        status: 'active',
+        pdf_url: publicUrl,
+      };
+
+      // Insert into appropriate table based on folder_type
+      let insertError;
+      
+      switch (form.folder_type) {
+        case 'notes':
+          const { error: notesError } = await supabase
+            .from('notes')
+            .insert({
+              ...commonData,
+              upload_date: new Date().toISOString().split('T')[0],
+            });
+          insertError = notesError;
+          break;
+
+        case 'pyqs':
+          const { error: pyqsError } = await supabase
+            .from('pyqs')
+            .insert({
+              ...commonData,
+              year: form.year,
+            });
+          insertError = pyqsError;
+          break;
+
+        case 'ppts':
+          const { error: pptsError } = await supabase
+            .from('ppts')
+            .insert({
+              ...commonData,
+              ppt_url: publicUrl,
+              upload_date: new Date().toISOString().split('T')[0],
+            });
+          insertError = pptsError;
+          break;
+
+        case 'ebooks':
+          const { error: ebooksError } = await supabase
+            .from('ebooks')
+            .insert({
+              ...commonData,
+              year: form.year,
+              upload_date: new Date().toISOString().split('T')[0],
+            });
+          insertError = ebooksError;
+          break;
+
+        default:
+          throw new Error('Invalid folder type');
+      }
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        // Rollback: delete uploaded file
+        await supabase.storage.from('study-materials').remove([storagePath]);
+        throw new Error(`Failed to save to database: ${insertError.message}`);
+      }
+
+      toast.success('Study material uploaded successfully!', {
+        description: `Your ${folderTypes.find(t => t.value === form.folder_type)?.label} has been published.`
       });
 
       // Reset form
@@ -116,13 +215,12 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
 
     } catch (error: any) {
       console.error('Submit error:', error);
-      toast.error(error.message || 'Failed to submit material');
+      toast.error(error.message || 'Failed to upload material');
     } finally {
       setUploading(false);
     }
   };
 
-  // Get subjects for selected semester
   const availableSubjects = form.semester 
     ? semesterSubjects.find(s => s.semester === form.semester)?.subjects || []
     : [];
@@ -133,11 +231,11 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Submit Study Material for Review
+            Upload Study Material
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
@@ -146,7 +244,6 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g., Data Structures Notes - Unit 1"
-                required
               />
             </div>
 
@@ -157,7 +254,6 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
                 value={form.uploader_name}
                 onChange={(e) => setForm({ ...form, uploader_name: e.target.value })}
                 placeholder="Your full name"
-                required
               />
             </div>
           </div>
@@ -230,7 +326,9 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
 
           {(form.folder_type === 'pyqs' || form.folder_type === 'ebooks') && (
             <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
+              <Label htmlFor="year">
+                Year {form.folder_type === 'pyqs' && '*'}
+              </Label>
               <Input
                 id="year"
                 value={form.year}
@@ -248,7 +346,6 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
                 type="file"
                 onChange={handleFileChange}
                 accept=".pdf,.ppt,.pptx,.doc,.docx"
-                required
                 className="cursor-pointer"
               />
               {form.file && (
@@ -262,10 +359,10 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
             )}
           </div>
 
-          <div className="bg-muted p-4 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Note:</strong> Your submission will be reviewed by admin before being published. 
-              You'll be notified once it's approved and made available to all students.
+          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-blue-900 dark:text-blue-100">
+              <strong>Note:</strong> Your material will be published immediately and made available to all students. 
+              Please ensure the content is accurate and appropriate before uploading.
             </p>
           </div>
 
@@ -278,21 +375,21 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={uploading}>
+            <Button onClick={handleSubmit} disabled={uploading}>
               {uploading ? (
                 <>
                   <Loader className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
+                  Uploading...
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  Submit for Review
+                  Upload Material
                 </>
               )}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
