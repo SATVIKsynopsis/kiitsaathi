@@ -2100,7 +2100,7 @@ app.post('/api/study-materials/upload', async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
       return res.status(400).json({ error: 'No file uploaded', success: false });
-    }
+    }a
     const file = req.files.file;
     const { title, subject, semester, branch, year, folder_type, uploader_name } = req.body;
 
@@ -2145,7 +2145,7 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(500).json({ error: 'Failed to upload file', success: false });
     }
 
-    // Insert into study_material_requests table only
+    // Insert into study_material_requests table only (match DB schema)
     const { error: insertError } = await supabase
       .from('study_material_requests')
       .insert({
@@ -2155,12 +2155,12 @@ app.post('/api/study-materials/upload', async (req, res) => {
         branch,
         year,
         folder_type,
-        // Use the column name expected by the DB schema
-        uploader_name: uploader_name,
-        pdf_url: filename, // Store just the filename, folder is implied
+        uploader_name: uploader_name || (req.user?.email ?? 'Unknown'),
+        uploader_id: userId || null,
+        filename: filename,
+        storage_path: storagePath,
         filesize: file.size,
         mime_type: file.mimetype,
-        ...(userId ? { user_id: userId } : {}),
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -2181,47 +2181,26 @@ app.post('/api/study-materials/upload', async (req, res) => {
 // Fetch study material requests (Admin)
 app.post('/api/admin/study-material-approve', async (req, res) => {
   try {
-    const { request_id, folder_type, adminUserId } = req.body;
+    const { request_id } = req.body;
 
-    // Validate folder_type
-    const validTypes = ['pyqs', 'notes', 'ebooks', 'ppts'];
-    if (!request_id || !folder_type || !validTypes.includes(folder_type)) {
-      return res.status(400).json({ error: 'Missing or invalid required fields' });
+    if (!request_id) return res.status(400).json({ error: 'request_id is required' });
+
+    // Forward the approval to the Supabase Edge Function which contains the hardened logic
+    const authHeader = req.headers.authorization || '';
+
+    const { data, error } = await supabase.functions.invoke('admin-approve-study-material', {
+      body: { request_id },
+      headers: { Authorization: authHeader }
+    });
+
+    if (error) {
+      console.error('Edge function error:', error);
+      return res.status(500).json({ success: false, error: error.message || 'Approval function failed' });
     }
 
-    // Fetch the request from the appropriate table
-    const tableName = folder_type;
-    const { data: request, error: fetchError } = await supabase
-      .from(tableName)
-      .select('pdf_url')
-      .eq('id', request_id)
-      .single();
-
-    if (fetchError || !request) throw new Error('Request not found');
-
-    // Move file to approved folder
-    const currentPath = `${folder_type}/pending/${request.pdf_url}`;
-    const newPath = `${folder_type}/${request.pdf_url}`;
-    const { error: moveError } = await supabase.storage
-      .from('study-materials')
-      .move(currentPath, newPath);
-
-    if (moveError) throw moveError;
-
-    // Update the request status
-    const { error: updateError } = await supabase
-      .from(tableName)
-      .update({
-        status: 'approved',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', request_id);
-
-    if (updateError) throw updateError;
-
-    res.json({ success: true });
+    return res.json({ success: true, data });
   } catch (error) {
-    console.error('Error approving material:', error);
+    console.error('Error invoking approval function:', error);
     res.status(500).json({ success: false, error: 'Failed to approve material' });
   }
 });
