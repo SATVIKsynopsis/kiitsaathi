@@ -2145,21 +2145,20 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(500).json({ error: 'Failed to upload file', success: false });
     }
 
-    // Insert into the appropriate table
-    const tableName = folder_type; // Maps to pyqs, notes, ebooks, ppts
+    // Insert into study_material_requests table only
     const { error: insertError } = await supabase
-      .from(tableName)
+      .from('study_material_requests')
       .insert({
         title,
         subject,
         semester,
         branch,
         year,
+        folder_type,
         uploaded_by: uploader_name,
         pdf_url: filename, // Store just the filename, folder is implied
         filesize: file.size,
         mime_type: file.mimetype,
-        // Only include user_id if present (authenticated)
         ...(userId ? { user_id: userId } : {}),
         status: 'pending',
         created_at: new Date().toISOString(),
