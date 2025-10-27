@@ -2100,7 +2100,7 @@ app.post('/api/study-materials/upload', async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
       return res.status(400).json({ error: 'No file uploaded', success: false });
-    }a
+    }
     const file = req.files.file;
     const { title, subject, semester, branch, year, folder_type, uploader_name } = req.body;
 
