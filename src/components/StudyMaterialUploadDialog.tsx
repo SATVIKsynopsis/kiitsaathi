@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Loader, FileText } from "lucide-react";
 import { semesters, semesterSubjects } from "@/data/studyMaterials";
@@ -66,49 +65,25 @@ export function StudyMaterialUploadDialog({ open, onOpenChange }: StudyMaterialU
     setUploading(true);
 
     try {
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Please login to upload materials');
-      }
+      // Upload file and submit request to backend
+      const formData = new FormData();
+      formData.append('file', form.file);
+      formData.append('title', form.title);
+      formData.append('subject', form.subject);
+      formData.append('semester', form.semester);
+      formData.append('branch', form.branch);
+      formData.append('year', form.year);
+      formData.append('folder_type', form.folder_type);
+      formData.append('uploader_name', form.uploader_name);
 
-      // Upload file to pending bucket
-      const timestamp = Date.now();
-      const filename = `${session.user.id}/${timestamp}_${form.file.name}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('study-material-pending')
-        .upload(filename, form.file, {
-          contentType: form.file.type,
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw new Error('Failed to upload file');
-      }
-
-      // Submit request via edge function
-      const { error: submitError } = await supabase.functions.invoke('submit-study-material-request', {
-        body: {
-          title: form.title,
-          subject: form.subject,
-          semester: form.semester,
-          branch: form.branch,
-          year: form.year,
-          folder_type: form.folder_type,
-          filename: form.file.name,
-          storage_path: filename,
-          filesize: form.file.size,
-          mime_type: form.file.type,
-          uploader_name: form.uploader_name
-        }
+      const response = await fetch('/api/study-material/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
       });
-
-      if (submitError) {
-        // Cleanup uploaded file
-        await supabase.storage.from('study-material-pending').remove([filename]);
-        throw submitError;
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit material');
       }
 
       toast.success('Study material submitted for review!', {

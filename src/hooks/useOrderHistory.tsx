@@ -1,21 +1,17 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
-import { Database } from '@/lib/database-types';
-
-export type Order = Database['public']['Tables']['orders']['Row'];
-
-export type OrderInsert = Database['public']['Tables']['orders']['Insert'];
 
 export function useOrderHistory() {
-  const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const { user, accessToken } = useAuth();
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
   const fetchOrders = async () => {
-    if (!user) {
+    if (!user || !accessToken) {
       setOrders([]);
       return;
     }
@@ -24,14 +20,19 @@ export function useOrderHistory() {
     setError(null);
 
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const response = await fetch(`${HOSTED_URL}/api/orders?user_id=${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        credentials: 'include'
+      });
+      const result = await response.json();
 
-      if (error) throw error;
-      setOrders(data || []);
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Failed to fetch orders');
+      }
+
+      setOrders(result.orders || []);
     } catch (err: any) {
       setError(err.message);
       toast({
@@ -44,32 +45,36 @@ export function useOrderHistory() {
     }
   };
 
-  const createOrder = async (orderData: Omit<Order, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (!user) {
+  const createOrder = async (orderData) => {
+    if (!user || !accessToken) {
       throw new Error('User must be authenticated to create orders');
     }
 
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .insert({
-          ...orderData,
-          user_id: user.id
-        })
-        .select()
-        .single();
+      const response = await fetch(`${HOSTED_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({ user_id: user.id, ...orderData })
+      });
 
-      if (error) throw error;
+      const result = await response.json();
 
-      // Add to local state
-      setOrders(prev => [data, ...prev]);
-      
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Failed to create order');
+      }
+
+      setOrders(prev => [result.order, ...prev]);
+
       toast({
         title: 'Order Recorded',
         description: 'Your transaction has been saved to order history'
       });
 
-      return data;
+      return result.order;
     } catch (err: any) {
       toast({
         title: 'Error',
@@ -80,24 +85,33 @@ export function useOrderHistory() {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, status: Order['payment_status']) => {
+  const updateOrderStatus = async (orderId, status) => {
+    if (!accessToken) {
+      throw new Error('Authentication required');
+    }
+
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ payment_status: status })
-        .eq('id', orderId)
-        .eq('user_id', user?.id);
+      const response = await fetch(`${HOSTED_URL}/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({ user_id: user.id, status })
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Failed to update status');
+      }
 
-      // Update local state
-      setOrders(prev => 
-        prev.map(order => 
-          order.id === orderId 
-            ? { ...order, payment_status: status }
-            : order
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === orderId ? { ...order, payment_status: status } : order
         )
       );
+
     } catch (err: any) {
       toast({
         title: 'Error',
@@ -112,7 +126,7 @@ export function useOrderHistory() {
     fetchOrders();
   }, [user]);
 
-  const getStatusColor = (status: Order['payment_status']) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'text-green-600 bg-green-100';
       case 'pending': return 'text-yellow-600 bg-yellow-100';
@@ -122,7 +136,7 @@ export function useOrderHistory() {
     }
   };
 
-  const getStatusIcon = (status: Order['payment_status']) => {
+  const getStatusIcon = (status) => {
     switch (status) {
       case 'completed': return '✅';
       case 'pending': return '⏳';

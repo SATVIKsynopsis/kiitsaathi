@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { X, ImageIcon, Upload, CheckCircle } from "lucide-react";
 
 interface ApplicationSubmissionFormProps {
@@ -28,6 +29,7 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
   onSuccess
 }) => {
   const { toast } = useToast();
+  const { accessToken } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -70,20 +72,23 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
   };
 
   const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `application_${lostItemId}_${Date.now()}.${fileExt}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from("lost-and-found-images")
-      .upload(fileName, file);
-      
-    if (uploadError) throw uploadError;
-    
-    const { data } = supabase.storage
-      .from("lost-and-found-images")
-      .getPublicUrl(fileName);
-      
-    return data.publicUrl;
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('lostItemId', lostItemId);
+    // You can add more fields if needed
+
+    const response = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/upload-lost-found-image`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to upload image');
+    }
+    const result = await response.json();
+    if (!result.publicUrl) throw new Error('No image URL returned');
+    return result.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,9 +110,17 @@ export const ApplicationSubmissionForm: React.FC<ApplicationSubmissionFormProps>
       const photoUrl = await uploadImage(selectedImage);
 
       // Submit application to backend
-      const response = await fetch(`${import.meta.env.VITE_LOST_FOUND_API_URL}/submit-lost-item-application`, {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/lostfound/submit-lost-item-application`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({
           lostItemId,
           lostItemTitle,

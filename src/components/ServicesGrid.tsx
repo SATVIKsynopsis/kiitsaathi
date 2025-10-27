@@ -20,7 +20,9 @@ import {
   ArrowRight,
   Calculator,
   FileText,
-  GraduationCap
+  GraduationCap,
+  Heart,
+  Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +30,7 @@ import { useServiceVisibility } from "@/hooks/useServiceVisibility";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const services = [
   {
@@ -110,6 +113,22 @@ const services = [
     description: "Simplify how you and your friends split bills during trips, café visits, or fests.",
     price: "Free",
     gradient: "from-fedkiit-green to-usc-green",
+  },
+  {
+    id: "donation-saathi",
+    icon: Heart,
+    title: "Donation Saathi",
+    description: "Extend a helping hand — donate books, food, and essentials to those in need through the KIIT community.",
+    price: "Coming Soon",
+    gradient: "from-kiit-green to-campus-orange",
+  },
+  {
+    id: "student-mental-wellness",
+    icon: Brain,
+    title: "Student Mental Wellness",
+    description: "Because your mind matters — find support and guidance for emotional and mental well-being.",
+    price: "Coming Soon",
+    gradient: "from-campus-blue to-ecell-cyan",
   },
   {
     id: "printout-on-demand",
@@ -203,18 +222,23 @@ const services = [
 
 export const ServicesGrid = () => {
   const navigate = useNavigate();
-  const { visibilityMap, loading } = useServiceVisibility();
-  const { user } = useAuth();
+  const { visibilityMap, loading, hasFetchedData } = useServiceVisibility();
+  const { user, loading: authLoading } = useAuth();
   
-  // Admin emails
+  // Admin emails - these are the ONLY emails that can see hidden services
   const ADMIN_EMAILS = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
   const isAdmin = user && ADMIN_EMAILS.includes(user.email || '');
   
-  // Log admin status
-  if (isAdmin) {
-    console.log('✅ Admin mode activated — all hidden services visible.');
-  } else {
-    console.log('🚫 Non-admin mode — hidden services restricted.');
+  // Wait for both auth and visibility data to load
+  const isDataReady = !authLoading && hasFetchedData;
+  
+  // Log admin status (only when data is ready)
+  if (isDataReady) {
+    if (isAdmin) {
+      console.log('✅ Admin mode activated — all hidden services visible.');
+    } else {
+      console.log('🚫 Non-admin mode — hidden services completely hidden.');
+    }
   }
 
   const handleServiceClick = (service: typeof services[0]) => {
@@ -245,8 +269,13 @@ export const ServicesGrid = () => {
     if (route) {
       navigate(route);
     } else {
-      // Show coming soon for services without pages
-      alert("Coming Soon! This service is under development and will be available soon.");
+      // Show coming soon toast for services without pages
+      toast({
+        title: "Coming Soon!",
+        description: "This service will be available in the next update.",
+        duration: 3500,
+        className: "bg-gradient-to-r from-kiit-green to-kiit-green-dark text-white border-none font-semibold",
+      });
     }
   };
 
@@ -262,35 +291,55 @@ export const ServicesGrid = () => {
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-4 sm:mb-6">
             Everything You Need
-            <span className="block">In One App</span>
+            <span className="block">In One Platform</span>
           </h2>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-black max-w-3xl mx-auto leading-relaxed px-2 sm:px-4">
             From academic support to daily essentials, we have built the complete ecosystem
-            to enrich your KIIT experience. <span className="font-semibold text-kiit-green">Because campus life is hectic enough already.</span>
+            to enrich your KIIT experience. <span className="font-semibold text-kiit-green block">Because campus life is hectic enough already.</span>
           </p>
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 px-2 sm:px-4">
-          {loading ? (
+        <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 px-2 sm:px-4">
+          {!isDataReady ? (
             <div className="col-span-full flex justify-center py-6 sm:py-8">
               <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             services.map((service, index) => {
               const visibility = visibilityMap[service.id];
-              const isVisible = !visibility || visibility.visible;
-              const replacementText = visibility?.replaced_text;
-              const isHidden = !isVisible;
               const IconComponent = service.icon;
+              
+              // CRITICAL: For non-admins, services are hidden by default unless explicitly visible
+              // For admins, all services are shown regardless of visibility
+              let isVisible: boolean;
+              let replacementText: string | null = null;
+              
+              if (isAdmin) {
+                // Admins see everything, regardless of visibility settings
+                isVisible = true;
+              } else {
+                // Non-admins (including unauthenticated users):
+                // - If service has no visibility record, hide it (secure by default)
+                // - If service has visibility record with visible=false, hide it
+                // - Only show if visibility record exists AND visible=true
+                if (!visibility) {
+                  isVisible = false; // Hide services not in visibility table
+                } else {
+                  isVisible = visibility.visible;
+                  replacementText = visibility.replaced_text;
+                }
+              }
+              
+              const isHidden = !isVisible;
 
-              // For non-admins: completely skip hidden services (no DOM rendering)
+              // For non-admins: completely skip hidden services (no DOM rendering at all)
               if (!isAdmin && isHidden && !replacementText) {
                 return null;
               }
 
-              // If service is hidden and has replacement text, show placeholder
+              // If service is hidden and has replacement text, show placeholder (non-admin only)
               if (!isAdmin && !isVisible && replacementText) {
                 return (
                   <div
@@ -331,7 +380,7 @@ export const ServicesGrid = () => {
                 <div
                   key={index}
                   onClick={() => handleServiceClick(service)}
-                  className="service-card bg-white group text-kiit-green-dark cursor-pointer"
+                  className="hover:shadow-md hover:shadow-green-600 service-card bg-white group text-kiit-green-dark cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Service Header */}

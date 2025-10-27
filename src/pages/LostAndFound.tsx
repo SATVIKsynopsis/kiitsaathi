@@ -54,6 +54,9 @@ interface FormData {
   item_type: "lost" | "found"
 }
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
+
 const testimonials = [
   { text: "Lost my AirPods near Food Court — got them back in 2 hours!", author: "Rahul, CSE 3rd Year", icon: "🎧" },
   { text: "Someone found my file near Block 5. Thank you so much 💗", author: "Sneha, IT 2nd Year", icon: "📁" },
@@ -67,7 +70,7 @@ const testimonials = [
 const categories = ["Electronics", "ID Card", "Books & Stationery", "Accessories", "Miscellaneous"]
 
 export default function LostAndFound() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const { items, loading, error, addItem, refreshItems } = useSecureLostAndFound()
   const { toast } = useToast()
 
@@ -143,8 +146,16 @@ export default function LostAndFound() {
         const paidItemsCheck: { [id: string]: boolean } = {}
         for (const item of items) {
           try {
+            const headers: HeadersInit = {
+              'Content-Type': 'application/json'
+            };
+            if (accessToken) {
+              headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+            
             const res = await fetch(
-              `${import.meta.env.VITE_LOST_FOUND_API_URL}/has-paid-lost-found-contact?user_id=${user.id}&item_id=${item.id}`,
+              `${HOSTED_URL}/api/lostfound/has-paid-lost-found-contact?user_id=${user.id}&item_id=${item.id}`,
+              { headers }
             )
             const result = await res.json()
             if (result.paid) {
@@ -158,7 +169,7 @@ export default function LostAndFound() {
       }
     }
     checkPaidItems()
-  }, [user?.id, items])
+  }, [user?.id, items, accessToken])
 
   // Fetch application counts for lost items
   useEffect(() => {
@@ -275,9 +286,18 @@ export default function LostAndFound() {
   const uploadImage = async (file: File): Promise<string> => {
     const fileExt = file.name.split(".").pop()
     const fileName = `${Date.now()}.${fileExt}`
+    
+    console.log('📤 Uploading image:', fileName);
     const { error: uploadError } = await supabase.storage.from("lost-and-found-images").upload(fileName, file)
-    if (uploadError) throw uploadError
+    
+    if (uploadError) {
+      console.error('❌ Upload error:', uploadError);
+      throw uploadError;
+    }
+    
     const { data } = supabase.storage.from("lost-and-found-images").getPublicUrl(fileName)
+    console.log('✅ Image uploaded successfully:', data.publicUrl);
+    
     return data.publicUrl
   }
 
@@ -308,6 +328,13 @@ export default function LostAndFound() {
       }
       
       const imageUrl = selectedImage ? await uploadImage(selectedImage) : undefined
+      
+      console.log('📋 Submitting Lost & Found request:', {
+        title: formData.title,
+        item_type: formData.item_type,
+        has_image: !!imageUrl,
+        image_url: imageUrl
+      });
       
       // Submit to pending requests table instead of direct publication
       const { error } = await supabase
@@ -404,7 +431,7 @@ export default function LostAndFound() {
         })
 
         try {
-          await fetch(`${import.meta.env.VITE_LOST_FOUND_API_URL}/send-contact-details`, {
+          await fetch(`${HOSTED_URL}/api/payments/send-contact-details`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -635,9 +662,25 @@ export default function LostAndFound() {
                     >
                       <div className="relative overflow-hidden">
                         <img
-                          src={item.image_url || "/placeholder.svg?height=200&width=400&query=lost+and+found+item"}
+                          src={
+                            item.image_url && 
+                            !item.image_url.includes('example.com') && 
+                            !item.image_url.includes('placeholder') &&
+                            item.image_url.startsWith('http')
+                              ? item.image_url 
+                              : "/placeholder.svg?height=200&width=400&query=lost+and+found+item"
+                          }
                           alt={item.title}
                           className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+                          onError={(e) => {
+                            console.error('Image failed to load:', item.image_url);
+                            e.currentTarget.src = "/placeholder.svg?height=200&width=400&query=lost+and+found+item";
+                          }}
+                          onLoad={() => {
+                            if (item.image_url && !item.image_url.includes('placeholder')) {
+                              console.log('Image loaded successfully:', item.image_url);
+                            }
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <Badge

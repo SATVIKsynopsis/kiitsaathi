@@ -1,18 +1,32 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Users, Plus, Calculator, PieChart, Receipt, Heart, ArrowLeft } from "lucide-react";
+import {
+  Users,
+  Plus,
+  Calculator,
+  PieChart,
+  Receipt,
+  Heart,
+  ArrowLeft,
+} from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useGroupAutoLink } from "@/hooks/useGroupAutoLink";
 
 const SplitSaathi = () => {
   const navigate = useNavigate();
@@ -21,36 +35,39 @@ const SplitSaathi = () => {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
-  
+
+  // Auto-link groups based on roll number when user logs in
+  useGroupAutoLink();
+
   const groupFormRef = useRef<HTMLDivElement>(null);
-  
+
   const [groupForm, setGroupForm] = useState({
     name: "",
     description: "",
     currency: "₹",
-    members: [{ name: "" }]
+    members: [{ name: "", rollNumber: "" }],
   });
 
   const addMember = () => {
-    setGroupForm(prev => ({
+    setGroupForm((prev) => ({
       ...prev,
-      members: [...prev.members, { name: "" }]
+      members: [...prev.members, { name: "", rollNumber: "" }],
     }));
   };
 
   const removeMember = (index: number) => {
-    setGroupForm(prev => ({
+    setGroupForm((prev) => ({
       ...prev,
-      members: prev.members.filter((_, i) => i !== index)
+      members: prev.members.filter((_, i) => i !== index),
     }));
   };
 
   const updateMember = (index: number, field: string, value: string) => {
-    setGroupForm(prev => ({
+    setGroupForm((prev) => ({
       ...prev,
-      members: prev.members.map((member, i) => 
+      members: prev.members.map((member, i) =>
         i === index ? { ...member, [field]: value } : member
-      )
+      ),
     }));
   };
 
@@ -61,129 +78,111 @@ const SplitSaathi = () => {
   }, [user]);
 
   const loadUserGroups = async () => {
-    if (!user) return;
-    
-    try {
-      setLoadingGroups(true);
-      const { data: userGroups, error } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('created_by', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      setGroups(userGroups || []);
-    } catch (error: any) {
-      console.error('Error loading groups:', error.message);
-    } finally {
-      setLoadingGroups(false);
-    }
-  };
+  if (!user) return;
 
-  const createGroup = async () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+  try {
+    setLoadingGroups(true);
 
-    if (!groupForm.name.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide a group name.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Validate that at least one member has a name
-    const validMembers = groupForm.members.filter(m => m.name.trim());
-    if (validMembers.length === 0) {
-      toast({
-        title: "Missing Members",
-        description: "Please add at least one member with a name.",
-        variant: "destructive"
-      });
-      return;
-    }
+    const res = await fetch("/api/user-groups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id, email: user.email }),
+    });
 
-    try {
-      // Create group
-      const { data: group, error: groupError } = await supabase
-        .from('groups')
-        .insert({
-          name: groupForm.name,
-          description: groupForm.description,
-          currency: groupForm.currency,
-          created_by: user.id
-        })
-        .select()
-        .single();
+    if (!res.ok) throw new Error("Failed to fetch user groups");
 
-      if (groupError) throw groupError;
+    const uniqueGroups = await res.json();
+    setGroups(uniqueGroups);
+  } catch (error) {
+    console.error("Error loading groups:", error.message);
+  } finally {
+    setLoadingGroups(false);
+  }
+};
 
-      // Add members (already validated above)
-      console.log('👥 Adding members to group:', validMembers);
-      const { error: membersError } = await supabase
-        .from('group_members')
-        .insert(
-          validMembers.map(member => ({
-            group_id: group.id,
-            name: member.name,
-            email_phone: '' // Optional field, can be empty
-          }))
-        );
 
-      if (membersError) {
-        console.error('❌ Error adding members:', membersError);
-        throw membersError;
-      }
+ const createGroup = async () => {
+  if (!user) {
+    navigate("/auth");
+    return;
+  }
 
-      toast({
-        title: "Group Created! 🎉",
-        description: `${groupForm.name} is ready with ${validMembers.length} member${validMembers.length !== 1 ? 's' : ''}.`
-      });
+  if (!groupForm.name.trim()) {
+    toast({
+      title: "Missing Information",
+      description: "Please provide a group name.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-      // Reset form
-      setGroupForm({
-        name: "",
-        description: "",
-        currency: "₹",
-        members: [{ name: "" }]
-      });
-      setIsCreatingGroup(false);
-      
-      // Reload groups and navigate
-      loadUserGroups();
-      navigate(`/split-saathi/group/${group.id}`);
-      
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
+  const validMembers = groupForm.members.filter((m) => m.name.trim());
+  if (validMembers.length === 0) {
+    toast({
+      title: "Missing Members",
+      description: "Please add at least one member with a name.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/create-group", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id, groupForm }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to create group");
+
+    toast({
+      title: "Group Created! 🎉",
+      description: `${groupForm.name} is ready with ${data.memberCount} member${
+        data.memberCount !== 1 ? "s" : ""
+      }.`,
+    });
+
+    setGroupForm({
+      name: "",
+      description: "",
+      currency: "₹",
+      members: [{ name: "", rollNumber: "" }],
+    });
+    setIsCreatingGroup(false);
+
+    // Reload groups and navigate
+    loadUserGroups();
+    navigate(`/split-saathi/group/${data.group.id}`);
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error.message,
+      variant: "destructive",
+    });
+  }
+};
+
 
   const handleCreateGroup = () => {
     if (!user) {
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
     setIsCreatingGroup(true);
-    
+
     // Scroll to group form section after a brief delay to allow the form to render
     setTimeout(() => {
-      groupFormRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
+      groupFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }, 100);
   };
 
   const handleViewGroups = () => {
     if (!user) {
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
     loadUserGroups();
@@ -192,57 +191,62 @@ const SplitSaathi = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="pt-24 pb-16 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
             className="mb-6 self-start"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-          
+
           <div className="inline-flex items-center gap-2 mb-4">
             <Receipt className="w-8 h-8 text-primary" />
             <Badge variant="secondary" className="text-lg px-4 py-2">
               ₹ SplitSaathi
             </Badge>
           </div>
-          
+
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-6">
             Split Expenses, Not Friendships 💰
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Manage hostel bills, fest contributions, trips, and society spending effortlessly. 
-            Because friendship shouldn't cost you your peace of mind! 😌
+            Manage hostel bills, fest contributions, trips, and society spending
+            effortlessly. Because friendship shouldn't cost you your peace of
+            mind! 😌
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={handleCreateGroup}
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
             >
               <Plus className="w-5 h-5 mr-2" />
-              {user ? 'Create a Group' : 'Sign In to Create Group'}
+              {user ? "Create a Group" : "Sign In to Create Group"}
             </Button>
             <Button size="lg" variant="outline" onClick={handleViewGroups}>
               <Users className="w-5 h-5 mr-2" />
-              {user ? 'View My Groups' : 'Sign In to View Groups'}
+              {user ? "View My Groups" : "Sign In to View Groups"}
             </Button>
           </div>
-          
+
           {/* My Groups Section */}
           {user && groups.length > 0 && (
             <div className="mt-12">
               <h3 className="text-2xl font-bold mb-6">My Groups</h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
                 {groups.map((group) => (
-                  <Card key={group.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate(`/split-saathi/group/${group.id}`)}>
+                  <Card
+                    key={group.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/split-saathi/group/${group.id}`)}
+                  >
                     <CardHeader>
                       <CardTitle className="text-lg">{group.name}</CardTitle>
                       {group.description && (
@@ -264,37 +268,44 @@ const SplitSaathi = () => {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Students Love SplitSaathi? 🚀</h2>
-            <p className="text-lg text-muted-foreground">Built specifically for college life and group adventures</p>
+            <h2 className="text-3xl font-bold mb-4">
+              Why Students Love SplitSaathi? 🚀
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Built specifically for college life and group adventures
+            </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="border-2 hover:border-primary/50 transition-colors">
               <CardHeader>
                 <Calculator className="w-10 h-10 text-primary mb-2" />
                 <CardTitle>Smart Calculations</CardTitle>
                 <CardDescription>
-                  No more mental math! Split bills equally or customize shares for any scenario.
+                  No more mental math! Split bills equally or customize shares
+                  for any scenario.
                 </CardDescription>
               </CardHeader>
             </Card>
-            
+
             <Card className="border-2 hover:border-primary/50 transition-colors">
               <CardHeader>
                 <PieChart className="w-10 h-10 text-primary mb-2" />
                 <CardTitle>Visual Insights</CardTitle>
                 <CardDescription>
-                  See where your money goes with beautiful charts and spending summaries.
+                  See where your money goes with beautiful charts and spending
+                  summaries.
                 </CardDescription>
               </CardHeader>
             </Card>
-            
+
             <Card className="border-2 hover:border-primary/50 transition-colors">
               <CardHeader>
                 <Users className="w-10 h-10 text-primary mb-2" />
                 <CardTitle>Group Harmony</CardTitle>
                 <CardDescription>
-                  Keep track of who owes what, settle debts, and maintain friendship goals.
+                  Keep track of who owes what, settle debts, and maintain
+                  friendship goals.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -313,7 +324,8 @@ const SplitSaathi = () => {
                   Create New Group
                 </CardTitle>
                 <CardDescription>
-                  Start tracking expenses with your friends, roommates, or society members
+                  Start tracking expenses with your friends, roommates, or
+                  society members
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -323,41 +335,76 @@ const SplitSaathi = () => {
                     id="groupName"
                     placeholder="e.g., Hostel Room 420, Tech Fest Committee, Goa Trip Gang"
                     value={groupForm.name}
-                    onChange={(e) => setGroupForm(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setGroupForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     placeholder="Brief description of the group or purpose"
                     value={groupForm.description}
-                    onChange={(e) => setGroupForm(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setGroupForm((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Currency</Label>
                   <Input
                     value={groupForm.currency}
-                    onChange={(e) => setGroupForm(prev => ({ ...prev, currency: e.target.value }))}
+                    onChange={(e) =>
+                      setGroupForm((prev) => ({
+                        ...prev,
+                        currency: e.target.value,
+                      }))
+                    }
                     className="w-20"
                   />
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Add Members</Label>
-                  <p className="text-sm text-muted-foreground">Enter member names to track expenses</p>
+                  <p className="text-sm text-muted-foreground">
+                    Enter member names to track expenses
+                  </p>
+                  <p className="text-xs text-muted-foreground italic">
+                    💡 Adding roll number helps members auto-view this group
+                  </p>
                   {groupForm.members.map((member, index) => (
-                    <div key={index} className="flex gap-2 items-end">
-                      <div className="flex-1">
+                    <div
+                      key={index}
+                      className="flex gap-2 items-end flex-wrap sm:flex-nowrap"
+                    >
+                      <div className="flex-1 min-w-[180px]">
                         <Input
                           placeholder="Member name *"
                           value={member.name}
-                          onChange={(e) => updateMember(index, 'name', e.target.value)}
+                          onChange={(e) =>
+                            updateMember(index, "name", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="w-full sm:w-[160px]">
+                        <Input
+                          placeholder="Roll No. (optional)"
+                          value={member.rollNumber}
+                          onChange={(e) =>
+                            updateMember(index, "rollNumber", e.target.value)
+                          }
+                          className="text-sm"
                         />
                       </div>
                       {groupForm.members.length > 1 && (
@@ -372,7 +419,7 @@ const SplitSaathi = () => {
                       )}
                     </div>
                   ))}
-                  
+
                   <Button
                     type="button"
                     variant="outline"
@@ -383,13 +430,13 @@ const SplitSaathi = () => {
                     Add Another Member
                   </Button>
                 </div>
-                
+
                 <div className="flex gap-4 pt-4">
                   <Button onClick={createGroup} className="flex-1">
                     Create Group & Start Tracking
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setIsCreatingGroup(false)}
                     className="flex-1"
                   >
@@ -405,27 +452,40 @@ const SplitSaathi = () => {
       {/* Common Use Cases */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Perfect for Every College Scenario 🎓</h2>
-          
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Perfect for Every College Scenario 🎓
+          </h2>
+
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="p-6">
               <h3 className="font-semibold text-lg mb-2">🏠 Hostel Life</h3>
-              <p className="text-muted-foreground">Room groceries, electricity bills, cleaning supplies, late-night food orders</p>
+              <p className="text-muted-foreground">
+                Room groceries, electricity bills, cleaning supplies, late-night
+                food orders
+              </p>
             </Card>
-            
+
             <Card className="p-6">
               <h3 className="font-semibold text-lg mb-2">🎉 Fest & Events</h3>
-              <p className="text-muted-foreground">Committee expenses, decoration costs, team meals, celebration parties</p>
+              <p className="text-muted-foreground">
+                Committee expenses, decoration costs, team meals, celebration
+                parties
+              </p>
             </Card>
-            
+
             <Card className="p-6">
               <h3 className="font-semibold text-lg mb-2">✈️ Trips & Outings</h3>
-              <p className="text-muted-foreground">Transportation, accommodation, meals, activities, souvenirs</p>
+              <p className="text-muted-foreground">
+                Transportation, accommodation, meals, activities, souvenirs
+              </p>
             </Card>
-            
+
             <Card className="p-6">
               <h3 className="font-semibold text-lg mb-2">📚 Study Groups</h3>
-              <p className="text-muted-foreground">Reference books, printing costs, cafe study sessions, project materials</p>
+              <p className="text-muted-foreground">
+                Reference books, printing costs, cafe study sessions, project
+                materials
+              </p>
             </Card>
           </div>
         </div>
@@ -435,14 +495,23 @@ const SplitSaathi = () => {
       <footer className="py-12 px-4 bg-muted/50 border-t">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex flex-wrap justify-center gap-6 mb-8">
-            <Button variant="link" onClick={() => navigate('/')}>Home</Button>
-            <Button variant="link" onClick={() => navigate('/carton-transfer')}>Carton Transfer</Button>
-            <Button variant="link" onClick={() => navigate('/senior-connect')}>Senior Connect</Button>
-            <Button variant="link" onClick={() => navigate('/lost-and-found')}>Lost & Found</Button>
+            <Button variant="link" onClick={() => navigate("/")}>
+              Home
+            </Button>
+            <Button variant="link" onClick={() => navigate("/carton-transfer")}>
+              Carton Transfer
+            </Button>
+            <Button variant="link" onClick={() => navigate("/senior-connect")}>
+              Senior Connect
+            </Button>
+            <Button variant="link" onClick={() => navigate("/lost-and-found")}>
+              Lost & Found
+            </Button>
           </div>
-          
+
           <p className="text-muted-foreground flex items-center justify-center gap-2">
-            Made with <Heart className="w-4 h-4 text-red-500" /> for KIIT Students by KIIT Saathi
+            Made with <Heart className="w-4 h-4 text-red-500" /> for KIIT
+            Students by KIIT Saathi
           </p>
         </div>
       </footer>

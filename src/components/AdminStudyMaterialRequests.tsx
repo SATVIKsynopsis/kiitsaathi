@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,40 +41,20 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
 
   useEffect(() => {
     fetchRequests();
-
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('study_material_requests_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'study_material_requests'
-      }, () => {
-        fetchRequests();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Optionally, you can implement polling or SSE for real-time updates
+    // For now, just fetch on mount and when statusFilter changes
   }, [statusFilter]);
 
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from('study_material_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setRequests(data || []);
+      const url = statusFilter === 'all'
+        ? '/api/admin/study-material-requests'
+        : `/api/admin/study-material-requests?status=${statusFilter}`;
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch requests');
+      const result = await response.json();
+      setRequests(result.data || []);
     } catch (error) {
       console.error('Error fetching requests:', error);
       toast.error('Failed to load requests');
@@ -86,13 +65,10 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
 
   const handlePreview = async (request: StudyMaterialRequest) => {
     try {
-      const { data, error } = await supabase.storage
-        .from('study-material-pending')
-        .createSignedUrl(request.storage_path, 300); // 5 minutes
-
-      if (error) throw error;
-
-      setPreviewUrl(data.signedUrl);
+      const response = await fetch(`/api/admin/study-material-preview-url?path=${encodeURIComponent(request.storage_path)}`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to get preview URL');
+      const result = await response.json();
+      setPreviewUrl(result.signedUrl);
       setSelectedRequest(request);
     } catch (error) {
       console.error('Preview error:', error);
@@ -102,24 +78,16 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
   const handleApprove = async (requestId: string) => {
     setProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-approve-study-material', {
-        body: {
-          request_id: requestId,
-          adminUserId // <-- add this line
-        }
+      const response = await fetch('/api/admin/study-material-approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ request_id: requestId, adminUserId }),
       });
-
-      if (error) {
-        console.error('Edge function error:', error);
-        throw new Error(error.message || 'Failed to approve material');
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to approve material');
       }
-
-      if (data && !data.success) {
-        console.error('Operation failed:', data.error);
-        throw new Error(data.error || 'Failed to approve material');
-      }
-
-      console.log('Approval successful:', data);
       toast.success('✅ Material approved and added to public site!');
       setSelectedRequest(null);
       setPreviewUrl(null);
@@ -132,50 +100,22 @@ export function AdminStudyMaterialRequests({ adminUserId }: AdminStudyMaterialRe
     }
   };
 
-  // const handleApprove = async (requestId: string) => {
-  //   setProcessing(true);
-  //   try {
-  //     const { data, error } = await supabase.functions.invoke('admin-approve-study-material', {
-  //       body: { request_id: requestId }
-  //     });
-
-  //     if (error) {
-  //       console.error('Edge function error:', error);
-  //       throw new Error(error.message || 'Failed to approve material');
-  //     }
-
-  //     if (data && !data.success) {
-  //       console.error('Operation failed:', data.error);
-  //       throw new Error(data.error || 'Failed to approve material');
-  //     }
-
-  //     console.log('Approval successful:', data);
-  //     toast.success('✅ Material approved and added to public site!');
-  //     setSelectedRequest(null);
-  //     setPreviewUrl(null);
-  //     fetchRequests();
-  //   } catch (error: any) {
-  //     console.error('Approve error:', error);
-  //     toast.error(error.message || 'Failed to approve material');
-  //   } finally {
-  //     setProcessing(false);
-  //   }
-  // };
 
   const handleReject = async () => {
     if (!selectedRequest) return;
 
     setProcessing(true);
     try {
-      const { error } = await supabase.functions.invoke('admin-reject-study-material', {
-        body: {
-          request_id: selectedRequest.id,
-          admin_comment: rejectReason
-        }
+      const response = await fetch('/api/admin/study-material-reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ request_id: selectedRequest.id, admin_comment: rejectReason }),
       });
-
-      if (error) throw error;
-
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to reject material');
+      }
       toast.success('Material request rejected');
       setShowRejectDialog(false);
       setSelectedRequest(null);

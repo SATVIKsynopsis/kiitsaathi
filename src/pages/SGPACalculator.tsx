@@ -14,7 +14,7 @@ import { Navbar } from '@/components/Navbar';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useAuth } from '@/hooks/useAuth';
-import kiitMascot from "@/assets/kiit-mascot.jpg";
+import kiitMascot from "@/assets/kiitMascot.jpg";
 
 
 interface Subject {

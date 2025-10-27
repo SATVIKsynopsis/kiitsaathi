@@ -5,11 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  accessToken: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
 
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -19,11 +22,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        setAccessToken(session?.access_token ?? null);
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -32,6 +39,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setAccessToken(session?.access_token ?? null);
+
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -42,19 +51,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
+    try {
+      // Clear state immediately before signing out
+      setUser(null);
+      setSession(null);
+      setAccessToken(null);
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+        throw error;
+      }
+      
+      // Clear any remaining local storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      console.log('✅ Successfully signed out');
+    } catch (error) {
+      console.error('❌ Sign out error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    signOut,
-  };
+ const value = {
+  user,
+  session,
+  accessToken,
+  loading,
+  signOut,
+};
+
 
   return (
     <AuthContext.Provider value={value}>

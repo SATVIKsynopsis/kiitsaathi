@@ -15,6 +15,9 @@ interface SecureDatabaseHook {
   clearError: () => void;
 }
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
+
 export function useSecureDatabase(): SecureDatabaseHook {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<DatabaseError | null>(null);

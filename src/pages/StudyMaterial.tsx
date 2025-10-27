@@ -15,7 +15,6 @@ import {
   Bot,
   Search
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/study-materials/FilterBar";
@@ -26,8 +25,9 @@ import { toast } from "sonner";
 import { semesters, years, semesterSubjects } from "@/data/studyMaterials";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth"
 
-
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 // Types
 interface StudyMaterialItem {
   id: number;
@@ -55,7 +55,7 @@ export default function StudyMaterial() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const { user, loading: authLoading } = useAuth();
 
   //playlist from youtube 
   const playlistYoutube = [
@@ -187,69 +187,48 @@ export default function StudyMaterial() {
     }
   ]
 
-  // Get current user session
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        setError("Please login to access study materials");
-      }
-    };
-    getUser();
-  }, []);
+    if (user) {
+      fetchMaterials();
+    }
+  }, [activeSection, selectedSubject, selectedSemester, selectedYear, searchQuery, user]);
 
-  // Fetch materials from Supabase
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      setLoading(true);
-      setError("");
+  const fetchMaterials = async () => {
+    setLoading(true);
+    setError('');
 
-      let query;
-      if (activeSection === "notes") {
-        query = supabase.from("notes").select("*").order("created_at", { ascending: false });
-      } else if (activeSection === "pyqs") {
-        query = supabase.from("pyqs").select("*").order("created_at", { ascending: false });
-      } else if (activeSection === "ppts") {
-        query = supabase.from("ppts").select("*").order("created_at", { ascending: false });
-      } else if (activeSection === "ebooks") {
-        query = supabase.from("ebooks").select("*").order("created_at", { ascending: false });
+    try {
+      const params = new URLSearchParams({
+        type: activeSection,
+        subject: selectedSubject !== 'all' ? selectedSubject : '',
+        semester: selectedSemester !== 'all' ? selectedSemester : '',
+        year: selectedYear !== 'all' ? selectedYear : '',
+        search: searchQuery
+      });
+
+      const response = await fetch(`${HOSTED_URL}/api/study-materials?${params.toString()}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch materials: ${response.status} - ${errorText}`);
       }
 
-      if (!query) {
-        setLoading(false);
-        return;
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Invalid response: Expected JSON, got ${contentType} - ${text.slice(0, 100)}...`);
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Fetch error:", error);
-        setError(error.message);
-        setLoading(false);
-        return;
-      }
-
-      const mapped = data.map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        subject: item.subject,
-        semester: item.semester,
-        branch: item.branch || "",
-        year: item.year || "",
-        views: item.views ?? 0,
-        uploadedBy: item.uploaded_by,
-        uploadDate: item.upload_date ?? item.created_at,
-        downloadUrl: activeSection === "ppts" ? item.ppt_url : item.pdf_url,
-      }));
-
-      setMaterials(mapped);
+      const { data } = await response.json();
+      setMaterials(data || []);
+    } catch (err: any) {
+      setError(err.message);
+      toast.error('Failed to load materials');
+    } finally {
       setLoading(false);
-    };
-
-    fetchMaterials();
-  }, [activeSection]);
+    }
+  };
+  
   const availableSubjects =
     selectedSemester === "all"
       ? semesterSubjects.flatMap(s => s.subjects) // all subjects
@@ -270,29 +249,70 @@ export default function StudyMaterial() {
     });
   };
 
-  // Handle file download
-  const handleDownload = async (material: StudyMaterialItem) => {
-    try {
-      // Update view count
-      if (activeSection === "notes") {
-        await supabase.from("notes").update({ views: material.views + 1 }).eq("id", material.id);
-      } else if (activeSection === "pyqs") {
-        await supabase.from("pyqs").update({ views: material.views + 1 }).eq("id", material.id);
-      } else if (activeSection === "ppts") {
-        await supabase.from("ppts").update({ views: material.views + 1 }).eq("id", material.id);
-      } else if (activeSection === "ebooks") {
-        await supabase.from("ebooks").update({ views: material.views + 1 }).eq("id", material.id);
-      }
+  // Update handleDownload function signature and logic
+const handleDownload = async (material: StudyMaterialItem) => {
+  try {
+    const table =
+      activeSection === "notes"
+        ? "notes"
+        : activeSection === "pyqs"
+        ? "pyqs"
+        : activeSection === "ebooks"
+        ? "ebooks"
+        : "ppts";
 
-      // Download file
-      
-    } catch (error) {
-      console.error("Download error:", error);
+    if (!material) {
+      toast.error("Material not found");
+      return;
     }
-  };
+
+    // Force file download
+    if (material.downloadUrl) {
+      const response = await fetch(material.downloadUrl);
+      const blob = await response.blob();
+      const fileURL = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = fileURL;
+      const fileName =
+        material.title?.includes(".")
+          ? material.title
+          : `${material.title || "file"}.${material.downloadUrl
+              .split(".")
+              .pop()
+              ?.split("?")[0]}`;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Cleanup memory
+      window.URL.revokeObjectURL(fileURL);
+    } else {
+      toast.error("No file available to download");
+    }
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    toast.error("Failed to download file");
+  }
+};
 
 
-  if (!user && !loading) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-kiit-primary/20 rounded-full"></div>
+            <div className="w-16 h-16 border-4 border-kiit-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+          </div>
+          <p className="mt-4 text-muted-foreground animate-pulse">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -304,44 +324,41 @@ export default function StudyMaterial() {
   }
 
   const handleView = async (id: number) => {
-    try {
-      // Update view count first
-      const table = activeSection === "notes"
+  try {
+    const table =
+      activeSection === "notes"
         ? "notes"
         : activeSection === "pyqs"
-          ? "pyqs"
-          : activeSection === "ebooks"
-            ? "ebooks"
-            : "ppts";
+        ? "pyqs"
+        : activeSection === "ebooks"
+        ? "ebooks"
+        : "ppts";
 
-      const { error } = await supabase
-        .from(table)
-        .update({ views: materials.find(m => m.id === id)?.views! + 1 })
-        .eq("id", id);
-
-      if (error) {
-        throw error;
-      }
-
-      // Update local state
-      setMaterials(materials.map(material =>
-        material.id === id
-          ? { ...material, views: material.views + 1 }
-          : material
-      ));
-
-      // Find material and open PDF
-      const material = materials.find(m => m.id === id);
-      if (material && material.downloadUrl) {
-        // Method 1: Open in new tab with PDF viewer
-        window.open(material.downloadUrl, '_blank', 'noopener,noreferrer');
-      }
-
-    } catch (error) {
-      console.error("Error updating view count:", error);
-      toast.error("Failed to update view count");
+    // Find the selected material
+    const material = materials.find((m) => m.id === id);
+    if (!material) {
+      toast.error("Material not found");
+      return;
     }
-  };;
+
+    // Update local state instantly
+    setMaterials((prev) =>
+      prev.map((m) =>
+        m.id === id ? { ...m, views: m.views + 1 } : m
+      )
+    );
+
+    // Open file in new tab if available
+    if (material.downloadUrl) {
+      window.open(material.downloadUrl, "_blank", "noopener,noreferrer");
+    } else {
+      toast.error("No file available to view");
+    }
+  } catch (error) {
+    console.error("Error updating view count:", error);
+    toast.error("Failed to open file");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">

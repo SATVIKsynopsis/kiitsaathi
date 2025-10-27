@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { useAuthenticatedFetch } from './useAuthenticatedFetch';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from './use-toast';
+import { useState } from "react";
+import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
+import { toast } from "./use-toast";
 
 interface SemesterBook {
   id: string;
@@ -29,7 +28,7 @@ interface BookSelection {
   selectedCombo?: string;
   totalAmount: number;
   semester: number;
-  action: 'buy' | 'sell';
+  action: "buy" | "sell";
   userDetails: {
     name: string;
     email: string;
@@ -37,6 +36,9 @@ interface BookSelection {
     address?: string;
   };
 }
+
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
 
 export function useSemesterBooks() {
   const { invokeEdgeFunction, isAuthenticated } = useAuthenticatedFetch();
@@ -47,36 +49,66 @@ export function useSemesterBooks() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
   const fetchSemesterData = async (semester: number) => {
     setIsLoading(true);
-    
+
     try {
-      const { data, error } = await supabase
-        .from('semester_books')
-        .select('*')
-        .eq('semester', semester)
-        .order('subject_category', { ascending: true });
+      const [booksResponse, combosResponse] = await Promise.all([
+        fetch(`${HOSTED_URL}/api/semester-books?semester=${semester}`),
+        fetch(`${HOSTED_URL}/api/semester-combos?semester=${semester}`),
+      ]);
 
-      if (error) throw error;
+      if (!booksResponse.ok) {
+        const errorText = await booksResponse.text();
+        throw new Error(
+          `Failed to fetch semester books: ${booksResponse.status} ${booksResponse.statusText} - ${errorText}`
+        );
+      }
+      if (!combosResponse.ok) {
+        const errorText = await combosResponse.text();
+        throw new Error(
+          `Failed to fetch semester combos: ${combosResponse.status} ${combosResponse.statusText} - ${errorText}`
+        );
+      }
 
-      const { data: combosData, error: combosError } = await supabase
-        .from('semester_combos')
-        .select('*')
-        .eq('semester_number', semester);
+      const booksContentType = booksResponse.headers.get("content-type");
+      const combosContentType = combosResponse.headers.get("content-type");
+      if (!booksContentType || !booksContentType.includes("application/json")) {
+        const text = await booksResponse.text();
+        throw new Error(
+          `Invalid response for semester books: Expected JSON, got ${booksContentType} - ${text.slice(
+            0,
+            100
+          )}...`
+        );
+      }
+      if (
+        !combosContentType ||
+        !combosContentType.includes("application/json")
+      ) {
+        const text = await combosResponse.text();
+        throw new Error(
+          `Invalid response for semester combos: Expected JSON, got ${combosContentType} - ${text.slice(
+            0,
+            100
+          )}...`
+        );
+      }
 
-      if (combosError) throw combosError;
+      const { data: booksData } = await booksResponse.json();
+      const { data: combosData } = await combosResponse.json();
 
-      setBooks(data || []);
+      setBooks(booksData || []);
       setCombos(combosData || []);
       setSelectedBooks([]);
       setSelectedCombo(null);
-      
     } catch (error: any) {
-      console.error('Error fetching semester data:', error);
+      console.error("Error fetching semester data:", error);
       toast({
         title: "Error",
         description: "Failed to load semester books",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -92,10 +124,10 @@ export function useSemesterBooks() {
         description: "Individual book selection will replace the combo",
       });
     }
-    
-    setSelectedBooks(prev => 
-      prev.includes(bookId) 
-        ? prev.filter(id => id !== bookId)
+
+    setSelectedBooks((prev) =>
+      prev.includes(bookId)
+        ? prev.filter((id) => id !== bookId)
         : [...prev, bookId]
     );
   };
@@ -107,7 +139,7 @@ export function useSemesterBooks() {
         description: "Combo selection will replace individual book selection",
       });
     }
-    
+
     setSelectedBooks([]);
     setSelectedCombo(selectedCombo === comboId ? null : comboId);
   };
@@ -119,50 +151,58 @@ export function useSemesterBooks() {
 
   const calculateTotal = () => {
     if (selectedCombo) {
-      const combo = combos.find(c => c.id === selectedCombo);
+      const combo = combos.find((c) => c.id === selectedCombo);
       return combo?.combo_price || 0;
     }
-    
+
     return selectedBooks.reduce((total, bookId) => {
-      const book = books.find(b => b.id === bookId);
+      const book = books.find((b) => b.id === bookId);
       return total + (book?.base_price || 0);
     }, 0);
   };
 
   const getSelectedBookDetails = () => {
-    return books.filter(book => selectedBooks.includes(book.id));
+    return books.filter((book) => selectedBooks.includes(book.id));
   };
 
   const getSelectedComboDetails = () => {
-    return combos.find(combo => combo.id === selectedCombo);
+    return combos.find((combo) => combo.id === selectedCombo);
   };
 
   const submitSelection = async (selectionData: BookSelection) => {
     if (!isAuthenticated) {
-      throw new Error('Authentication required');
+      throw new Error("Authentication required");
     }
 
     setIsSubmitting(true);
-    
+
     try {
-      const result = await invokeEdgeFunction('submit-book-selection', selectionData);
+      const result = await invokeEdgeFunction(
+        "submit-book-selection",
+        selectionData
+      );
 
       toast({
-        title: selectionData.action === 'buy' ? "📚 Order Placed!" : "💰 Buyback Request Submitted!",
-        description: selectionData.action === 'buy' 
-          ? "Your book order has been placed successfully. We'll contact you soon!"
-          : "Your buyback request has been submitted. We'll evaluate and get back to you.",
+        title:
+          selectionData.action === "buy"
+            ? "📚 Order Placed!"
+            : "💰 Buyback Request Submitted!",
+        description:
+          selectionData.action === "buy"
+            ? "Your book order has been placed successfully. We'll contact you soon!"
+            : "Your buyback request has been submitted. We'll evaluate and get back to you.",
       });
 
       // Clear selection after successful submission
       clearSelection();
-      
+
       return result;
     } catch (error: any) {
       toast({
         title: "Submission Failed",
-        description: error.message || "Failed to submit request. Please try again.",
-        variant: "destructive"
+        description:
+          error.message || "Failed to submit request. Please try again.",
+        variant: "destructive",
       });
       throw error;
     } finally {
@@ -185,6 +225,6 @@ export function useSemesterBooks() {
     calculateTotal,
     getSelectedBookDetails,
     getSelectedComboDetails,
-    submitSelection
+    submitSelection,
   };
 }

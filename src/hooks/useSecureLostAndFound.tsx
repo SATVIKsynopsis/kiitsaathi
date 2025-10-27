@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useSecureDatabase } from './useSecureDatabase';
 
@@ -21,22 +20,42 @@ interface LostAndFoundItem {
   contact_phone?: string;
 }
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
+
 export function useSecureLostAndFound() {
   const [items, setItems] = useState<LostAndFoundItem[]>([]);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const { loading, error, executeQuery, clearError } = useSecureDatabase();
 
+  // ✅ Fetch active items from backend
   const fetchItems = async () => {
     const result = await executeQuery(async () => {
-      // Always use the main table for now - the views may not be ready yet
-      const { data, error } = await supabase
-        .from('lost_and_found_items')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as LostAndFoundItem[];
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add token only if user is logged in (GET is public, but include token for future features)
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
+      const response = await fetch(`${HOSTED_URL}/api/lostfound/items`, {
+        credentials: 'include',
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('📦 Fetched Lost & Found items:', data.items?.length || 0);
+      console.log('🖼️ Sample image URLs:', data.items?.slice(0, 3).map((item: any) => ({ 
+        title: item.title, 
+        image_url: item.image_url 
+      })));
+      return data.items as LostAndFoundItem[];
     }, { 
       fallback: [] as LostAndFoundItem[],
       retries: 3 
@@ -47,54 +66,71 @@ export function useSecureLostAndFound() {
     }
   };
 
+  // ✅ Add a new item (requires user)
   const addItem = async (itemData: Omit<LostAndFoundItem, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'status'>) => {
-    if (!user) {
+    if (!user || !accessToken) {
       throw new Error('Authentication required to add items');
     }
 
     const result = await executeQuery(async () => {
-      const { data, error } = await supabase
-        .from('lost_and_found_items')
-        .insert({
-          ...itemData,
+      const response = await fetch(`${HOSTED_URL}/api/lostfound/items`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
           user_id: user.id,
-          status: 'active'
-        } as any)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as LostAndFoundItem;
+          ...itemData
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.item as LostAndFoundItem;
     });
 
     if (result) {
-      // Refresh the list
-      await fetchItems();
+      await fetchItems(); // Refresh after adding
       return result;
     }
     return null;
   };
 
+  // ✅ Update an item
   const updateItem = async (id: string, updates: Partial<LostAndFoundItem>) => {
-    if (!user) {
+    if (!user || !accessToken) {
       throw new Error('Authentication required to update items');
     }
 
     const result = await executeQuery(async () => {
-      const { data, error } = await supabase
-        .from('lost_and_found_items')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const response = await fetch(`${HOSTED_URL}/api/lostfound/items/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          ...updates
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.item as LostAndFoundItem;
     });
 
     if (result) {
-      // Refresh the list
-      await fetchItems();
+      await fetchItems(); // Refresh after update
       return result;
     }
     return null;

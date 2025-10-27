@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, BookOpen, GraduationCap, Users } from "lucide-react";
+import { Search, BookOpen, GraduationCap, Users, Sparkles  } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,31 +18,19 @@ const CourseStructure = () => {
   const [selectedSemester, setSelectedSemester] = useState("all");
   const [sortBy, setSortBy] = useState("default");
 
-  // Faculty tab states
   const [expandedCardId, setExpandedCardId] = useState<string>("");
   const [facultySearchQuery, setFacultySearchQuery] = useState("");
   const [selectedDesignation, setSelectedDesignation] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<"all" | "contact" | "faculty">("all");
   const [selectedSchool, setSelectedSchool] = useState<string>("all");
 
-  // Log successful feature implementations
-  useState(() => {
-    console.log("✅ Academic Calendar Added - Semesters III & V PDFs available");
-    console.log("✅ New Courses Integrated - IT, CS&CE, CS&SE branches added");
-    console.log("✅ Disclaimer Added - All tabs now show KIIT attribution");
-    console.log("✅ All updates completed successfully!");
-  });
-
-  // Filter and sort courses
   const filteredSemesters = useMemo(() => {
     let semesters = branchCourseStructure[selectedBranch] || branchCourseStructure[branches[0]];
 
-    // Filter by semester
     if (selectedSemester !== "all") {
       semesters = semesters.filter((s) => s.semester === parseInt(selectedSemester));
     }
 
-    // Search filter
     if (searchQuery) {
       semesters = semesters
         .map((semester) => ({
@@ -61,7 +49,6 @@ const CourseStructure = () => {
         .filter((semester) => semester.sections.length > 0);
     }
 
-    // Sort courses
     if (sortBy !== "default") {
       semesters = semesters.map((semester) => ({
         ...semester,
@@ -82,19 +69,6 @@ const CourseStructure = () => {
     return semesters;
   }, [searchQuery, selectedSemester, sortBy, selectedBranch]);
 
-  const getSectionColor = (type: string) => {
-    switch (type) {
-      case "Theory":
-        return "text-blue-400";
-      case "Practical":
-        return "text-green-400";
-      case "Sessional":
-        return "text-purple-400";
-      default:
-        return "text-gray-400";
-    }
-  };
-
   const getSectionIcon = (type: string) => {
     switch (type) {
       case "Theory":
@@ -109,83 +83,82 @@ const CourseStructure = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#F5F7FA] via-white to-[#E6F2FF]">
       <Navbar />
 
       <main className="flex-1 pt-20 pb-16">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
+            <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#0066FF]/10 to-[#00C896]/10 border border-[#0066FF]/20">
+              <Sparkles className="w-4 h-4 text-[#0066FF]" />
+              <span className="text-sm font-medium text-[#0066FF]">Academic Portal 2024-25</span>
+            </div>
             <h1
-              className="text-4xl md:text-5xl font-bold mb-3"
-              style={{ color: "#0066FF", fontFamily: "Inter, Poppins, sans-serif" }}
+              className="text-4xl md:text-5xl font-bold mb-4 gradient-text"
+              style={{ fontFamily: "Inter, Poppins, sans-serif" }}
             >
-              Course & Faculty Details
+              Course & Faculty Hub
             </h1>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: "#555555" }}>
-              Explore your semester courses with ease
+            <p className="text-lg text-[#555555] max-w-2xl mx-auto" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
+              Explore comprehensive course details and connect with distinguished faculty members
             </p>
           </div>
 
-          {/* Tabs */}
           <Tabs defaultValue="courses" className="w-full">
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8 bg-white border border-gray-200 shadow-sm">
+            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-3 mb-10 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg rounded-2xl ">
               <TabsTrigger
                 value="courses"
-                className="data-[state=active]:bg-[#00C896] data-[state=active]:text-white"
+                className=" data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#0066FF] data-[state=active]:to-[#0052CC] data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl"
                 style={{ fontFamily: "Inter, Poppins, sans-serif" }}
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                Course Details
+                Courses
               </TabsTrigger>
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-[#0066FF] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00C896] data-[state=active]:to-[#00A876] data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl"
                 style={{ fontFamily: "Inter, Poppins, sans-serif" }}
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                Academic Calendar
+                Calendar
               </TabsTrigger>
               <TabsTrigger
                 value="faculty"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#006400] data-[state=active]:to-[#228B22] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#006400] data-[state=active]:to-[#228B22] data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl"
                 style={{ fontFamily: "Inter, Poppins, sans-serif" }}
               >
                 <GraduationCap className="w-4 h-4 mr-2" />
-                Faculty Details(CSE, Civil, Management, BioTech)
+                Faculty
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="courses" className="space-y-6 animate-fade-in">
-              {/* Filters - Sticky */}
-              <div className="sticky top-16 z-10 mb-8">
-                <Card className="bg-white border-gray-200 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      {/* Search */}
+              <div className="sticky top-16 z-10 mb-6">
+                <Card className="glass-effect border-gray-200 shadow-xl">
+                  <CardContent className="p-5">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div className="relative md:col-span-2">
                         <Search
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
                           style={{ color: "#0066FF" }}
                         />
                         <Input
                           placeholder="Search courses, codes or keywords..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-12 rounded-full border-gray-300 bg-[#F5F7FA] focus:border-[#0066FF] focus:ring-[#0066FF]"
+                          className="pl-10 text-sm rounded-full border-gray-300 bg-white/80 focus:border-[#0066FF] focus:ring-[#0066FF] shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         />
                       </div>
 
-                      {/* Branch Filter */}
                       <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                         <SelectTrigger
-                          className="bg-[#F5F7FA] border-gray-300 focus:border-[#0066FF] focus:ring-[#0066FF]"
+                          className="text-sm bg-white/80 border-gray-300 focus:border-[#0066FF] focus:ring-[#0066FF] rounded-xl shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         >
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200">
+                        <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
                           {branches.map((branch) => (
                             <SelectItem
                               key={branch}
@@ -198,15 +171,14 @@ const CourseStructure = () => {
                         </SelectContent>
                       </Select>
 
-                      {/* Semester Filter */}
                       <Select value={selectedSemester} onValueChange={setSelectedSemester}>
                         <SelectTrigger
-                          className="bg-[#F5F7FA] border-gray-300 focus:border-[#0066FF] focus:ring-[#0066FF]"
+                          className="text-sm bg-white/80 border-gray-300 focus:border-[#0066FF] focus:ring-[#0066FF] rounded-xl shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         >
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200">
+                        <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
                           <SelectItem value="all" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                             All Semesters
                           </SelectItem>
@@ -223,19 +195,18 @@ const CourseStructure = () => {
                       </Select>
                     </div>
 
-                    {/* Sort */}
-                    <div className="mt-4 flex items-center gap-3">
-                      <span className="text-sm" style={{ color: "#555555", fontFamily: "Inter, Poppins, sans-serif" }}>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-xs text-[#555555]" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                         Sort by:
                       </span>
                       <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger
-                          className="w-48 bg-[#F5F7FA] border-gray-300 focus:border-[#0066FF] focus:ring-[#0066FF]"
+                          className="w-44 text-sm bg-white/80 border-gray-300 focus:border-[#0066FF] focus:ring-[#0066FF] rounded-xl shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         >
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200">
+                        <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
                           <SelectItem value="default" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                             Default Order
                           </SelectItem>
@@ -261,13 +232,11 @@ const CourseStructure = () => {
                 </Card>
               </div>
 
-              {/* Course Structure */}
-              <div className="space-y-10">
+              <div className="space-y-8">
                 {filteredSemesters.map((semester) => (
-                  <div key={semester.semester} className="animate-fade-in">
-                    {/* Semester Header with Gradient */}
+                  <div key={semester.semester} className="animate-slide-up">
                     <div
-                      className="mb-6 p-6 rounded-xl shadow-md"
+                      className="mb-5 p-6 rounded-2xl shadow-lg"
                       style={{
                         background: "linear-gradient(135deg, #0066FF 0%, #00C896 100%)",
                       }}
@@ -277,24 +246,12 @@ const CourseStructure = () => {
                         style={{ fontFamily: "Inter, Poppins, sans-serif" }}
                       >
                         Semester{" "}
-                        {semester.semester === 1
-                          ? "I"
-                          : semester.semester === 2
-                            ? "II"
-                            : semester.semester === 3
-                              ? "III"
-                              : semester.semester === 4
-                                ? "IV"
-                                : semester.semester === 5
-                                  ? "V"
-                                  : "VI"}
+                        {["I", "II", "III", "IV", "V", "VI"][semester.semester - 1]}
                       </h2>
                     </div>
 
-                    {/* Sections */}
                     {semester.sections.map((section, idx) => (
-                      <div key={idx} className="mb-8">
-                        {/* Section Header */}
+                      <div key={idx} className="mb-6">
                         <div className="flex items-center gap-2 mb-4">
                           <span className="text-2xl">{getSectionIcon(section.type)}</span>
                           <h3
@@ -313,20 +270,16 @@ const CourseStructure = () => {
                           </h3>
                         </div>
 
-                        {/* Course Cards Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {section.courses.map((course, courseIdx) => (
                             <Card
                               key={courseIdx}
-                              className="bg-white border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] rounded-xl overflow-hidden group"
-                              style={{
-                                boxShadow: "0 2px 8px rgba(0, 102, 255, 0.1)",
-                              }}
+                              className="bg-white border-gray-200 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 rounded-2xl overflow-hidden group"
                             >
                               <CardContent className="p-5">
                                 <div className="flex justify-between items-start mb-3">
                                   <span
-                                    className="font-mono text-sm font-semibold px-3 py-1 rounded-full"
+                                    className="font-mono text-xs font-bold px-3 py-1.5 rounded-full shadow-sm"
                                     style={{
                                       backgroundColor: "#E6F2FF",
                                       color: "#0066FF",
@@ -336,7 +289,7 @@ const CourseStructure = () => {
                                     {course.code}
                                   </span>
                                   <Badge
-                                    className="rounded-full"
+                                    className="text-xs rounded-full shadow-sm"
                                     style={{
                                       backgroundColor:
                                         section.type === "Theory"
@@ -358,7 +311,7 @@ const CourseStructure = () => {
                                   </Badge>
                                 </div>
                                 <h4
-                                  className="font-semibold text-base leading-tight"
+                                  className="font-semibold text-sm leading-tight"
                                   style={{
                                     color: "#1A1A1A",
                                     fontFamily: "Inter, Poppins, sans-serif",
@@ -389,26 +342,24 @@ const CourseStructure = () => {
                 ))}
               </div>
 
-              {/* No Results */}
               {filteredSemesters.length === 0 && (
-                <Card className="bg-white border-gray-200 shadow-md rounded-xl">
-                  <CardContent className="p-12 text-center">
-                    <p className="text-lg" style={{ color: "#555555", fontFamily: "Inter, Poppins, sans-serif" }}>
+                <Card className="bg-white border-gray-200 shadow-md rounded-2xl">
+                  <CardContent className="p-10 text-center">
+                    <p className="text-base text-[#555555]" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                       No courses found matching your filters.
                     </p>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Disclaimer */}
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg text-center border border-blue-200">
-                <p className="text-sm text-gray-600" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
-                  All data has been taken from the official KIIT Bhubaneswar site -{" "}
+              <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl text-center border border-blue-200 shadow-sm">
+                <p className="text-xs text-gray-600" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
+                  All data sourced from the official KIIT Bhubaneswar website -{" "}
                   <a
                     href="https://kiit.ac.in/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 hover:underline font-medium"
                   >
                     https://kiit.ac.in/
                   </a>
@@ -419,100 +370,59 @@ const CourseStructure = () => {
             <TabsContent value="calendar" className="space-y-6 animate-fade-in">
               <div className="text-center mb-8">
                 <h2
-                  className="text-3xl font-bold mb-3"
-                  style={{ color: "#0066FF", fontFamily: "Inter, Poppins, sans-serif" }}
+                  className="text-3xl font-bold mb-3 gradient-text"
+                  style={{ fontFamily: "Inter, Poppins, sans-serif" }}
                 >
                   Academic Calendar
                 </h2>
-                <p className="text-lg" style={{ color: "#555555", fontFamily: "Inter, Poppins, sans-serif" }}>
+                <p className="text-base text-[#555555]" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                   Download semester-wise academic calendars
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
                   <Card
                     key={sem}
-                    className="bg-white border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden"
-                    style={{
-                      boxShadow: "0 2px 8px rgba(0, 102, 255, 0.1)",
-                    }}
+                    className="bg-white border-gray-200 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 rounded-2xl overflow-hidden"
                   >
-                    <CardContent className="p-6 text-center">
+                    <CardContent className="p-5 text-center">
                       <div
-                        className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: "#E6F2FF" }}
+                        className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg"
+                        style={{ background: "linear-gradient(135deg, #00C896 0%, #0066FF 100%)" }}
                       >
-                        <BookOpen className="w-8 h-8" style={{ color: "#0066FF" }} />
+                        <BookOpen className="w-8 h-8 text-white" />
                       </div>
                       <h3
                         className="text-lg font-semibold mb-3"
                         style={{ color: "#1A1A1A", fontFamily: "Inter, Poppins, sans-serif" }}
                       >
-                        Semester{" "}
-                        {sem === 1
-                          ? "I"
-                          : sem === 2
-                            ? "II"
-                            : sem === 3
-                              ? "III"
-                              : sem === 4
-                                ? "IV"
-                                : sem === 5
-                                  ? "V"
-                                  : sem === 6
-                                    ? "VI"
-                                    : sem === 7
-                                      ? "VII"
-                                      : "VIII"}
+                        Semester {["I", "II", "III", "IV", "V", "VI", "VII", "VIII"][sem - 1]}
                       </h3>
-                      {sem === 1 ||
-                      sem === 2 ||
-                      sem === 3 ||
-                      sem === 4 ||
-                      sem === 5 ||
-                      sem === 6 ||
-                      sem === 7 ||
-                      sem === 8 ? (
-                        <Button
-                          onClick={() => window.open(`/academic-calendars/semester-${sem}.pdf`, "_blank")}
-                          className="w-full"
-                          style={{
-                            backgroundColor: "#0066FF",
-                            color: "white",
-                            fontFamily: "Inter, Poppins, sans-serif",
-                          }}
-                        >
-                          Download PDF
-                        </Button>
-                      ) : (
-                        <Button
-                          disabled
-                          className="w-full"
-                          style={{
-                            backgroundColor: "#E5E7EB",
-                            color: "#9CA3AF",
-                            fontFamily: "Inter, Poppins, sans-serif",
-                            cursor: "not-allowed",
-                          }}
-                        >
-                          Coming Soon
-                        </Button>
-                      )}
+                      <Button
+                        onClick={() => window.open(`/academic-calendars/semester-${sem}.pdf`, "_blank")}
+                        className="w-full text-sm shadow-md hover:shadow-lg"
+                        style={{
+                          background: "linear-gradient(135deg, #0066FF 0%, #00C896 100%)",
+                          color: "white",
+                          fontFamily: "Inter, Poppins, sans-serif",
+                        }}
+                      >
+                        Download PDF
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
               </div>
 
-              {/* Disclaimer */}
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg text-center border border-blue-200">
-                <p className="text-sm text-gray-600" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
-                  All data has been taken from the official KIIT Bhubaneswar site -{" "}
+              <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl text-center border border-blue-200 shadow-sm">
+                <p className="text-xs text-gray-600" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
+                  All data sourced from the official KIIT Bhubaneswar website -{" "}
                   <a
                     href="https://kiit.ac.in/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 hover:underline font-medium"
                   >
                     https://kiit.ac.in/
                   </a>
@@ -521,12 +431,10 @@ const CourseStructure = () => {
             </TabsContent>
 
             <TabsContent value="faculty" className="space-y-8 animate-fade-in">
-              {/* Search and Filters */}
               <div className="sticky top-16 z-10 mb-8">
-                <Card className="bg-white border-gray-200 shadow-lg">
+                <Card className="glass-effect border-gray-200 shadow-xl">
                   <CardContent className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      {/* Search */}
                       <div className="relative">
                         <Search
                           className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
@@ -536,20 +444,19 @@ const CourseStructure = () => {
                           placeholder="Search by name or designation..."
                           value={facultySearchQuery}
                           onChange={(e) => setFacultySearchQuery(e.target.value)}
-                          className="pl-12 rounded-full border-gray-300 bg-[#F5F7FA] focus:border-[#006400] focus:ring-[#006400]"
+                          className="pl-12 rounded-full border-gray-300 bg-white/80 focus:border-[#006400] focus:ring-[#006400] shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         />
                       </div>
 
-                      {/* Category Filter */}
                       <Select value={selectedCategory} onValueChange={(value: any) => setSelectedCategory(value)}>
                         <SelectTrigger
-                          className="bg-[#F5F7FA] border-gray-300 focus:border-[#228B22] focus:ring-[#228B22]"
+                          className="bg-white/80 border-gray-300 focus:border-[#228B22] focus:ring-[#228B22] rounded-xl shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         >
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200">
+                        <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
                           <SelectItem value="all" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                             All Categories
                           </SelectItem>
@@ -562,15 +469,14 @@ const CourseStructure = () => {
                         </SelectContent>
                       </Select>
 
-                      {/* Schools Filter */}
                       <Select value={selectedSchool} onValueChange={setSelectedSchool}>
                         <SelectTrigger
-                          className="bg-[#F5F7FA] border-gray-300 focus:border-[#FF6B35] focus:ring-[#FF6B35]"
+                          className="bg-white/80 border-gray-300 focus:border-[#FF6B35] focus:ring-[#FF6B35] rounded-xl shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         >
                           <SelectValue placeholder="All Schools" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200">
+                        <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
                           <SelectItem value="all" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                             All Schools
                           </SelectItem>
@@ -598,15 +504,14 @@ const CourseStructure = () => {
                         </SelectContent>
                       </Select>
 
-                      {/* Designation Filter */}
                       <Select value={selectedDesignation} onValueChange={setSelectedDesignation}>
                         <SelectTrigger
-                          className="bg-[#F5F7FA] border-gray-300 focus:border-[#1E90FF] focus:ring-[#1E90FF]"
+                          className="bg-white/80 border-gray-300 focus:border-[#1E90FF] focus:ring-[#1E90FF] rounded-xl shadow-sm"
                           style={{ fontFamily: "Inter, Poppins, sans-serif", color: "#1A1A1A" }}
                         >
                           <SelectValue placeholder="All Designations" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200">
+                        <SelectContent className="bg-white border-gray-200 shadow-xl rounded-xl">
                           <SelectItem value="all" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                             All Designations
                           </SelectItem>
@@ -628,7 +533,6 @@ const CourseStructure = () => {
                 </Card>
               </div>
 
-              {/* Contact Persons Section */}
               {(selectedCategory === "all" || selectedCategory === "contact") &&
                 (() => {
                   const filtered = contactPersons.filter((faculty) => {
@@ -646,10 +550,10 @@ const CourseStructure = () => {
                   if (filtered.length === 0) return null;
 
                   return (
-                    <div className="animate-fade-in">
+                    <div className="animate-slide-up">
                       <div className="mb-6">
                         <h2
-                          className="text-3xl font-bold"
+                          className="text-4xl font-bold gradient-text"
                           style={{
                             background: "linear-gradient(135deg, #006400 0%, #228B22 100%)",
                             WebkitBackgroundClip: "text",
@@ -659,7 +563,7 @@ const CourseStructure = () => {
                         >
                           Contact Persons
                         </h2>
-                        <p className="mt-2" style={{ color: "#555555", fontFamily: "Inter, Poppins, sans-serif" }}>
+                        <p className="mt-2 text-[#555555]" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                           {filtered.length} contact{filtered.length !== 1 ? "s" : ""} available
                         </p>
                       </div>
@@ -677,7 +581,6 @@ const CourseStructure = () => {
                   );
                 })()}
 
-              {/* Faculty Members Section */}
               {(selectedCategory === "all" || selectedCategory === "faculty") &&
                 (() => {
                   const filtered = facultyMembers.filter((faculty) => {
@@ -694,10 +597,10 @@ const CourseStructure = () => {
                   if (filtered.length === 0) return null;
 
                   return (
-                    <div className="animate-fade-in">
+                    <div className="animate-slide-up">
                       <div className="mb-6">
                         <h2
-                          className="text-3xl font-bold"
+                          className="text-4xl font-bold"
                           style={{
                             background: "linear-gradient(135deg, #006400 0%, #228B22 100%)",
                             WebkitBackgroundClip: "text",
@@ -707,7 +610,7 @@ const CourseStructure = () => {
                         >
                           Faculty Members
                         </h2>
-                        <p className="mt-2" style={{ color: "#555555", fontFamily: "Inter, Poppins, sans-serif" }}>
+                        <p className="mt-2 text-[#555555]" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
                           {filtered.length} facult{filtered.length !== 1 ? "y members" : "y member"} available
                         </p>
                       </div>
@@ -725,53 +628,14 @@ const CourseStructure = () => {
                   );
                 })()}
 
-              {/* No Results */}
-              {(() => {
-                const allFiltered = [...contactPersons, ...facultyMembers].filter((faculty) => {
-                  const matchesSearch =
-                    facultySearchQuery === "" ||
-                    faculty.name.toLowerCase().includes(facultySearchQuery.toLowerCase()) ||
-                    faculty.designation.toLowerCase().includes(facultySearchQuery.toLowerCase());
-                  const matchesDesignation =
-                    selectedDesignation === "all" || faculty.designation === selectedDesignation;
-                  const matchesCategory = selectedCategory === "all" || faculty.category === selectedCategory;
-                  const matchesSchool =
-                    selectedSchool === "all" ||
-                    faculty.school === selectedSchool ||
-                    (faculty.category === "contact" && !faculty.school);
-                  return matchesSearch && matchesDesignation && matchesCategory && matchesSchool;
-                });
-
-                if (allFiltered.length === 0) {
-                  return (
-                    <Card className="bg-white border-gray-200 shadow-md rounded-xl">
-                      <CardContent className="p-12 text-center">
-                        <Users className="w-16 h-16 mx-auto mb-4" style={{ color: "#006400" }} />
-                        <h3
-                          className="text-2xl font-semibold mb-2"
-                          style={{ color: "#1A1A1A", fontFamily: "Inter, Poppins, sans-serif" }}
-                        >
-                          No Faculty Found
-                        </h3>
-                        <p style={{ color: "#555555", fontFamily: "Inter, Poppins, sans-serif" }}>
-                          Try adjusting your search or filter criteria.
-                        </p>
-                      </CardContent>
-                    </Card>
-                  );
-                }
-                return null;
-              })()}
-
-              {/* Disclaimer */}
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg text-center border border-blue-200">
+              <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl text-center border border-blue-200 shadow-sm">
                 <p className="text-sm text-gray-600" style={{ fontFamily: "Inter, Poppins, sans-serif" }}>
-                  All data has been taken from the official KIIT Bhubaneswar site -{" "}
+                  All data sourced from the official KIIT Bhubaneswar website -{" "}
                   <a
                     href="https://kiit.ac.in/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 hover:underline font-medium"
                   >
                     https://kiit.ac.in/
                   </a>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 export interface ServiceVisibility {
   service_id: string;
@@ -7,31 +6,36 @@ export interface ServiceVisibility {
   replaced_text: string | null;
 }
 
+const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+
 export function useServiceVisibility() {
   const [visibilityMap, setVisibilityMap] = useState<Record<string, ServiceVisibility>>({});
   const [loading, setLoading] = useState(true);
+  const [hasFetchedData, setHasFetchedData] = useState(false);
 
   useEffect(() => {
     async function fetchVisibility() {
       try {
-        const { data, error } = await supabase
-          .from('service_visibility')
-          .select('*');
+        const response = await fetch(`${HOSTED_URL}/api/service-visibility`);
+        const result = await response.json();
 
-        if (error) {
-          console.error('Error fetching service visibility:', error);
+        if (!response.ok || !result.services) {
+          console.error('Error fetching service visibility:', result.error || 'Unknown error');
+          setHasFetchedData(true);
+          setLoading(false);
           return;
         }
 
-        // Convert to map for easy lookup
         const map: Record<string, ServiceVisibility> = {};
-        data?.forEach(item => {
+        result.services.forEach((item: ServiceVisibility) => {
           map[item.service_id] = item;
         });
 
         setVisibilityMap(map);
+        setHasFetchedData(true);
       } catch (error) {
         console.error('Error in useServiceVisibility:', error);
+        setHasFetchedData(true);
       } finally {
         setLoading(false);
       }
@@ -40,5 +44,5 @@ export function useServiceVisibility() {
     fetchVisibility();
   }, []);
 
-  return { visibilityMap, loading };
+  return { visibilityMap, loading, hasFetchedData };
 }

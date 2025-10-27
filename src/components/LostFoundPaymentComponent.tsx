@@ -70,9 +70,10 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
     setIsProcessing(true);
 
     try {
-      const orderRes = await fetch(`${import.meta.env.VITE_API_URL}/create-lost-found-order`, {
+      const orderRes = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/payments/create-lost-found-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           amount: 500, // ₹5 in paise
           itemId,
@@ -96,9 +97,10 @@ const LostFoundPaymentComponent: React.FC<LostFoundPaymentComponentProps> = ({
         image: "/favicon.ico",
         handler: async (response: any) => {
           try {
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/verify-lost-found-payment`, {
+            const verifyRes = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/payments/verify-lost-found-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,

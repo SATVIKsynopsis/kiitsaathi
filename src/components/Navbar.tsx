@@ -6,6 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import kiitMascot from "@/assets/kiit-mascot.jpg";
 
+interface NavItem {
+  label: string;
+  href: string;
+  isRoute?: boolean;
+}
+
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,27 +22,37 @@ export const Navbar = () => {
   // Check if current user is admin
   const isAdmin = user?.email === 'adityash8997@gmail.com' || user?.email === '24155598@kiit.ac.in';
 
+
+
   const handleSignOut = async () => {
     try {
       await signOut();
       toast.success("Successfully signed out");
-      navigate("/");
+      // Force redirect after sign out
+      window.location.href = "/auth";
     } catch (error) {
       toast.error("Error signing out");
+      console.error("Sign out error:", error);
     }
   };
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { label: "Home", href: "#home" },
     { label: "Services", href: "#services" },
-    { label: "How It Works", href: "#how-it-works" },
     { label: "Our Team", href: "#team" },
     { label: "FAQ", href: "#faq" },
+    { label: "Feedback", href: "/feedback", isRoute: true },
     { label: "Contact", href: "#contact" },
   ];
 
-  // Smooth scroll to section
-  const scrollToSection = (href: string) => {
+  // Smooth scroll to section or navigate to route
+  const scrollToSection = (href: string, isRoute?: boolean) => {
+    if (isRoute) {
+      navigate(href);
+      setIsOpen(false);
+      return;
+    }
+    
     if (location.pathname !== "/") {
       navigate("/");
       setTimeout(() => {
@@ -106,7 +122,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-kiit-green text-white border-b border-white/20 shadow-lg mx-2 mt-2 rounded-full">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-kiit-green text-white border-b border-white/20 shadow-lg mx-2 mt-2 lg:rounded-full">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -126,22 +142,11 @@ export const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {/* <button
-              onClick={() => { setActiveSection("home"); scrollToSection("#home");}}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-base ${
-                isActive("#home")
-                  ? "text-black bg-white/40 shadow-md"
-                  : "text-white hover:text-kiit-black hover:bg-kiit-black"
-              }`}
-            >
-              <Home className="w-5 h-5" />
-              Home
-            </button> */}
-
+            
             {navItems.map((item) => (
               <button
                 key={item.label}
-                onClick={() => scrollToSection(item.href)}
+                onClick={() => scrollToSection(item.href, item.isRoute)}
                 className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium relative ${
                   isActive(item.href)
                     ? "text-black bg-white/40"
@@ -207,7 +212,7 @@ export const Navbar = () => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden border-t border-white/20 py-4 space-y-2 backdrop-blur-sm">
-            <button
+            {/* <button
               onClick={() => {
                 navigate("/");
                 setIsOpen(false);
@@ -219,14 +224,13 @@ export const Navbar = () => {
                   : "text-white hover:text-kiit-green hover:bg-kiit-green/5"
               }`}
             >
-              <Home className="w-4 h-4" />
-              Home
-            </button>
+              
+            </button> */}
 
             {navItems.map((item) => (
               <button
                 key={item.label}
-                onClick={() => scrollToSection(item.href)}
+                onClick={() => scrollToSection(item.href, item.isRoute)}
                 className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
                   isActive(item.href)
                     ? "text-black bg-white/40"

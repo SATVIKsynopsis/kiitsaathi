@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface PolicyAcceptance {
@@ -10,9 +9,10 @@ interface PolicyAcceptance {
   terms_conditions_version: string;
   last_updated: string;
 }
+  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 
 export function usePolicyManager() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [policyData, setPolicyData] = useState<PolicyAcceptance | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
@@ -30,30 +30,28 @@ export function usePolicyManager() {
   }, [user]);
 
   const loadPolicyAcceptance = async () => {
-    if (!user) return;
+    if (!user || !accessToken) return;
 
     try {
-      const { data, error } = await supabase
-        .from('policy_acceptances')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      const response = await fetch(`${HOSTED_URL}/api/policy`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Error loading policy acceptance:', error);
-        return;
-      }
+      if (response.ok && result.policyData) {
+        setPolicyData(result.policyData);
 
-      if (data) {
-        setPolicyData(data);
-        
-        // Check if privacy policy needs to be shown (first time or version update)
-        if (!data.privacy_policy_accepted || data.privacy_policy_version !== CURRENT_PRIVACY_VERSION) {
+        if (
+          !result.policyData.privacy_policy_accepted ||
+          result.policyData.privacy_policy_version !== CURRENT_PRIVACY_VERSION
+        ) {
           setShowPrivacyPolicy(true);
         }
       } else {
-        // First time user - show privacy policy
-        setShowPrivacyPolicy(true);
+        setShowPrivacyPolicy(true); // First-time user
       }
     } catch (error) {
       console.error('Error in loadPolicyAcceptance:', error);
@@ -63,24 +61,23 @@ export function usePolicyManager() {
   };
 
   const acceptPrivacyPolicy = async () => {
-    if (!user) return;
+    if (!user || !accessToken) return;
 
     try {
-      const updateData = {
-        user_id: user.id,
-        privacy_policy_accepted: true,
-        privacy_policy_version: CURRENT_PRIVACY_VERSION,
-        last_updated: new Date().toISOString(),
-      };
+      const response = await fetch(`${HOSTED_URL}/api/policy/privacy`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          privacy_policy_version: CURRENT_PRIVACY_VERSION,
+        })
+      });
 
-      const { error } = await supabase
-        .from('policy_acceptances')
-        .upsert(updateData, { onConflict: 'user_id' });
-
-      if (error) {
-        console.error('Error accepting privacy policy:', error);
-        toast.error('Failed to save privacy policy acceptance');
-        return;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Policy update failed');
       }
 
       setPolicyData(prev => ({
@@ -99,24 +96,23 @@ export function usePolicyManager() {
   };
 
   const acceptTermsAndConditions = async () => {
-    if (!user) return;
+    if (!user || !accessToken) return false;
 
     try {
-      const updateData = {
-        user_id: user.id,
-        terms_conditions_accepted: true,
-        terms_conditions_version: CURRENT_TERMS_VERSION,
-        last_updated: new Date().toISOString(),
-      };
+      const response = await fetch(`${HOSTED_URL}/api/policy/terms`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          terms_conditions_version: CURRENT_TERMS_VERSION,
+        })
+      });
 
-      const { error } = await supabase
-        .from('policy_acceptances')
-        .upsert(updateData, { onConflict: 'user_id' });
-
-      if (error) {
-        console.error('Error accepting terms and conditions:', error);
-        toast.error('Failed to save terms acceptance');
-        return false;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Terms update failed');
       }
 
       setPolicyData(prev => ({
@@ -136,14 +132,16 @@ export function usePolicyManager() {
     }
   };
 
-  const requireTermsAcceptance = (serviceName?: string) => {
+  const requireTermsAcceptance = () => {
     if (!user) {
       toast.error('Please sign in to continue');
       return false;
     }
 
-    if (!policyData?.terms_conditions_accepted || 
-        policyData.terms_conditions_version !== CURRENT_TERMS_VERSION) {
+    if (
+      !policyData?.terms_conditions_accepted ||
+      policyData.terms_conditions_version !== CURRENT_TERMS_VERSION
+    ) {
       setShowTermsAndConditions(true);
       return false;
     }
@@ -151,15 +149,13 @@ export function usePolicyManager() {
     return true;
   };
 
-  const isPrivacyPolicyAccepted = () => {
-    return policyData?.privacy_policy_accepted && 
-           policyData.privacy_policy_version === CURRENT_PRIVACY_VERSION;
-  };
+  const isPrivacyPolicyAccepted = () =>
+    policyData?.privacy_policy_accepted &&
+    policyData.privacy_policy_version === CURRENT_PRIVACY_VERSION;
 
-  const isTermsAccepted = () => {
-    return policyData?.terms_conditions_accepted && 
-           policyData.terms_conditions_version === CURRENT_TERMS_VERSION;
-  };
+  const isTermsAccepted = () =>
+    policyData?.terms_conditions_accepted &&
+    policyData.terms_conditions_version === CURRENT_TERMS_VERSION;
 
   return {
     loading,

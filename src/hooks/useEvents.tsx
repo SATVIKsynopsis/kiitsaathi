@@ -1,40 +1,53 @@
-// hooks/useEvents.ts
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/lib/database-types';
+import { useAuth } from './useAuth';
 
-type CalendarEvent = Database['public']['Tables']['calendar_events']['Row'];
 
 export function useEvents() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const { accessToken } = useAuth();
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+  
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("calendar_events") // Fixed typo
-          .select("*")
-          .eq("validation", true)
-          .order("event_date", { ascending: true });
-        
-        if (error) {
-          throw new Error(`Supabase error: ${error.message} (Check table name and permissions)`);
-        }
-        setEvents(data || []);
-        setError(null);
-      } catch (err: any) {
-        setError(err.message);
-        console.error("Fetch error:", err.message);
-      } finally {
-        setLoading(false);
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
-    };
     
-    fetchEvents();
-  }, []);
+      const response = await fetch(`${HOSTED_URL}/api/events`, {
+        headers,
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch events');
+      }
+
+      setEvents(data.events || []);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Fetch error:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEvents();
+}, [accessToken]);
+
 
   const upcomingEvents = events
     .filter(event => new Date(event.event_date) > new Date())

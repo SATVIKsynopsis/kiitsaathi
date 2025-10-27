@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Check, CreditCard, IndianRupee, Shield, Clock, X } from "lucide-react";
 
 interface ApplicationPaymentComponentProps {
@@ -29,6 +30,7 @@ const ApplicationPaymentComponent: React.FC<ApplicationPaymentComponentProps> = 
   onPaymentCancel
 }) => {
   const { toast } = useToast();
+  const { accessToken } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
@@ -92,11 +94,20 @@ const ApplicationPaymentComponent: React.FC<ApplicationPaymentComponentProps> = 
 
     try {
       console.log('🔵 Creating payment order...');
-      console.log('API URL:', import.meta.env.VITE_LOST_FOUND_API_URL);
+      console.log('API URL:', import.meta.env.VITE_HOSTED_URL);
+      console.log('Access Token:', accessToken ? 'Present' : 'Missing');
       
-      const orderRes = await fetch(`${import.meta.env.VITE_LOST_FOUND_API_URL}/create-application-unlock-order`, {
+      if (!accessToken) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+      
+      const orderRes = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/lostfound/create-application-unlock-order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        credentials: 'include',
         body: JSON.stringify({
           amount: 500, // ₹5 in paise
           applicationId,
@@ -129,9 +140,13 @@ const ApplicationPaymentComponent: React.FC<ApplicationPaymentComponentProps> = 
         handler: async (response: any) => {
           console.log('✅ Payment completed:', response.razorpay_payment_id);
           try {
-            const verifyRes = await fetch(`${import.meta.env.VITE_LOST_FOUND_API_URL}/verify-application-unlock-payment`, {
+            const verifyRes = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/lostfound/verify-application-unlock-payment`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+              },
+              credentials: 'include',
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
