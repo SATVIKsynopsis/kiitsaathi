@@ -27,11 +27,6 @@ const mentors: Mentor[] = [
     designation: "Associate Professor,SCE",
     photo: "/mentors/rai.jpg",
   },
-  {
-    name: "Dr. Ajit Pasayat",
-    designation: "Associate Dean, KSAC",
-    photo: "/mentors/ajit.jpg",
-  },
 ];
 
 const OurMentors = () => {
