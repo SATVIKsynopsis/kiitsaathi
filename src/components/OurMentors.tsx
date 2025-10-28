@@ -22,6 +22,7 @@ const mentors: Mentor[] = [
     designation: "Associate Professor,SCE",
     photo: "/mentors/vikas.jpg",
   },
+  
   {
     name: "Mr. Satyananda Champati Rai",
     designation: "Associate Professor,SCE",
