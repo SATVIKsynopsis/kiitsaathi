@@ -272,6 +272,22 @@ const ResumePDF = ({ data }: { data: ResumeData }) => (
         </View>
       )}
 
+      {/* Languages */}
+      {Array.isArray(data.languages) && data.languages.filter((l) => l && l.trim()).length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>LANGUAGES</Text>
+          <Text style={styles.text}>{data.languages.filter((l) => l && l.trim()).join(", ")}</Text>
+        </View>
+      )}
+
+      {/* Interests */}
+      {Array.isArray(data.interests) && data.interests.filter((i) => i && i.trim()).length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>INTERESTS & HOBBIES</Text>
+          <Text style={styles.text}>{data.interests.filter((i) => i && i.trim()).join(", ")}</Text>
+        </View>
+      )}
+
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
