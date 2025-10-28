@@ -14,7 +14,7 @@ const imageCache = new Map<string, {
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 1000; // 1 second
 const FALLBACK_IMAGE_URL = 'https://storage.googleapis.com/kiitsaathi.appspot.com/faculty-photos/fallback.jpg';
-const LOAD_TIMEOUT = 10000; // 10 seconds timeout
+const LOAD_TIMEOUT = 40000; // 10 seconds timeout
 
 export function useFacultyPhotos() {
   const { user } = useAuth();
