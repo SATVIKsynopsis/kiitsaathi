@@ -13,6 +13,11 @@ const mentors: Mentor[] = [
     photo: "/mentors/bhaskar.jpg",
   },
   {
+    name: "Dr. Ajit Pasayat",
+    designation: "Associate Dean, KSAC",
+    photo: "/mentors/ajit.jpg",
+  },
+  {
     name: "Dr. Vikas Hassija",
     designation: "Associate Professor,SCE",
     photo: "/mentors/vikas.jpg",
@@ -21,6 +26,11 @@ const mentors: Mentor[] = [
     name: "Mr. Satyananda Champati Rai",
     designation: "Associate Professor,SCE",
     photo: "/mentors/rai.jpg",
+  },
+  {
+    name: "Dr. Ajit Pasayat",
+    designation: "Associate Dean, KSAC",
+    photo: "/mentors/ajit.jpg",
   },
 ];
 
