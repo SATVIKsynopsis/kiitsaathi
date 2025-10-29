@@ -115,14 +115,6 @@ const services = [
     gradient: "from-fedkiit-green to-usc-green",
   },
   {
-    id: "donation-saathi",
-    icon: Heart,
-    title: "Donation Saathi",
-    description: "Extend a helping hand - donate books, food, and essentials to those in need through the KIIT community.",
-    price: "Coming Soon",
-    gradient: "from-kiit-green to-campus-orange",
-  },
-  {
     id: "student-mental-wellness",
     icon: Brain,
     title: "Student Mental Wellness",
@@ -130,6 +122,15 @@ const services = [
     price: "Coming Soon",
     gradient: "from-campus-blue to-ecell-cyan",
   },
+  //{
+  //  id: "donation-saathi",
+  //  icon: Heart,
+  //  title: "Donation Saathi",
+  //  description: "Extend a helping hand - donate books, food, and essentials to those in need through the KIIT community.",
+  //  price: "Coming Soon",
+  //  gradient: "from-kiit-green to-campus-orange",
+  //
+  //},
   {
     id: "printout-on-demand",
     icon: Printer,
