@@ -63,11 +63,6 @@ const faqs = [
       "SplitSaathi helps you and your friends manage shared expenses during café visits, trips, or fests. Add your group’s expenses, and it automatically calculates who owes what - making money management stress-free and transparent.",
   },
   {
-    question: "What is Donation Saathi?",
-    answer:
-      "Donation Saathi allows you to give back to the community. You can donate food, books, clothes, and essentials to fellow students in need - fostering a spirit of care and kindness across KIIT.",
-  },
-  {
     question: "What is Student Mental Wellness?",
     answer:
       "We deeply care about mental health. The Student Mental Wellness section provides verified resources, guidance, and professional helplines to help students find support when they need it the most.",
