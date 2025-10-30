@@ -188,41 +188,6 @@ export default function LostAndFound() {
     setFilteredItems(filtered);
   }, [items, searchTerm, selectedCategory, selectedType, activeTab]);
 
-  useEffect(() => {
-    const checkPaidItems = async () => {
-      if (!user?.id) {
-        setPaidItems({});
-        return;
-      }
-      if (items.length > 0) {
-        const paidItemsCheck: { [id: string]: boolean } = {};
-        for (const item of items) {
-          try {
-            const headers: HeadersInit = {
-              "Content-Type": "application/json",
-            };
-            if (accessToken) {
-              headers["Authorization"] = `Bearer ${accessToken}`;
-            }
-
-            const res = await fetch(
-              `${HOSTED_URL}/api/lostfound/has-paid-lost-found-contact?user_id=${user.id}&item_id=${item.id}`,
-              { headers }
-            );
-            const result = await res.json();
-            if (result.paid) {
-              paidItemsCheck[item.id] = true;
-            }
-          } catch (err) {
-            
-          }
-        }
-        setPaidItems(paidItemsCheck);
-      }
-    };
-    checkPaidItems();
-  }, [user?.id, items, accessToken]);
-
   // Fetch application counts for lost items
   useEffect(() => {
     const fetchApplicationCounts = async () => {
@@ -446,6 +411,8 @@ export default function LostAndFound() {
       return;
     }
 
+    // PAYMENT FEATURE COMMENTED OUT - Just show contact details after sign in
+    /*
     // Prevent users from paying for their own uploaded items
     if (user.email === item.contact_email) {
       toast({
@@ -474,9 +441,31 @@ export default function LostAndFound() {
       return;
     }
     setShowPayment({ item, open: true });
+    */
+
+    // Mark item as "viewed" (without payment)
+    setPaidItems((prev) => ({ ...prev, [item.id]: true }));
+    
+    toast({
+      title: "Contact Details Revealed! 🎉",
+      description: "You can now see the contact information below.",
+      duration: 3000,
+    });
+
+    // Scroll to the item
+    const itemElement = document.getElementById(`item-${item.id}`);
+    if (itemElement) {
+      itemElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      itemElement.classList.add("ring-2", "ring-blue-500");
+      setTimeout(() => {
+        itemElement.classList.remove("ring-2", "ring-blue-500");
+      }, 3000);
+    }
   };
 
   const handlePaymentSuccess = async () => {
+    // PAYMENT FEATURE COMMENTED OUT
+    /*
     if (showPayment.item && user?.id) {
       try {
         setPaidItems((prev) => ({ ...prev, [showPayment.item!.id]: true }));
@@ -520,6 +509,7 @@ export default function LostAndFound() {
         });
       }
     }
+    */
   };
 
   const removeImage = () => {
@@ -589,7 +579,7 @@ export default function LostAndFound() {
               </span>
             </p>
             {/* Under Development Banner - now below hero section */}
-            <div className="mt-6 mb-6 flex justify-center">
+            {/* <div className="mt-6 mb-6 flex justify-center">
               <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white py-4 px-6 rounded-2xl shadow-2xl w-full max-w-2xl border-4 border-white/20">
                 <p className="text-lg md:text-xl font-bold flex items-center justify-center gap-2">
                   <span className="text-2xl">🚧</span>
@@ -600,7 +590,7 @@ export default function LostAndFound() {
                   This portal is currently being updated. Some functions may not work as expected. Thank you for your patience!
                 </p>
               </div>
-            </div>
+            </div> */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button
                 size="lg"
@@ -881,52 +871,64 @@ export default function LostAndFound() {
                               )}
                             </Button>
                           )
-                        ) : /* FOUND ITEMS - Old Payment Flow */
-                        paidItems[item.id] ? (
-                          <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
-                            <div className="flex items-center mb-3">
-                              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                              <span className="font-bold text-green-800 dark:text-green-200">
-                                Contact Details:
-                              </span>
+                        ) : /* FOUND ITEMS - Sign in to View Contact (No Payment) */
+                        user ? (
+                          // User is signed in - Show contact button
+                          paidItems[item.id] ? (
+                            <div className="mt-4 p-4 border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 shadow-inner">
+                              <div className="flex items-center mb-3">
+                                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                                <span className="font-bold text-green-800 dark:text-green-200">
+                                  Contact Details:
+                                </span>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center">
+                                  <span className="font-semibold w-16">
+                                    Name:
+                                  </span>
+                                  <span className="text-green-800 dark:text-green-200">
+                                    {item.contact_name}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="font-semibold w-16">
+                                    Email:
+                                  </span>
+                                  <span className="text-green-800 dark:text-green-200">
+                                    {item.contact_email}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="font-semibold w-16">
+                                    Phone:
+                                  </span>
+                                  <span className="text-green-800 dark:text-green-200">
+                                    {item.contact_phone}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">
-                                  Name:
-                                </span>
-                                <span className="text-green-800 dark:text-green-200">
-                                  {item.contact_name}
-                                </span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">
-                                  Email:
-                                </span>
-                                <span className="text-green-800 dark:text-green-200">
-                                  {item.contact_email}
-                                </span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">
-                                  Phone:
-                                </span>
-                                <span className="text-green-800 dark:text-green-200">
-                                  {item.contact_phone}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                          ) : (
+                            <Button
+                              className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                              onClick={() => handleContactClick(item)}
+                              disabled={user?.email === item.contact_email}
+                            >
+                              <Phone className="w-5 h-5 mr-3" />
+                              {user?.email === item.contact_email
+                                ? "Your Item"
+                                : `View Contact Details`}
+                            </Button>
+                          )
                         ) : (
+                          // User is NOT signed in - Show sign in prompt
                           <Button
                             className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                             onClick={() => handleContactClick(item)}
-                            disabled={user?.email === item.contact_email}
                           >
                             <Phone className="w-5 h-5 mr-3" />
-                            {user?.email === item.contact_email
-                              ? "Your Item"
-                              : `Contact ${item.contact_name} (₹5)`}
+                            Sign in to View Contact
                           </Button>
                         )}
 
@@ -1225,7 +1227,7 @@ export default function LostAndFound() {
                               <Phone className="w-5 h-5 mr-3" />
                               {user?.email === item.contact_email
                                 ? "Your Item"
-                                : `Contact ${item.contact_name} (₹15)`}
+                                : `View Contact Details`}
                             </Button>
                           )}
 
@@ -1264,8 +1266,9 @@ export default function LostAndFound() {
         </div>
       </section>
 
+      {/* PAYMENT DIALOG COMMENTED OUT */}
       {/* Payment Dialog */}
-      {showPayment.open && showPayment.item && (
+      {/* {showPayment.open && showPayment.item && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="w-full max-w-md">
             <LostFoundPaymentComponent
@@ -1281,7 +1284,7 @@ export default function LostAndFound() {
             />
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Upload Form Dialog */}
       <Dialog open={showUploadForm} onOpenChange={setShowUploadForm}>
