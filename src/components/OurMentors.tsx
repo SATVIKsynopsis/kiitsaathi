@@ -9,7 +9,7 @@ interface Mentor {
 const mentors: Mentor[] = [
   {
     name: "Dr. Ajit Pasayat",
-    designation: "Associate Dean, KSAC \nAssociate Professor,SCE",
+    designation: "Associate Dean, KSAC \n Associate Professor,SCE",
     photo: "/mentors/ajit.jpg",
   },
   {
