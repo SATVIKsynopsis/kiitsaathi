@@ -587,7 +587,7 @@ export default function LostAndFound() {
                   <span className="text-2xl">🚧</span>
                 </p>
                 <p className="text-sm md:text-base mt-1 opacity-90 text-center">
-                  This portal is currently being updated. Some functions may not work as expected. Thank you for your patience!
+                  This portal is currently being updated. Some functions may not work as . Thank you for your patience!
                 </p>
               </div>
             </div> */}
