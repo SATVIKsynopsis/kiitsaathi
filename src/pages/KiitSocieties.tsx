@@ -41,7 +41,7 @@ const KiitSocieties = () => {
   const societyServices = [
     {
       icon: Search,
-      title: "Interview Deadlines Tracker",
+      title: "KIIT Societies Events, Interviews Calender",
       description: "Track every interview and onboarding deadline.",
       price: "Free",
       gradient: "from-campus-purple to-campus-orange",
