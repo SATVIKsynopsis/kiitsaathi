@@ -313,15 +313,6 @@ export const contactPersonsData: FacultyMember[] = [
     category: "contact",
   },
   {
-    id: "cp-34",
-    name: "Dr. Rajat Kumar Behera(International Student Affairs (Academics))",
-    designation: "International Student Affairs (Academics)",
-    email: "rajatkumar.beherafcs@kiit.ac.in",
-    phone: "9886072882",
-    linkedin: "https://in.linkedin.com/in/dr-rajat-kumar-behera-2809a226",
-    category: "contact",
-  },
-  {
     id: "cp-35",
     name: "Dr. Jayanta Mondal(International Student Affairs (Academics))",
     designation: "International Student Affairs (Academics)",
