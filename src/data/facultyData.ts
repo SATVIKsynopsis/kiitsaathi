@@ -13,7 +13,7 @@ export interface FacultyMember {
   school?: string;
 }
 
-// Contact Persons (46 total) - Updated with real data
+// Contact Persons (76 total) - Updated with real data
 export const contactPersonsData: FacultyMember[] = [
   {
     id: "cp-1",
