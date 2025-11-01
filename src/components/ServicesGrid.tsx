@@ -33,14 +33,14 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const services = [
-  {
-    id: "kiit-saathi-ai-assistant",
-    icon: Bot,
-    title: "KIIT Saathi (AI Assistant)",
-    description: "Lost? Hungry? Confused? Ask our chatbot - 24x7 KIIT help.",
-    price: "Free",
-    gradient: "from-ecell-cyan to-campus-blue",
-  },
+  // {
+  // id: "kiit-saathi-ai-assistant",
+  //  icon: Bot,
+  //  title: "KIIT Saathi (AI Assistant)",
+  //  description: "Lost? Hungry? Confused? Ask our chatbot - 24x7 KIIT help.",
+  //  price: "Free",
+  //  gradient: "from-ecell-cyan to-campus-blue",
+  // },
   {
     id: "study-material",
     icon: BookOpen,
@@ -56,6 +56,14 @@ const services = [
     description: "Lost your ID card? Found someone's AirPods? Report it here.",
     price: "Free",
     gradient: "from-campus-orange to-usc-orange",
+  },
+  {
+    id: "campus-map",
+    icon: Shield,
+    title: "Campus Map",
+    description: "Explore the vibrant campus of KIIT and everything it has to offer.",
+    price: "Free",
+    gradient: "from-campus-blue to-kiit-green",
   },
   // {
   //   id: "timetable-saathi",
@@ -80,14 +88,6 @@ const services = [
     description: "Complete course structure and faculty information for all semesters.",
     price: "Free",
     gradient: "from-blue-500 to-cyan-500",
-  },
-  {
-    id: "campus-map",
-    icon: Shield,
-    title: "Campus Map",
-    description: "Explore the vibrant campus of KIIT and everything it has to offer.",
-    price: "Free",
-    gradient: "from-campus-blue to-kiit-green",
   },
   {
     id: "sgpa-cgpa-calculator",
