@@ -5,8 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Phone, Mail, User, CheckCircle, X, Clock, CreditCard } from "lucide-react";
-import ApplicationPaymentComponent from "@/components/ApplicationPaymentComponent";
+import { MapPin, Calendar, Phone, Mail, User, CheckCircle, X, Clock } from "lucide-react";
 
 interface Application {
   id: string;
@@ -41,11 +40,6 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
   const { toast } = useToast();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPayment, setShowPayment] = useState<{ application: Application | null; open: boolean }>({
-    application: null,
-    open: false,
-  });
-
   useEffect(() => {
     if (open) {
       fetchApplications();
@@ -76,31 +70,7 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
     }
   };
 
-  const handleUnlockContact = (application: Application) => {
-    if (application.status === 'paid') {
-      toast({
-        title: "Already Unlocked",
-        description: "You have already unlocked this applicant's contact details.",
-      });
-      return;
-    }
-
-    setShowPayment({ application, open: true });
-  };
-
-  const handlePaymentSuccess = async () => {
-    if (showPayment.application) {
-      // Refresh applications to show updated payment status
-      await fetchApplications();
-      setShowPayment({ application: null, open: false });
-      
-      toast({
-        title: "Contact Details Unlocked! 🎉",
-        description: "You can now see the applicant's contact information below.",
-        duration: 5000,
-      });
-    }
-  };
+  // Owners can view applicant contact details directly. No payment/unlock flow here.
 
   return (
     <>
@@ -137,11 +107,7 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
                       <div className="flex-1">
                         <CardTitle className="flex items-center gap-2 text-lg">
                           📸 Application from{' '}
-                          {application.status === 'paid' ? (
-                            <span className="text-blue-600">{application.applicant_name}</span>
-                          ) : (
-                            <span className="text-muted-foreground">Hidden (Pay to reveal)</span>
-                          )}
+                          <span className="text-blue-600">{application.applicant_name}</span>
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
                           <Clock className="w-4 h-4" />
@@ -149,11 +115,8 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
                           {new Date(application.created_at).toLocaleTimeString()}
                         </p>
                       </div>
-                      <Badge
-                        variant={application.status === 'paid' ? 'default' : 'secondary'}
-                        className={application.status === 'paid' ? 'bg-green-500' : ''}
-                      >
-                        {application.status === 'paid' ? '✅ Unlocked' : '🔒 Locked'}
+                      <Badge variant={application.status === 'paid' ? 'default' : 'secondary'} className={application.status === 'paid' ? 'bg-green-500' : ''}>
+                        {application.status === 'paid' ? '✅ Unlocked' : 'Pending'}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -199,62 +162,43 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
                       </div>
                     </div>
 
-                    {/* Contact Details - Only shown after payment */}
-                    {application.status === 'paid' ? (
-                      <div className="border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 p-4 shadow-inner">
-                        <div className="flex items-center mb-3">
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                          <span className="font-bold text-green-800 dark:text-green-200">
-                            Applicant Contact Details:
+                    {/* Contact Details - shown to owner directly */}
+                    <div className="border-2 border-green-200 rounded-xl bg-green-50 dark:bg-green-950/50 dark:border-green-800/50 p-4 shadow-inner">
+                      <div className="flex items-center mb-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                        <span className="font-bold text-green-800 dark:text-green-200">
+                          Applicant Contact Details:
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <User className="w-4 h-4 text-green-600" />
+                          <span className="font-semibold">Name:</span>
+                          <span className="text-green-800 dark:text-green-200">
+                            {application.applicant_name}
                           </span>
                         </div>
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3">
-                            <User className="w-4 h-4 text-green-600" />
-                            <span className="font-semibold">Name:</span>
-                            <span className="text-green-800 dark:text-green-200">
-                              {application.applicant_name}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Mail className="w-4 h-4 text-green-600" />
-                            <span className="font-semibold">Email:</span>
-                            <span className="text-green-800 dark:text-green-200">
-                              {application.applicant_email}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Phone className="w-4 h-4 text-green-600" />
-                            <span className="font-semibold">Phone:</span>
-                            <span className="text-green-800 dark:text-green-200">
-                              {application.applicant_phone}
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-3">
+                          <Mail className="w-4 h-4 text-green-600" />
+                          <span className="font-semibold">Email:</span>
+                          <span className="text-green-800 dark:text-green-200">
+                            {application.applicant_email}
+                          </span>
                         </div>
-                        {application.paid_at && (
-                          <p className="text-xs text-muted-foreground mt-3">
-                            Unlocked on {new Date(application.paid_at).toLocaleDateString()}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-3">
+                          <Phone className="w-4 h-4 text-green-600" />
+                          <span className="font-semibold">Phone:</span>
+                          <span className="text-green-800 dark:text-green-200">
+                            {application.applicant_phone}
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-                        <p className="text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2">
-                          🔒 <span className="font-semibold">Contact details are hidden</span>
+                      {application.paid_at && (
+                        <p className="text-xs text-muted-foreground mt-3">
+                          Unlocked on {new Date(application.paid_at).toLocaleDateString()}
                         </p>
-                        <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
-                          If this looks like your item, pay ₹5 to unlock the applicant's contact information
-                          and arrange collection.
-                        </p>
-                        <Button
-                          onClick={() => handleUnlockContact(application)}
-                          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-12 font-semibold"
-                        >
-                          <CreditCard className="w-5 h-5 mr-2" />
-                          Pay ₹5 & Unlock Contact Details
-                        </Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -269,17 +213,7 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Payment Dialog for unlocking specific applicant's contact */}
-      {showPayment.open && showPayment.application && (
-        <ApplicationPaymentComponent
-          applicationId={showPayment.application.id}
-          lostItemTitle={lostItemTitle}
-          applicantName={showPayment.application.applicant_name}
-          ownerUserId={ownerUserId}
-          onPaymentSuccess={handlePaymentSuccess}
-          onPaymentCancel={() => setShowPayment({ application: null, open: false })}
-        />
-      )}
+  {/* No payment dialog - contact details shown directly to owner */}
     </>
   );
 };
