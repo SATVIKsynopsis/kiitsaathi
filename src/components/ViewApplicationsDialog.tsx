@@ -71,7 +71,7 @@ export const ViewApplicationsDialog: React.FC<ViewApplicationsDialogProps> = ({
   };
 
   // Owners can view applicant contact details directly. No payment/unlock flow here.
-
+//Direct
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
