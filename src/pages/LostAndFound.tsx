@@ -41,9 +41,9 @@ import { DatabaseErrorFallback } from "@/components/DatabaseErrorFallback";
 import { supabase } from "@/integrations/supabase/client";
 import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
 import { useAuth } from "@/hooks/useAuth";
-import LostFoundPaymentComponent from "@/components/LostFoundPaymentComponent";
+import LostFoundPaymentComponent from "@/components/services/lost-found/LostFoundPaymentComponent";
 import { ApplicationSubmissionForm } from "@/components/ApplicationSubmissionForm";
-import { ViewApplicationsDialog } from "@/components/ViewApplicationsDialog";
+import { ViewApplicationsDialog } from "@/components/services/lost-found/ViewApplicationsDialog";
 
 interface LostFoundItem {
   id: string;

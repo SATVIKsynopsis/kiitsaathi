@@ -29,7 +29,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
-import { BuyBooksSection } from "@/components/BuyBooksSection";
+import { BuyBooksSection } from "@/components/services/book-buy-sell/BuyBooksSection";
 
 interface AvailableBook {
   id: string;

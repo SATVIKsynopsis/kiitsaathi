@@ -1,14 +1,14 @@
 import { Navbar } from "@/components/Navbar";
-import { Hero } from "@/components/Hero";
-import { ServicesGrid } from "@/components/ServicesGrid";
+import { Hero } from "@/components/services/home/Hero";
+import { ServicesGrid } from "@/components/services/home/ServicesGrid";
 import { Testimonials } from "@/components/Testimonials";
-import { FAQ } from "@/components/FAQ";
+import { FAQ } from "@/components/services/home/FAQ";
 import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { NotificationBell } from "@/components/NotificationBell";
-import { AdminCommandExecutor } from "@/components/AdminCommandExecutor";
-import  MeetOurTeam  from "@/components/MeetOurTeam";
-import OurMentors from "@/components/OurMentors";
+import { AdminCommandExecutor } from "@/components/admin/AdminCommandExecutor";
+import  MeetOurTeam  from "@/components/services/home/MeetOurTeam";
+import OurMentors from "@/components/services/home/OurMentors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
-import  InspirationSection  from "@/components/Inspiration"
+import  InspirationSection  from "@/components/services/home/Inspiration"
 
 const contactFormSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -145,6 +145,8 @@ const handleContactSubmit = async (data: ContactFormData) => {
             </div>
           </div>
         </section>
+
+        
 
         {/* Testimonials Section */}
         <section id="testimonials" className="py-8 sm:py-12 lg:py-16">

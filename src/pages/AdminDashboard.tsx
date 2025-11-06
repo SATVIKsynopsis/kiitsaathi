@@ -35,7 +35,7 @@ import {
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
-import { AdminStudyMaterialRequests } from '@/components/AdminStudyMaterialRequests';
+import { AdminStudyMaterialRequests } from '@/components/admin/AdminStudyMaterialRequests';
 
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 

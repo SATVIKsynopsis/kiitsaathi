@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { branchCourseStructure, branches } from "@/data/courseStructure";
 import { contactPersons, facultyMembers } from "@/data/facultyData";
-import { FacultyCard } from "@/components/FacultyCard";
+import { FacultyCard } from "@/components/services/course/FacultyCard";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 

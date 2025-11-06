@@ -22,7 +22,7 @@ const DAY_MAP = {
 };
 
 // Import timetable data from JSON file
-import timetableDataImport from './timetable.json';
+import timetableDataImport from '@/data/timetable.json';
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 

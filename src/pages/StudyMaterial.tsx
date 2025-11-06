@@ -17,9 +17,9 @@ import {
 } from "lucide-react";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
-import { FilterBar } from "@/components/study-materials/FilterBar";
-import { DataTable } from "@/components/study-materials/DataTable";
-import { TabNavigation } from "@/components/study-materials/TabNavigation";
+import { FilterBar } from "@/components/services/study-materials/FilterBar";
+import { DataTable } from "@/components/services/study-materials/DataTable";
+import { TabNavigation } from "@/components/services/study-materials/TabNavigation";
 import  StudyMaterialUploadDialog  from "@/components/StudyMaterialUploadDialog";
 import { toast } from "sonner";
 import { semesters, years, semesterSubjects } from "@/data/studyMaterials";

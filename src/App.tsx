@@ -88,7 +88,7 @@ import SGPACalculator from "./pages/SGPACalculator";
 
 import AdminDashboard from "./pages/AdminDashboard";
 
-import { AdminGuard } from "@/components/AdminGuard";
+import { AdminGuard } from "@/components/admin/AdminGuard";
 
 import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
 

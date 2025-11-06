@@ -27,9 +27,9 @@ import {
   Settings
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { ViewBalances } from "@/components/ViewBalances";
-import { ExportSummary } from "@/components/ExportSummary";
-import { GroupSettings } from "@/components/GroupSettings";
+import { ViewBalances } from "@/components/services/splitsaathi/ViewBalances";
+import { ExportSummary } from "@/components/services/splitsaathi/ExportSummary";
+import { GroupSettings } from "@/components/services/splitsaathi/GroupSettings";
 import { useGroupAutoLink } from "@/hooks/useGroupAutoLink";
 
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;

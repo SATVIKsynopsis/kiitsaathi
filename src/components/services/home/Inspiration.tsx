@@ -1,9 +1,9 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import founderImg from '../assets/founder.jpg';
-import kissImg from '../assets/kiss.jpg';
-import kimsImg from '../assets/kims.jpg';
-import aogImg from '../assets/aog.jpg';
+import founderImg from '@/assets/founder.jpg';
+import kissImg from '@/assets/kiss.jpg';
+import kimsImg from '@/assets/kims.jpg';
+import aogImg from '@/assets/aog.jpg';
 
 interface InspirationCardProps {
   title: string;

@@ -44,9 +44,9 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useBookBuyback } from "@/hooks/useBookBuyback";
-import { BookSelectionGrid } from "@/components/BookSelectionGrid";
+import { BookSelectionGrid } from "@/components/services/book-buy-sell/BookSelectionGrid";
 import { PricingSummary } from "@/components/PricingSummary";
-import { BuyBooksSection } from "@/components/BuyBooksSection";
+import { BuyBooksSection } from "@/components/services/book-buy-sell/BuyBooksSection";
 import { format } from "date-fns";
 
 // Updated form schemas for new comprehensive system
