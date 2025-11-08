@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Lightbulb, AlertTriangle, CheckCircle, TrendingUp } from "lucide-react";
-import { ResumeData } from "./ResumeSaathi";
+import { ResumeData } from "../../pages/ResumeSaathi";
 
 interface SuggestionsPanelProps {
   atsScore: number;

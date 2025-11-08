@@ -20,7 +20,7 @@ import { Navbar } from "../components/Navbar";
 import { FilterBar } from "@/components/services/study-materials/FilterBar";
 import { DataTable } from "@/components/services/study-materials/DataTable";
 import { TabNavigation } from "@/components/services/study-materials/TabNavigation";
-import  StudyMaterialUploadDialog  from "@/components/StudyMaterialUploadDialog";
+import  StudyMaterialUploadDialog  from "@/components/services/study-materials/StudyMaterialUploadDialog";
 import { toast } from "sonner";
 import { semesters, years, semesterSubjects } from "@/data/studyMaterials";
 import { Input } from "@/components/ui/input";

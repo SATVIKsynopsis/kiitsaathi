@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/services/home/Hero";
 import { ServicesGrid } from "@/components/services/home/ServicesGrid";
-import { Testimonials } from "@/components/Testimonials";
+import { Testimonials } from "@/components/services/home/Testimonials";
 import { FAQ } from "@/components/services/home/FAQ";
 import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
@@ -146,7 +146,7 @@ const handleContactSubmit = async (data: ContactFormData) => {
           </div>
         </section>
 
-        
+
 
         {/* Testimonials Section */}
         <section id="testimonials" className="py-8 sm:py-12 lg:py-16">

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Star, Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
-import { ResumeData } from "./ResumeSaathi";
+import { ResumeData } from "../../pages/ResumeSaathi";
 
 interface TemplatePreviewProps {
   data: ResumeData;

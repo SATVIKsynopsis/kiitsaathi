@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, User, FileText, GraduationCap, Briefcase, Code, Award, Globe, ChevronLeft, ChevronRight } from "lucide-react";
-import { ResumeData } from "./ResumeSaathi";
+import { ResumeData } from "../../pages/ResumeSaathi";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

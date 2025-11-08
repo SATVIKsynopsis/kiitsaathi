@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Edit, Eye, Trash2, Calendar, Star } from "lucide-react";
-import { ResumeData } from "./ResumeSaathi";
+import { ResumeData } from "../../pages/ResumeSaathi";
 import {
   AlertDialog,
   AlertDialogAction,

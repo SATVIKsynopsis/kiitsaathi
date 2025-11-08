@@ -11,7 +11,7 @@ import {
   pdf,
   Font,
 } from "@react-pdf/renderer";
-import { ResumeData } from "./ResumeSaathi";
+import { ResumeData } from "../../pages/ResumeSaathi";
 
 // ✅ Helvetica is built-in, no registration needed
 

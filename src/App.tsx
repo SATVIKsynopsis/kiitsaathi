@@ -90,7 +90,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
 
-import ResumeSaathi from "./pages/ResumeSaathi/ResumeSaathi";
+import ResumeSaathi from "./pages/ResumeSaathi";
 
 
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
@@ -316,6 +316,7 @@ const App = () => {
   }, []);
 
   // ✅ Existing security + UI logic
+
  useEffect(() => {
     document.body.style.margin = "0";
 
@@ -376,7 +377,6 @@ const App = () => {
       clearInterval(interval);
     };
   }, []);
-
   
 
   // ✅ Main return (unchanged)
