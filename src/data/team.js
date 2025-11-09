@@ -21,7 +21,7 @@ export const teamData = [
   },
   {
     name: "Piyush Swain",
-    LinkedIn: null,
+    LinkedIn: "https://www.linkedin.com/in/piyush-kumar-swain-8b2907384",
     Instagram: "https://www.instagram.com/mr_piyush2106",
     Image: "/team/piyush.jpg",
     Github: null,
