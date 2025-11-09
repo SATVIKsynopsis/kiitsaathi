@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import {
   Plus,
   MessageSquare,
@@ -44,6 +45,7 @@ interface StudyMaterialItem {
 }
 
 export default function StudyMaterial() {
+  const navigate = useNavigate(); // Add this hook
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedSemester, setSelectedSemester] = useState("all");
@@ -402,13 +404,35 @@ export default function StudyMaterial() {
   }
 
   if (!user) {
+    // Redirect after showing message
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        navigate('/auth');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }, [navigate]);
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4">
+          <div className="flex flex-col items-center justify-center mb-6">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 border-4 border-kiit-primary/20 rounded-full"></div>
+              <div className="w-20 h-20 border-4 border-kiit-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+            </div>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-kiit-primary to-kiit-secondary rounded-2xl mb-4 shadow-lg">
+              <BookOpen className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold mb-3 bg-gradient-to-r from-kiit-primary to-kiit-secondary bg-clip-text text-transparent">
             Authentication Required
           </h2>
-          <p>Please login to access study materials.</p>
+          <p className="text-muted-foreground mb-4">
+            Please login to access study materials.
+          </p>
+          <p className="text-sm text-muted-foreground animate-pulse">
+            Redirecting to login page...
+          </p>
         </div>
       </div>
     );

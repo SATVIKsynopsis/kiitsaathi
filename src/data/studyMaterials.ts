@@ -52,7 +52,7 @@ export const semesterSubjects = [
       "Data Structures",
       "Industry 4.0 Technologies",
       "Scientific and Technical Writing",
-      "Discrete Mathematics",
+      "Probability & Statistics",
       "AFL",
       "DSD",
       "Data Structures Lab",
