@@ -42,6 +42,15 @@ const services = [
   //  gradient: "from-ecell-cyan to-campus-blue",
   // },
   {
+    id: "sgpa-cgpa-calculator",
+    icon: Calculator,
+    title: "SGPA & CGPA Calculator",
+    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
+    price: "Free",
+    gradient: "from-kiit-green to-campus-blue",
+    action: () => window.location.href = "/sgpa-calculator",
+  },
+  {
     id: "study-material",
     icon: BookOpen,
     title: "Study Material (PYQs, Notes, YouTube Videos)",
@@ -88,15 +97,6 @@ const services = [
     description: "Complete course structure and faculty information for all semesters.",
     price: "Free",
     gradient: "from-blue-500 to-cyan-500",
-  },
-  {
-    id: "sgpa-cgpa-calculator",
-    icon: Calculator,
-    title: "SGPA & CGPA Calculator",
-    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
-    price: "Free",
-    gradient: "from-kiit-green to-campus-blue",
-    action: () => window.location.href = "/sgpa-calculator",
   },
   {
     id: "resume-saathi",
