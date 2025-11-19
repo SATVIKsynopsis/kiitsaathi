@@ -126,7 +126,7 @@ const commonSemesters: Semester[] = [
         type: "Theory",
         courses: [
           { code: "EX20003", title: "Scientific and Technical Writing OR HASS Elective-II", credits: 2 },
-          { code: "MA21002", title: "Discrete Structures", credits: 4 },
+          { code: "MA21002", title: "Discrete Mathematics", credits: 4 },
           { code: "CS20002", title: "Operating Systems", credits: 3 },
           { code: "CS20004", title: "Object-Oriented Programming using Java", credits: 3 },
           { code: "CS20006", title: "Database Management Systems", credits: 3 },
