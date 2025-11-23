@@ -14,9 +14,9 @@ import {
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
-import SeniorCard from "@/components/SeniorCard";
+import SeniorCard from "@/components/services/seniorConnect/SeniorCard";
 import MentorshipFeatures from "@/components/MentorshipFeatures";
-import SkillSessions from "@/components/SkillSessions";
+import SkillSessions from "@/components/services/seniorConnect/SkillSessions";
 import { DemoNameSelector } from "@/components/DemoNameSelector";
 import { ChatInterface } from "@/components/ChatInterface";
 import { useSeniorConnect } from "@/hooks/useSeniorConnect";

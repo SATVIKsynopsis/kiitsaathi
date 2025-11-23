@@ -1,14 +1,14 @@
 import { Navbar } from "@/components/Navbar";
-import { Hero } from "@/components/services/home/Hero";
-import { ServicesGrid } from "@/components/services/home/ServicesGrid";
-import { Testimonials } from "@/components/services/home/Testimonials";
-import { FAQ } from "@/components/services/home/FAQ";
+import { Hero } from "@/components/home/Hero";
+import { ServicesGrid } from "@/components/home/ServicesGrid";
+import { Testimonials } from "@/components/home/Testimonials";
+import { FAQ } from "@/components/home/FAQ";
 import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { NotificationBell } from "@/components/NotificationBell";
 import { AdminCommandExecutor } from "@/components/admin/AdminCommandExecutor";
-import  MeetOurTeam  from "@/components/services/home/MeetOurTeam";
-import OurMentors from "@/components/services/home/OurMentors";
+import  MeetOurTeam  from "@/components/home/MeetOurTeam";
+import OurMentors from "@/components/home/OurMentors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
-import  InspirationSection  from "@/components/services/home/Inspiration"
+import  InspirationSection  from "@/components/home/Inspiration"
 
 const contactFormSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
