@@ -2096,6 +2096,7 @@ app.get("/api/study-materials/debug/:type", async (req, res) => {
 });
 
 // Upload study material and submit request
+// Backend corrected version
 app.post('/api/study-materials/upload', async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
@@ -2104,10 +2105,15 @@ app.post('/api/study-materials/upload', async (req, res) => {
     const file = req.files.file;
     const { title, subject, semester, branch, year, folder_type, uploader_name } = req.body;
 
-    // Validate required fields and folder_type
+    // Validate required fields
     const validTypes = ['pyqs', 'notes', 'ebooks', 'ppts'];
     if (!title || !subject || !semester || !folder_type || !uploader_name || !validTypes.includes(folder_type)) {
       return res.status(400).json({ error: 'Missing or invalid required fields', success: false });
+    }
+
+    // Validate year for pyqs/ebooks
+    if ((folder_type === 'pyqs' || folder_type === 'ebooks') && !year) {
+      return res.status(400).json({ error: 'Year is required for PYQs/Ebooks', success: false });
     }
 
     // Validate file type
@@ -2127,10 +2133,12 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(400).json({ error: 'File size exceeds 50MB limit', success: false });
     }
 
-  const userId = req.user?.id || null;
-  const timestamp = Date.now();
-  const filename = `${userId ? userId : 'guest'}_${timestamp}_${file.name}`;
-  const storagePath = `${folder_type}/pending/${filename}`; // Store in pending subfolder
+    const userId = req.user?.id || null;
+    const timestamp = Date.now();
+    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin';
+    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${safeTitle}_${timestamp}.${ext}`;
+    const storagePath = `${folder_type}/${filename}`; // Match frontend path
 
     // Upload to study-materials bucket
     const { error: uploadError } = await supabase.storage
@@ -2145,36 +2153,73 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(500).json({ error: 'Failed to upload file', success: false });
     }
 
-    // Insert into the appropriate table
-    const tableName = folder_type; // Maps to pyqs, notes, ebooks, ppts
-    const { error: insertError } = await supabase
-      .from(tableName)
-      .insert({
-        title,
-        subject,
-        semester,
-        branch,
-        year,
-        uploaded_by: uploader_name,
-        pdf_url: filename, // Store just the filename, folder is implied
-        filesize: file.size,
-        mime_type: file.mimetype,
-        // Only include user_id if present (authenticated)
-        ...(userId ? { user_id: userId } : {}),
-        status: 'pending',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+    // Get public URL (match frontend)
+    const { data: publicData } = supabase.storage
+      .from('study-materials')
+      .getPublicUrl(storagePath);
+    
+    const publicUrl = publicData?.publicUrl ?? null;
+    const filesizeMB = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+    // Base data for all tables
+    const baseData = {
+      title,
+      subject,
+      semester,
+      branch: branch || 'CSE',
+      uploaded_by: uploader_name,
+      user_id: userId,
+      filesize: filesizeMB,
+      mime_type: file.mimetype,
+      status: 'active', // or 'pending' based on your workflow
+      pdf_url: publicUrl,
+      upload_date: new Date().toISOString().split('T')[0], // Date only (YYYY-MM-DD)
+      created_at: new Date().toISOString().split('T')[0] // Date only
+    };
+
+    // Insert based on folder type
+    let insertError = null;
+
+    if (folder_type === 'notes') {
+      const { error } = await supabase.from('notes').insert(baseData);
+      insertError = error;
+    } else if (folder_type === 'pyqs') {
+      const { error } = await supabase.from('pyqs').insert({ 
+        ...baseData, 
+        year: parseInt(year, 10) // Convert to integer
       });
+      insertError = error;
+    } else if (folder_type === 'ppts') {
+      const { error } = await supabase.from('ppts').insert({ 
+        ...baseData, 
+        ppt_url: publicUrl 
+      });
+      insertError = error;
+    } else if (folder_type === 'ebooks') {
+      const { error } = await supabase.from('ebooks').insert({ 
+        ...baseData, 
+        year: parseInt(year, 10) // Convert to integer
+      });
+      insertError = error;
+    }
 
     if (insertError) {
-      await supabase.storage.from('study-materials').remove([storagePath]);
+      // Rollback: remove file from storage
+      try {
+        await supabase.storage.from('study-materials').remove([storagePath]);
+      } catch (rErr) {
+        console.warn('Rollback remove failed:', rErr);
+      }
       throw insertError;
     }
 
-    res.json({ success: true });
+    res.json({ success: true, message: 'Study material uploaded successfully' });
   } catch (error) {
     console.error('Study material upload error:', error);
-    res.status(500).json({ error: 'Failed to upload material', success: false });
+    res.status(500).json({ 
+      error: error?.message || 'Failed to upload material', 
+      success: false 
+    });
   }
 });
 
