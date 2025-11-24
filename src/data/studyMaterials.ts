@@ -92,13 +92,16 @@ export const semesterSubjects = [
   {
     semester: "6th",
     subjects: [
-      "Compiler Design",
+      "Artificial Intelligence",
       "Machine Learning",
-      "Project Management",
+      "Software Project Management",
+      "Cloud Computing",
+      "NLP",
+      "Computer Vision",
       "Engineering Professional Practice",
-      "Machine Learning Lab",
+      "AI Lab",
       "Compiler Lab",
-      "Open Elective II",
+      "App Development Lab",
     ],
   },
   {
