@@ -109,20 +109,20 @@ export const teamData = [
     role: "Marketing & Growth Manager",
   },
   {
-    name: "Kirti Kumari",
-    LinkedIn: "https://www.linkedin.com/in/kirti-kumari-246582321",
-    Instagram: "https://www.instagram.com/cocokirti",
-    Image: "/team/Kirti .jpg",
-    Github: null,
-    role: "Marketing",
-  },
-  {
     name: "Shree",
     LinkedIn:
       "https://www.linkedin.com/in/anushka-gupta-4a366b2b6?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
     Instagram: "https://www.instagram.com/parijashri?igsh=MTBjbDR4ancyYnlucA==",
     Image: "/team/Shree.jpg",
     Github: "https://github.com/Parijashri",
+    role: "Marketing",
+  },
+  {
+    name: "Kirti Kumari",
+    LinkedIn: "https://www.linkedin.com/in/kirti-kumari-246582321",
+    Instagram: "https://www.instagram.com/cocokirti",
+    Image: "/team/Kirti .jpg",
+    Github: null,
     role: "Marketing",
   },
   {
