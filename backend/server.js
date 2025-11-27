@@ -2096,6 +2096,7 @@ app.get("/api/study-materials/debug/:type", async (req, res) => {
 });
 
 // Upload study material and submit request
+// Backend corrected version
 app.post('/api/study-materials/upload', async (req, res) => {
   try {
     if (!req.files || !req.files.file) {
@@ -2104,10 +2105,15 @@ app.post('/api/study-materials/upload', async (req, res) => {
     const file = req.files.file;
     const { title, subject, semester, branch, year, folder_type, uploader_name } = req.body;
 
-    // Validate required fields and folder_type
+    // Validate required fields
     const validTypes = ['pyqs', 'notes', 'ebooks', 'ppts'];
     if (!title || !subject || !semester || !folder_type || !uploader_name || !validTypes.includes(folder_type)) {
       return res.status(400).json({ error: 'Missing or invalid required fields', success: false });
+    }
+
+    // Validate year for pyqs/ebooks
+    if ((folder_type === 'pyqs' || folder_type === 'ebooks') && !year) {
+      return res.status(400).json({ error: 'Year is required for PYQs/Ebooks', success: false });
     }
 
     // Validate file type
@@ -2127,10 +2133,12 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(400).json({ error: 'File size exceeds 50MB limit', success: false });
     }
 
-  const userId = req.user?.id || null;
-  const timestamp = Date.now();
-  const filename = `${userId ? userId : 'guest'}_${timestamp}_${file.name}`;
-  const storagePath = `${folder_type}/pending/${filename}`; // Store in pending subfolder
+    const userId = req.user?.id || null;
+    const timestamp = Date.now();
+    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin';
+    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${safeTitle}_${timestamp}.${ext}`;
+    const storagePath = `${folder_type}/${filename}`; // Match frontend path
 
     // Upload to study-materials bucket
     const { error: uploadError } = await supabase.storage
@@ -2145,62 +2153,120 @@ app.post('/api/study-materials/upload', async (req, res) => {
       return res.status(500).json({ error: 'Failed to upload file', success: false });
     }
 
-    // Insert into study_material_requests table only (match DB schema)
-    const { error: insertError } = await supabase
-      .from('study_material_requests')
-      .insert({
-        title,
-        subject,
-        semester,
-        branch,
-        year,
-        folder_type,
-        uploader_name: uploader_name || (req.user?.email ?? 'Unknown'),
-        uploader_id: userId || null,
-        filename: filename,
-        storage_path: storagePath,
-        filesize: file.size,
-        mime_type: file.mimetype,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+    // Get public URL (match frontend)
+    const { data: publicData } = supabase.storage
+      .from('study-materials')
+      .getPublicUrl(storagePath);
+    
+    const publicUrl = publicData?.publicUrl ?? null;
+    const filesizeMB = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+    // Base data for all tables
+    const baseData = {
+      title,
+      subject,
+      semester,
+      branch: branch || 'CSE',
+      uploaded_by: uploader_name,
+      user_id: userId,
+      filesize: filesizeMB,
+      mime_type: file.mimetype,
+      status: 'active', // or 'pending' based on your workflow
+      pdf_url: publicUrl,
+      upload_date: new Date().toISOString().split('T')[0], // Date only (YYYY-MM-DD)
+      created_at: new Date().toISOString().split('T')[0] // Date only
+    };
+
+    // Insert based on folder type
+    let insertError = null;
+
+    if (folder_type === 'notes') {
+      const { error } = await supabase.from('notes').insert(baseData);
+      insertError = error;
+    } else if (folder_type === 'pyqs') {
+      const { error } = await supabase.from('pyqs').insert({ 
+        ...baseData, 
+        year: parseInt(year, 10) // Convert to integer
       });
+      insertError = error;
+    } else if (folder_type === 'ppts') {
+      const { error } = await supabase.from('ppts').insert({ 
+        ...baseData, 
+        ppt_url: publicUrl 
+      });
+      insertError = error;
+    } else if (folder_type === 'ebooks') {
+      const { error } = await supabase.from('ebooks').insert({ 
+        ...baseData, 
+        year: parseInt(year, 10) // Convert to integer
+      });
+      insertError = error;
+    }
 
     if (insertError) {
-      await supabase.storage.from('study-materials').remove([storagePath]);
+      // Rollback: remove file from storage
+      try {
+        await supabase.storage.from('study-materials').remove([storagePath]);
+      } catch (rErr) {
+        console.warn('Rollback remove failed:', rErr);
+      }
       throw insertError;
     }
 
-    res.json({ success: true });
+    res.json({ success: true, message: 'Study material uploaded successfully' });
   } catch (error) {
     console.error('Study material upload error:', error);
-    res.status(500).json({ error: 'Failed to upload material', success: false });
+    res.status(500).json({ 
+      error: error?.message || 'Failed to upload material', 
+      success: false 
+    });
   }
 });
 
 // Fetch study material requests (Admin)
 app.post('/api/admin/study-material-approve', async (req, res) => {
   try {
-    const { request_id } = req.body;
+    const { request_id, folder_type, adminUserId } = req.body;
 
-    if (!request_id) return res.status(400).json({ error: 'request_id is required' });
-
-    // Forward the approval to the Supabase Edge Function which contains the hardened logic
-    const authHeader = req.headers.authorization || '';
-
-    const { data, error } = await supabase.functions.invoke('admin-approve-study-material', {
-      body: { request_id },
-      headers: { Authorization: authHeader }
-    });
-
-    if (error) {
-      console.error('Edge function error:', error);
-      return res.status(500).json({ success: false, error: error.message || 'Approval function failed' });
+    // Validate folder_type
+    const validTypes = ['pyqs', 'notes', 'ebooks', 'ppts'];
+    if (!request_id || !folder_type || !validTypes.includes(folder_type)) {
+      return res.status(400).json({ error: 'Missing or invalid required fields' });
     }
 
-    return res.json({ success: true, data });
+    // Fetch the request from the appropriate table
+    const tableName = folder_type;
+    const { data: request, error: fetchError } = await supabase
+      .from(tableName)
+      .select('pdf_url')
+      .eq('id', request_id)
+      .single();
+
+    if (fetchError || !request) throw new Error('Request not found');
+
+    // Move file to approved folder
+    const currentPath = `${folder_type}/pending/${request.pdf_url}`;
+    const newPath = `${folder_type}/${request.pdf_url}`;
+    const { error: moveError } = await supabase.storage
+      .from('study-materials')
+      .move(currentPath, newPath);
+
+    if (moveError) throw moveError;
+
+    // Update the request status
+    const { error: updateError } = await supabase
+      .from(tableName)
+      .update({
+        status: 'approved',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', request_id);
+
+    if (updateError) throw updateError;
+
+    res.json({ success: true });
   } catch (error) {
-    console.error('Error invoking approval function:', error);
+    console.error('Error approving material:', error);
     res.status(500).json({ success: false, error: 'Failed to approve material' });
   }
 });
@@ -3021,7 +3087,37 @@ app.get('/api/service-visibility', async (req, res) => {
   }
 });
 
+//campus map buildings
 
+app.get('/api/campus-buildings', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('campus_maps')
+      .select('building, location')
+      .eq('is_visible', true);
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: 'Failed to fetch campus buildings' });
+    }
+    
+    // Get unique buildings with their locations
+    const uniqueBuildings = data.reduce((acc, curr) => {
+      if (!acc.find(b => b.building === curr.building)) {
+        acc.push({
+          building: curr.building,
+          location: curr.location || 'KIIT Campus',
+        });
+      }
+      return acc;
+    }, []);
+    
+    res.json(uniqueBuildings);
+  } catch (err) {
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
   
   
 
