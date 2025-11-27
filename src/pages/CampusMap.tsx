@@ -1,82 +1,100 @@
-import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Map as MapIcon, Sparkles, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { campusLocations } from '@/data/campusLocations';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Building2, MapPin } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Navbar } from '@/components/Navbar';
 
-const getCampusLocation = (campusNum: number) => campusLocations.find((c) => c.id === campusNum);
-
-const CampusMap: React.FC = () => {
+const CampusMap = () => {
   const navigate = useNavigate();
 
+  const { data: buildings, isLoading } = useQuery({
+  queryKey: ['campus-buildings'],
+  queryFn: async () => {
+    const response = await fetch(`${import.meta.env.VITE_HOSTED_URL}/api/campus-buildings`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch campus buildings');
+    }
+
+    return response.json();
+  },
+});
+
+  const handleBuildingClick = (building: string) => {
+    const slug = building.toLowerCase().replace(/\s+/g, '-');
+    navigate(`/campus-map/${slug}`);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900">
-      <header className="p-6 bg-white/10 backdrop-blur-md border-b border-white/10">
-        <div className="container mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-white hover:text-green-400 hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500">
-              <MapIcon className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Campus Explorer</h1>
-              <p className="text-sm text-white/70">Discover KIIT University</p>
-            </div>
-          </div>
-        </div>
-      </header>
-      <main className="container mx-auto p-6">
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Explore KIIT Campus
-          </h2>
-          <p className="text-lg text-white/80 max-w-2xl mx-auto">
-            Click any campus to view its location on the map
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="text-center my-20">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Campus Interactive Maps
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Explore detailed floor plans and navigate your way through KIIT campuses
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {campusLocations.map((campus) => (
-            <div
-              key={campus.id}
-              onClick={() => navigate(`/campus-map/${campus.id}`)}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 transition-all hover:bg-white/20 hover:scale-105 cursor-pointer"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500">
-                  <MapIcon className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-white">{campus.name}</h3>
-                  <p className="text-xs text-white/70">{campus.fullName}</p>
-                </div>
-              </div>
-              <p className="text-sm text-white/80">{campus.description}</p>
-              <div className="mt-3 flex items-center gap-2">
-                <Star className="w-3 h-3 text-green-400" />
-                <span className="text-xs text-green-400 font-medium">
-                  Click to view map
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-12 text-center">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-white mb-4">Campus Maps Available!</h3>
-            <p className="text-white/80 max-w-2xl mx-auto">
-              Click on any campus tile above to view its location on the interactive map.
+
+        {/* Buildings Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="h-48">
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {buildings?.map((building) => (
+              <Card
+                key={building.building}
+                className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary"
+                onClick={() => handleBuildingClick(building.building)}
+              >
+                <CardHeader>
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
+                    <Building2 className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">{building.building}</CardTitle>
+                  <CardDescription className="flex items-center gap-2 mt-2">
+                    <MapPin className="w-4 h-4" />
+                    {building.location}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Click to view detailed floor plans and navigate through all floors
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && (!buildings || buildings.length === 0) && (
+          <div className="text-center py-12">
+            <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No Maps Available</h3>
+            <p className="text-muted-foreground">
+              Campus maps will be available soon. Check back later!
             </p>
           </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
 };

@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { GuestBrowsingBanner } from '@/components/GuestBrowsingBanner';
+import { GuestBrowsingBanner } from '@/components/services/book-buy-sell/GuestBrowsingBanner';
 import { useGuestForm } from '@/hooks/useGuestForm';
 import { useAuth } from '@/hooks/useAuth';
 

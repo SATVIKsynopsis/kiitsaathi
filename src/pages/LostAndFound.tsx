@@ -39,7 +39,7 @@ import { Navbar } from "@/components/Navbar";
 import { useSecureLostAndFound } from "@/hooks/useSecureLostAndFound";
 import { DatabaseErrorFallback } from "@/components/DatabaseErrorFallback";
 import { supabase } from "@/integrations/supabase/client";
-import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
+import { GuestBrowsingBanner } from "@/components/services/book-buy-sell/GuestBrowsingBanner";
 import { useAuth } from "@/hooks/useAuth";
 import LostFoundPaymentComponent from "@/components/services/lost-found/LostFoundPaymentComponent";
 import { ApplicationSubmissionForm } from "@/components/ApplicationSubmissionForm";

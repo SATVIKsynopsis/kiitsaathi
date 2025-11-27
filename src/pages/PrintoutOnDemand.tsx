@@ -17,7 +17,7 @@ import { PrintJobTester } from '@/components/PrintJobTester';
 import { SystemStatus } from '@/components/SystemStatus';
 import { usePrintJobManager } from '@/hooks/usePrintJobManager';
 import { useAuth } from '@/hooks/useAuth';
-import { GuestBrowsingBanner } from '@/components/GuestBrowsingBanner';
+import { GuestBrowsingBanner } from '@/components/services/book-buy-sell/GuestBrowsingBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const PrintoutOnDemand = () => {

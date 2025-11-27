@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-campus.png";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
+import { GuestBrowsingBanner } from "@/components/services/book-buy-sell/GuestBrowsingBanner";
 import { useGuestForm } from "@/hooks/useGuestForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useCampusTourBooking } from "@/hooks/useCampusTourBooking";

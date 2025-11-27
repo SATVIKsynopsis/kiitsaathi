@@ -15,11 +15,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from 'react-router-dom';
 import { useGuestForm } from "@/hooks/useGuestForm";
-import { GuestBrowsingBanner } from "@/components/GuestBrowsingBanner";
+import { GuestBrowsingBanner } from "@/components/services/book-buy-sell/GuestBrowsingBanner";
 import { 
   BookOpen, 
   Upload, 

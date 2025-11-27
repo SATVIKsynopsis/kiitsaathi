@@ -3087,7 +3087,37 @@ app.get('/api/service-visibility', async (req, res) => {
   }
 });
 
+//campus map buildings
 
+app.get('/api/campus-buildings', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('campus_maps')
+      .select('building, location')
+      .eq('is_visible', true);
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ error: 'Failed to fetch campus buildings' });
+    }
+    
+    // Get unique buildings with their locations
+    const uniqueBuildings = data.reduce((acc, curr) => {
+      if (!acc.find(b => b.building === curr.building)) {
+        acc.push({
+          building: curr.building,
+          location: curr.location || 'KIIT Campus',
+        });
+      }
+      return acc;
+    }, []);
+    
+    res.json(uniqueBuildings);
+  } catch (err) {
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
   
   
 
