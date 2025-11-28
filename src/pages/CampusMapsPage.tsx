@@ -1,91 +1,113 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Navigation, ExternalLink } from 'lucide-react';
-import { campusLocations } from '@/data/campusLocations';
+import { ArrowLeft, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { campusLocations } from '@/data/campusLocations';
 
-const CampusMapsPage: React.FC = () => {
+const CampusMaps: React.FC = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredCampuses = campusLocations.filter(
-    (campus) =>
-      campus.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      campus.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      campus.address.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter campuses based on search
+  const filteredCampuses = campusLocations.filter((campus) =>
+    campus.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    campus.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleViewMap = (campus: typeof campusLocations[0]) => {
+    navigate(`/campus-maps/${campus.id}`, { state: { campusData: campus } });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-md border-b-4 border-green-600">
-        <div className="container mx-auto px-6 py-8">
-          <h1 className="text-4xl font-bold text-slate-900">Campus Interactive Maps</h1>
-          <p className="text-slate-600 mt-2">Explore detailed floor plans and navigate your way through KIIT campuses</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Header with Back to Home */}
+      <header className="border-b border-purple-700 bg-slate-900/50 backdrop-blur">
+        <div className="container mx-auto px-6 py-6 flex items-center justify-between">
+          <Button
+            onClick={() => navigate('/')}
+            variant="ghost"
+            className="flex items-center gap-2 text-white hover:text-green-400 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-semibold">Back to Home</span>
+          </Button>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-white">Campus Explorer</h1>
+              <p className="text-sm text-gray-300">Discover KIIT University</p>
+            </div>
+          </div>
+
+          <div className="w-32" />
         </div>
       </header>
 
-      {/* Search Bar */}
-      <div className="container mx-auto px-6 py-8">
-        <input
-          type="text"
-          placeholder="🔍 Search campuses by name, description, or address..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-6 py-4 rounded-xl border-2 border-slate-300 focus:border-green-500 focus:outline-none text-lg transition-all"
-        />
-      </div>
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-16">
+        {/* Title Section */}
+        <div className="text-center mb-16">
+          <h2 className="text-5xl font-bold text-white mb-4">Campus Interactive Maps</h2>
+          <p className="text-xl text-gray-300">Click any campus to view its location on the map</p>
+        </div>
 
-      {/* Campus Grid */}
-      <main className="container mx-auto px-6 py-12 pb-24">
-        {filteredCampuses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCampuses.map((campus) => (
-              <div
-                key={campus.id}
-                className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-l-4 border-green-500 hover:scale-105"
-              >
-                {/* Card Header */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <MapPin className="w-6 h-6 text-green-600" />
-                    <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">
-                      Campus {campus.id}
-                    </span>
-                  </div>
+        {/* Search Bar */}
+        <div className="mb-12 max-w-2xl mx-auto">
+          <input
+            type="text"
+            placeholder="Search campuses..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-6 py-3 rounded-lg bg-slate-800/50 border border-purple-600 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors"
+          />
+        </div>
 
-                  {/* Title & Description */}
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">{campus.fullName}</h3>
-                  <p className="text-slate-600 text-sm mb-4 line-clamp-2">{campus.description}</p>
-
-                  {/* Address */}
-                  <p className="text-xs text-slate-500 mb-6 line-clamp-2">📍 {campus.address}</p>
-
-                  {/* Buttons */}
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={() => navigate(`/campus-maps/${campus.id}`, { state: { campusData: campus } })}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
-                    >
-                      View Map
-                    </Button>
-                    <Button
-                      onClick={() => window.open(campus.mapsUrl, '_blank')}
-                      variant="outline"
-                      className="flex-1 border-2 hover:bg-slate-50"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </div>
+        {/* Campus Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCampuses.map((campus) => (
+            <div
+              key={campus.id}
+              className="group bg-slate-800/40 backdrop-blur border border-purple-600/50 rounded-xl p-6 hover:border-green-400/50 hover:bg-slate-800/60 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer"
+              onClick={() => handleViewMap(campus)}
+            >
+              {/* Icon + Title */}
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white group-hover:text-green-400 transition-colors">
+                    {campus.name}
+                  </h3>
+                  <p className="text-sm text-gray-400">{campus.fullName}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
+
+              {/* Description */}
+              <p className="text-gray-300 text-sm mb-4 line-clamp-2">{campus.description}</p>
+
+              {/* Click to view map link */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewMap(campus);
+                }}
+                className="flex items-center gap-2 text-green-400 hover:text-green-300 text-sm font-semibold transition-colors group-hover:translate-x-1 transition-transform"
+              >
+                <MapPin className="w-4 h-4" />
+                Click to view map
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* No Results Message */}
+        {filteredCampuses.length === 0 && (
           <div className="text-center py-16">
-            <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">No campuses found</h2>
-            <p className="text-slate-600">Try adjusting your search criteria</p>
+            <p className="text-gray-400 text-lg">No campuses found matching "{searchQuery}"</p>
           </div>
         )}
       </main>
@@ -93,4 +115,4 @@ const CampusMapsPage: React.FC = () => {
   );
 };
 
-export default CampusMapsPage;
+export default CampusMaps;
