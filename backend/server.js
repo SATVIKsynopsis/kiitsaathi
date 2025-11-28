@@ -2648,14 +2648,9 @@ app.post('/api/food/admin/batches', authenticateToken, async (req, res) => {
     const userId = req.user_id;
     const batchData = req.body;
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userId)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
+    // Check if user is admin by email
+    const adminEmails = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
+    if (!req.user?.email || !adminEmails.includes(req.user.email)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -2705,14 +2700,9 @@ app.put('/api/food/admin/batches/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const batchData = req.body;
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userId)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
+    // Check if user is admin by email
+    const adminEmails = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
+    if (!req.user?.email || !adminEmails.includes(req.user.email)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
