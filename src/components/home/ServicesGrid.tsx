@@ -90,6 +90,16 @@ const services = [
     price: "Free",
     gradient: "from-campus-purple to-usc-maroon",
   },
+
+  {
+    id: "kiiit-food-stalls-restaurants",
+    icon: Calendar,
+    title: "KIIT Food Stalls & Restaurants",
+    description: "Discover campus food stalls with menu, timings, and location. Generate discount coupons instantly - verfied and single-use.",
+    price: "Free",
+    gradient: "from-campus-orange to-usc-orange",
+    
+  },
   {
     id: "course-faculty-details",
     icon: GraduationCap,
@@ -263,7 +273,8 @@ export const ServicesGrid = () => {
       "Course & Faculty Details": "/course-structure",
       "Food and micro-essentials delivery": "/food-order-customer",
       "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
-      "Campus Map": "/campus-map"
+      "Campus Map": "/campus-map",
+      "KIIT Food Stalls & Restaurants": "/food"
     };
 
     const route = routeMap[service.title];

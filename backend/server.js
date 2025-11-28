@@ -39,6 +39,7 @@ const allowedOrigins = [
 
 
 
+
 // CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
@@ -661,9 +662,11 @@ app.get('/api/auth/session', async (req, res) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_email_verified')
+      .select('is_email_verified, is_admin')
       .eq('id', user.id)
       .single();
+
+    console.log('🔍 Session check for user:', user.id, 'Profile:', profile);
 
     res.json({ 
       session: { user }, 
@@ -1665,6 +1668,30 @@ app.post('/api/payments/verify-lost-found-payment', async (req, res) => {
   }
 });
 
+app.get('/api/food/shops', async (req, res) => {
+  console.log('🍽️ Food shops route hit!');
+  try {
+    const { data: shops, error } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('is_active', true)
+      .order('featured', { ascending: false })
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching shops:', error);
+      return res.status(500).json({ error: 'Failed to fetch shops' });
+    }
+
+    console.log(`✅ Found ${shops?.length || 0} shops`);
+    return res.json({ shops: shops || [] });
+
+  } catch (error) {
+    console.error('Error fetching shops:', error);
+    return res.status(500).json({ error: 'Failed to fetch shops' });
+  }
+});
+
 // Send contact details via email
 app.post('/api/payments/send-contact-details', async (req, res) => {
   try {
@@ -1732,6 +1759,1277 @@ app.get('/api/payments/has-paid-contact', async (req, res) => {
     res.status(500).json({ error: 'Failed to check payment status' });
   }
 });
+
+// ============================================
+// FOOD STALL COUPON ROUTES
+
+
+// ============================================
+
+app.post('/api/food/generate-coupon', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { shopId, couponData } = req.body;
+
+    if (!shopId || !couponData) {
+      return res.status(400).json({ error: 'Missing shopId or couponData' });
+    }
+
+    // Note: We don't need amount from couponData anymore since we get it from the batch
+
+    // Verify shop exists
+    const { data: shop, error: shopError } = await supabase
+      .from('shops')
+      .select('id, name')
+      .eq('id', shopId)
+      .single();
+
+    if (shopError || !shop) {
+      return res.status(404).json({ error: 'Shop not found' });
+    }
+
+    // Generate unique coupon code
+    const couponCode = `KIIT${Date.now()}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+
+    // Get the coupon batch to determine discount value
+    const { data: batch, error: batchError } = await supabase
+      .from('coupon_batches')
+      .select('*')
+      .eq('shop_id', shopId)
+      .eq('is_active', true)
+      .single();
+
+    if (batchError || !batch) {
+      return res.status(404).json({ error: 'No active coupon batch found for this shop' });
+    }
+
+    // Insert coupon into database
+    const { data: coupon, error: couponError } = await supabase
+      .from('coupons')
+      .insert({
+        code: couponCode,
+        shop_id: shopId,
+        batch_id: batch.id,
+        generated_by_user_id: userId,
+        discount_value: batch.amount_per_coupon,
+        qr_payload: couponCode, // Use coupon code as QR payload
+        status: 'generated',
+        expires_at: new Date(Date.now() + (batch.expires_in_days || 7) * 24 * 60 * 60 * 1000).toISOString()
+      })
+      .select()
+      .single();
+
+    if (couponError) {
+      console.error('Error creating coupon:', couponError);
+      return res.status(500).json({ error: 'Failed to generate coupon' });
+    }
+
+    // Return the complete coupon with shop info
+    return res.json({
+      success: true,
+      coupon: {
+        ...coupon,
+        shop_name: shop.name,
+        amount: coupon.discount_value // Map discount_value to amount for frontend compatibility
+      }
+    });
+
+  } catch (error) {
+    console.error('Error generating coupon:', error);
+    return res.status(500).json({ error: 'Failed to generate coupon' });
+  }
+});
+
+// ============================================
+// FOOD SHOP MANAGEMENT ROUTES
+// ============================================
+
+// Test route for food API
+app.get('/api/food/test', (req, res) => {
+  console.log('🧪 Food API test route hit!');
+  res.json({ message: 'Food API is working!', timestamp: new Date().toISOString() });
+});
+
+// Get all active shops (PUBLIC)
+
+
+// Get shop by ID (PUBLIC)
+app.get('/api/food/shop/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data: shop, error } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching shop:', error);
+      return res.status(404).json({ error: 'Shop not found' });
+    }
+
+    return res.json({ shop });
+
+  } catch (error) {
+    console.error('Error fetching shop:', error);
+    return res.status(500).json({ error: 'Failed to fetch shop' });
+  }
+});
+
+// Track shop view (PUBLIC - can be called without auth)
+app.post('/api/food/shop/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { viewType, userId } = req.body;
+
+    if (!viewType || !['card_click', 'page_view'].includes(viewType)) {
+      return res.status(400).json({ error: 'Invalid view type' });
+    }
+
+    const { error } = await supabase
+      .from('shop_views')
+      .insert({
+        shop_id: id,
+        user_id: userId || null,
+        view_type: viewType,
+        created_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error tracking shop view:', error);
+      // Don't fail the request if view tracking fails
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error tracking shop view:', error);
+    return res.json({ success: true }); // Don't fail the request
+  }
+});
+
+// Get shop analytics (SECURED - for shopkeepers)
+app.get('/api/food/shop/:id/analytics', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user_id;
+
+    // Verify user is shopkeeper for this shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('shop_id', id)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Get analytics
+    const { count: cardClicks } = await supabase
+      .from('shop_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('shop_id', id)
+      .eq('view_type', 'card_click');
+
+    const { count: pageViews } = await supabase
+      .from('shop_views')
+      .select('*', { count: 'exact', head: true })
+      .eq('shop_id', id)
+      .eq('view_type', 'page_view');
+
+    return res.json({
+      cardClicks: cardClicks || 0,
+      pageViews: pageViews || 0
+    });
+
+  } catch (error) {
+    console.error('Error fetching shop analytics:', error);
+    return res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
+// Update shop contact number (SECURED - for shopkeepers)
+app.patch('/api/food/shop/:id/contact', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { contactNumber } = req.body;
+    const userId = req.user_id;
+
+    if (!contactNumber) {
+      return res.status(400).json({ error: 'Contact number is required' });
+    }
+
+    // Verify user is shopkeeper for this shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('shop_id', id)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Update contact number
+    const { error: updateError } = await supabase
+      .from('shops')
+      .update({ contact_number: contactNumber })
+      .eq('id', id);
+
+    if (updateError) {
+      console.error('Error updating contact:', updateError);
+      return res.status(500).json({ error: 'Failed to update contact number' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error updating shop contact:', error);
+    return res.status(500).json({ error: 'Failed to update contact number' });
+  }
+});
+
+// Get shop rating and review count (PUBLIC)
+app.get('/api/food/shop/:id/rating', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // These would be RPC functions in Supabase - for now return mock data
+    const avgRating = 0; // await supabase.rpc('get_shop_avg_rating', { shop_uuid: id });
+    const reviewCount = 0; // await supabase.rpc('get_shop_review_count', { shop_uuid: id });
+
+    return res.json({
+      avgRating,
+      reviewCount
+    });
+
+  } catch (error) {
+    console.error('Error fetching shop rating:', error);
+    return res.status(500).json({ error: 'Failed to fetch rating' });
+  }
+});
+
+// ============================================
+// SHOPKEEPER MANAGEMENT ROUTES
+// ============================================
+
+// Get shopkeeper's assigned shop (SECURED)
+app.get('/api/food/shopkeeper/shop', authenticateToken, async (req, res) => {
+  console.log('🛒 Shopkeeper shop route hit!');
+  try {
+    const userId = req.user_id;
+
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError) {
+      if (staffError.code === 'PGRST116') {
+        return res.json({ shopStaff: null });
+      }
+      throw staffError;
+    }
+
+    if (!shopStaff) {
+      return res.json({ shopStaff: null });
+    }
+
+    // Get shop details
+    const { data: shop, error: shopError } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('id', shopStaff.shop_id)
+      .single();
+
+    if (shopError) {
+      console.error('Error fetching shop:', shopError);
+      return res.status(500).json({ error: 'Failed to fetch shop details' });
+    }
+
+    return res.json({
+      shopStaff,
+      shop
+    });
+
+  } catch (error) {
+    console.error('Error fetching shopkeeper shop:', error);
+    return res.status(500).json({ error: 'Failed to fetch assigned shop' });
+  }
+});
+
+// Get active coupon batch for shop (SECURED - for shopkeepers)
+app.get('/api/food/shopkeeper/batch', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // First get shopkeeper's shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Shopkeeper access required' });
+    }
+
+    // Get active batch for this shop
+    const { data: batch, error: batchError } = await supabase
+      .from('coupon_batches')
+      .select('*')
+      .eq('shop_id', shopStaff.shop_id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (batchError && batchError.code !== 'PGRST116') {
+      console.error('Error fetching batch:', batchError);
+      return res.status(500).json({ error: 'Failed to fetch batch' });
+    }
+
+    return res.json({ batch: batch || null });
+
+  } catch (error) {
+    console.error('Error fetching shopkeeper batch:', error);
+    return res.status(500).json({ error: 'Failed to fetch batch' });
+  }
+});
+
+// Update discount amount for active batch (SECURED - for shopkeepers)
+app.patch('/api/food/shopkeeper/batch/discount', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { discountAmount } = req.body;
+
+    if (!discountAmount || discountAmount <= 0) {
+      return res.status(400).json({ error: 'Valid discount amount is required' });
+    }
+
+    // Get shopkeeper's shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Shopkeeper access required' });
+    }
+
+    // Get active batch
+    const { data: batch, error: batchError } = await supabase
+      .from('coupon_batches')
+      .select('id')
+      .eq('shop_id', shopStaff.shop_id)
+      .eq('is_active', true)
+      .single();
+
+    if (batchError || !batch) {
+      return res.status(404).json({ error: 'No active batch found' });
+    }
+
+    // Update discount amount
+    const { error: updateError } = await supabase
+      .from('coupon_batches')
+      .update({ amount_per_coupon: discountAmount })
+      .eq('id', batch.id);
+
+    if (updateError) {
+      console.error('Error updating discount:', updateError);
+      return res.status(500).json({ error: 'Failed to update discount amount' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error updating discount amount:', error);
+    return res.status(500).json({ error: 'Failed to update discount amount' });
+  }
+});
+
+// ============================================
+// ADMIN SHOPKEEPER EMAIL ROUTES
+// ============================================
+
+// Get all shops for admin (SECURED - admin only)
+app.get('/api/food/admin/shops', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: shops, error } = await supabase
+      .from('shops')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching shops:', error);
+      return res.status(500).json({ error: 'Failed to fetch shops' });
+    }
+
+    return res.json({ shops: shops || [] });
+
+  } catch (error) {
+    console.error('Error fetching admin shops:', error);
+    return res.status(500).json({ error: 'Failed to fetch shops' });
+  }
+});
+
+// Get shopkeeper emails (SECURED - admin only)
+app.get('/api/food/admin/shopkeeper-emails', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: emails, error } = await supabase
+      .from('shopkeeper_emails')
+      .select('*, shops(name)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching shopkeeper emails:', error);
+      return res.status(500).json({ error: 'Failed to fetch emails' });
+    }
+
+    return res.json({ emails: emails || [] });
+
+  } catch (error) {
+    console.error('Error fetching shopkeeper emails:', error);
+    return res.status(500).json({ error: 'Failed to fetch emails' });
+  }
+});
+
+// Add shopkeeper email (SECURED - admin only)
+app.post('/api/food/admin/shopkeeper-emails', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { email, shopId } = req.body;
+
+    if (!email || !shopId) {
+      return res.status(400).json({ error: 'Email and shop ID are required' });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Add email
+    const { error } = await supabase
+      .from('shopkeeper_emails')
+      .insert({
+        email: email.toLowerCase().trim(),
+        shop_id: shopId,
+        added_by: userId,
+      });
+
+    if (error) {
+      console.error('Error adding shopkeeper email:', error);
+      return res.status(500).json({ error: 'Failed to add email' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error adding shopkeeper email:', error);
+    return res.status(500).json({ error: 'Failed to add email' });
+  }
+});
+
+// Delete shopkeeper email (SECURED - admin only)
+app.delete('/api/food/admin/shopkeeper-emails/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { error } = await supabase
+      .from('shopkeeper_emails')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting shopkeeper email:', error);
+      return res.status(500).json({ error: 'Failed to delete email' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting shopkeeper email:', error);
+    return res.status(500).json({ error: 'Failed to delete email' });
+  }
+});
+
+// ============================================
+// FOOD COUPON BATCH MANAGEMENT ROUTES
+// ============================================
+
+// Get shop with coupon batches for coupon generation (PUBLIC)
+app.get('/api/food/shop/:id/batches', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data: shop, error: shopError } = await supabase
+      .from('shops')
+      .select(`
+        *,
+        coupon_batches!inner(*)
+      `)
+      .eq('id', id)
+      .eq('is_active', true)
+      .eq('coupon_batches.is_active', true)
+      .single();
+
+    if (shopError) {
+      console.error('Error fetching shop with batches:', shopError);
+      return res.status(404).json({ error: 'Shop or active batch not found' });
+    }
+
+    return res.json({ shop });
+
+  } catch (error) {
+    console.error('Error fetching shop with batches:', error);
+    return res.status(500).json({ error: 'Failed to fetch shop batches' });
+  }
+});
+
+// ============================================
+// ADMIN DASHBOARD ROUTES FOR FOOD
+// ============================================
+
+// Get admin dashboard stats (SECURED - admin only)
+app.get('/api/food/admin/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Get total shops count
+    const { count: totalShops } = await supabase
+      .from('shops')
+      .select('*', { count: 'exact', head: true });
+
+    // Get active batches count
+    const { count: activeBatches } = await supabase
+      .from('coupon_batches')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true);
+
+    // Get redemptions count
+    const { count: redemptions } = await supabase
+      .from('redemptions')
+      .select('*', { count: 'exact', head: true });
+
+    // Get flagged attempts count
+    const { count: flaggedAttempts } = await supabase
+      .from('flagged_attempts')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending');
+
+    return res.json({
+      totalShops: totalShops || 0,
+      activeBatches: activeBatches || 0,
+      redemptions: redemptions || 0,
+      flaggedAttempts: flaggedAttempts || 0
+    });
+
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    return res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// Get all coupon batches for admin (SECURED - admin only)
+app.get('/api/food/admin/batches', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: batches, error } = await supabase
+      .from('coupon_batches')
+      .select('*, shops(name)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching batches:', error);
+      return res.status(500).json({ error: 'Failed to fetch batches' });
+    }
+
+    return res.json({ batches: batches || [] });
+
+  } catch (error) {
+    console.error('Error fetching admin batches:', error);
+    return res.status(500).json({ error: 'Failed to fetch batches' });
+  }
+});
+
+// Get redemption history for admin (SECURED - admin only)
+app.get('/api/food/admin/redemptions', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: redemptions, error } = await supabase
+      .from('redemptions')
+      .select('*, coupons(code, discount_value), shops(name)')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error fetching redemptions:', error);
+      return res.status(500).json({ error: 'Failed to fetch redemptions' });
+    }
+
+    return res.json({ redemptions: redemptions || [] });
+
+  } catch (error) {
+    console.error('Error fetching admin redemptions:', error);
+    return res.status(500).json({ error: 'Failed to fetch redemptions' });
+  }
+});
+
+// Get flagged attempts for admin (SECURED - admin only)
+app.get('/api/food/admin/flagged', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: flaggedAttempts, error } = await supabase
+      .from('flagged_attempts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching flagged attempts:', error);
+      return res.status(500).json({ error: 'Failed to fetch flagged attempts' });
+    }
+
+    return res.json({ flaggedAttempts: flaggedAttempts || [] });
+
+  } catch (error) {
+    console.error('Error fetching admin flagged attempts:', error);
+    return res.status(500).json({ error: 'Failed to fetch flagged attempts' });
+  }
+});
+
+// Create shop (SECURED - admin only)
+app.post('/api/food/admin/shops', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const shopData = req.body;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Filter allowed shop fields (exclude non-existent columns)
+    const allowedFields = {
+      name: shopData.name,
+      short_desc: shopData.short_desc,
+      address: shopData.address,
+      contact_number: shopData.contact_number,
+      tags: shopData.tags,
+      photos: shopData.photos,
+      featured: shopData.featured || false,
+      is_active: shopData.is_active !== undefined ? shopData.is_active : true
+    };
+
+    // Remove undefined fields
+    Object.keys(allowedFields).forEach(key => {
+      if (allowedFields[key] === undefined) {
+        delete allowedFields[key];
+      }
+    });
+
+    const { data: shop, error } = await supabase
+      .from('shops')
+      .insert(allowedFields)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating shop:', error);
+      return res.status(500).json({ error: 'Failed to create shop' });
+    }
+
+    return res.json({ shop });
+
+  } catch (error) {
+    console.error('Error creating shop:', error);
+    return res.status(500).json({ error: 'Failed to create shop' });
+  }
+});
+
+// Update shop (SECURED - admin only)
+app.put('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+    const shopData = req.body;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Filter allowed shop fields (exclude non-existent columns)
+    const allowedFields = {
+      name: shopData.name,
+      short_desc: shopData.short_desc,
+      address: shopData.address,
+      contact_number: shopData.contact_number,
+      tags: shopData.tags,
+      photos: shopData.photos,
+      featured: shopData.featured,
+      is_active: shopData.is_active
+    };
+
+    // Remove undefined fields
+    Object.keys(allowedFields).forEach(key => {
+      if (allowedFields[key] === undefined) {
+        delete allowedFields[key];
+      }
+    });
+
+    const { data: shop, error } = await supabase
+      .from('shops')
+      .update(allowedFields)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating shop:', error);
+      return res.status(500).json({ error: 'Failed to update shop' });
+    }
+
+    return res.json({ shop });
+
+  } catch (error) {
+    console.error('Error updating shop:', error);
+    return res.status(500).json({ error: 'Failed to update shop' });
+  }
+});
+
+// Delete shop (SECURED - admin only)
+app.delete('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { error } = await supabase
+      .from('shops')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting shop:', error);
+      return res.status(500).json({ error: 'Failed to delete shop' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting shop:', error);
+    return res.status(500).json({ error: 'Failed to delete shop' });
+  }
+});
+
+// Create coupon batch (SECURED - admin only)
+app.post('/api/food/admin/batches', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const batchData = req.body;
+
+    // Check if user is admin by email
+    const adminEmails = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
+    if (!req.user?.email || !adminEmails.includes(req.user.email)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Filter allowed coupon batch fields (use correct database schema)
+    const allowedFields = {
+      shop_id: batchData.shop_id,
+      batch_name: batchData.batch_name,
+      amount_per_coupon: batchData.amount_per_coupon,
+      expires_in_days: batchData.expires_in_days,
+      daily_limit: batchData.daily_limit || batchData.total_coupons, // Support both field names
+      per_user_limit: batchData.per_user_limit,
+      start_time: batchData.start_time,
+      end_time: batchData.end_time,
+      is_active: batchData.is_active !== undefined ? batchData.is_active : true
+    };
+
+    // Remove undefined fields
+    Object.keys(allowedFields).forEach(key => {
+      if (allowedFields[key] === undefined) {
+        delete allowedFields[key];
+      }
+    });
+
+    const { data: batch, error } = await supabase
+      .from('coupon_batches')
+      .insert(allowedFields)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating batch:', error);
+      return res.status(500).json({ error: 'Failed to create batch' });
+    }
+
+    return res.json({ batch });
+
+  } catch (error) {
+    console.error('Error creating batch:', error);
+    return res.status(500).json({ error: 'Failed to create batch' });
+  }
+});
+
+// Update coupon batch (SECURED - admin only)
+app.put('/api/food/admin/batches/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+    const batchData = req.body;
+
+    // Check if user is admin by email
+    const adminEmails = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
+    if (!req.user?.email || !adminEmails.includes(req.user.email)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Filter allowed coupon batch fields (use correct database schema)
+    const allowedFields = {
+      shop_id: batchData.shop_id,
+      batch_name: batchData.batch_name,
+      amount_per_coupon: batchData.amount_per_coupon,
+      expires_in_days: batchData.expires_in_days,
+      daily_limit: batchData.daily_limit || batchData.total_coupons, // Support both field names
+      per_user_limit: batchData.per_user_limit,
+      start_time: batchData.start_time,
+      end_time: batchData.end_time,
+      is_active: batchData.is_active
+    };
+
+    // Remove undefined fields
+    Object.keys(allowedFields).forEach(key => {
+      if (allowedFields[key] === undefined) {
+        delete allowedFields[key];
+      }
+    });
+
+    // First check if batch exists
+    const { data: existingBatch, error: checkError } = await supabase
+      .from('coupon_batches')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingBatch) {
+      console.error('Batch not found:', checkError);
+      return res.status(404).json({ error: 'Batch not found' });
+    }
+
+    // Update the batch
+    const { data: batch, error } = await supabase
+      .from('coupon_batches')
+      .update(allowedFields)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Error updating batch:', error);
+      return res.status(500).json({ error: 'Failed to update batch' });
+    }
+
+    if (!batch || batch.length === 0) {
+      console.error('Update returned no rows for batch:', id);
+      return res.status(404).json({ error: 'Batch not found or could not be updated' });
+    }
+
+    return res.json({ batch: batch[0] });
+
+  } catch (error) {
+    console.error('Error updating batch:', error);
+    return res.status(500).json({ error: 'Failed to update batch' });
+  }
+});
+
+// Delete coupon batch (SECURED - admin only)
+app.delete('/api/food/admin/batches/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+
+    // Check if user is admin by email
+    const adminEmails = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
+    if (!req.user?.email || !adminEmails.includes(req.user.email)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { error } = await supabase
+      .from('coupon_batches')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting batch:', error);
+      return res.status(500).json({ error: 'Failed to delete batch' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting batch:', error);
+    return res.status(500).json({ error: 'Failed to delete batch' });
+  }
+});
+
+// Get user's coupons (SECURED)
+app.get('/api/food/my-coupons', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    const { data: coupons, error } = await supabase
+      .from('coupons')
+      .select(`
+        *,
+        shops!inner(
+          id,
+          name,
+          address,
+          tags
+        )
+      `)
+      .eq('generated_by_user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching coupons:', error);
+      return res.status(500).json({ error: 'Failed to fetch coupons' });
+    }
+
+    return res.json({ coupons: coupons || [] });
+
+  } catch (error) {
+    console.error('Error fetching user coupons:', error);
+    return res.status(500).json({ error: 'Failed to fetch coupons' });
+  }
+});
+
+// Get coupon by ID (SECURED)
+app.get('/api/food/coupon/:couponId', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { couponId } = req.params;
+
+    const { data: coupon, error } = await supabase
+      .from('coupons')
+      .select(`
+        *,
+        shops!inner(
+          id,
+          name,
+          address,
+          contact_number
+        )
+      `)
+      .eq('id', couponId)
+      .eq('generated_by_user_id', userId)
+      .single();
+
+    if (error || !coupon) {
+      return res.status(404).json({ error: 'Coupon not found' });
+    }
+
+    return res.json({ coupon });
+
+  } catch (error) {
+    console.error('Error fetching coupon:', error);
+    return res.status(500).json({ error: 'Failed to fetch coupon' });
+  }
+});
+
+// Redeem coupon (SHOPKEEPER ACCESS)
+app.post('/api/food/redeem-coupon', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { couponCode } = req.body;
+
+    if (!couponCode) {
+      return res.status(400).json({ error: 'Missing couponCode' });
+    }
+
+    // Check if user is a shopkeeper
+    const { data: shopStaff, error: roleError } = await supabase
+      .from('shop_staff')
+      .select('shop_id, role')
+      .eq('user_id', userId)
+      .single();
+
+    if (roleError || !shopStaff) {
+      return res.status(403).json({ error: 'Unauthorized. Only shopkeepers can redeem coupons.' });
+    }
+
+    // Find and validate coupon
+    const { data: coupon, error: couponError } = await supabase
+      .from('coupons')
+      .select(`
+        *,
+        shops!inner(
+          id,
+          name
+        )
+      `)
+      .eq('code', couponCode)
+      .eq('status', 'generated')
+      .eq('shop_id', shopStaff.shop_id)
+      .single();
+
+    if (couponError || !coupon) {
+      return res.status(404).json({ error: 'Invalid or expired coupon' });
+    }
+
+    // Check if coupon is expired
+    if (new Date(coupon.expires_at) < new Date()) {
+      return res.status(400).json({ error: 'Coupon has expired' });
+    }
+
+    // Update coupon status to redeemed
+    const { error: updateError } = await supabase
+      .from('coupons')
+      .update({
+        status: 'redeemed',
+        redeemed_at: new Date().toISOString(),
+        redeemed_by_staff_id: userId
+      })
+      .eq('code', couponCode);
+
+    if (updateError) {
+      console.error('Error redeeming coupon:', updateError);
+      return res.status(500).json({ error: 'Failed to redeem coupon' });
+    }
+
+    // Record redemption
+    const { error: redemptionError } = await supabase
+      .from('redemptions')
+      .insert({
+        coupon_id: coupon.id,
+        shop_id: coupon.shop_id,
+        staff_id: userId,
+        customer_id: coupon.generated_by_user_id
+      });
+
+    if (redemptionError) {
+      console.error('Error recording redemption:', redemptionError);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Coupon redeemed successfully',
+      coupon: {
+        ...coupon,
+        status: 'redeemed',
+        redeemed_at: new Date().toISOString(),
+        amount: coupon.discount_value // Map discount_value to amount for frontend compatibility
+      }
+    });
+
+  } catch (error) {
+    console.error('Error redeeming coupon:', error);
+    return res.status(500).json({ error: 'Failed to redeem coupon' });
+  }
+});
+
+// Get shop coupons for shopkeeper dashboard (SECURED)
+app.get('/api/food/shop-coupons', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is a shopkeeper and get their shop
+    const { data: shopStaff, error: roleError } = await supabase
+      .from('shop_staff')
+      .select('shop_id, role')
+      .eq('user_id', userId)
+      .single();
+
+    if (roleError || !shopStaff) {
+      return res.status(403).json({ error: 'Unauthorized. Only shopkeepers can access this endpoint.' });
+    }
+
+    const { data: coupons, error } = await supabase
+      .from('coupons')
+      .select(`
+        *,
+        profiles!generated_by_user_id(
+          full_name,
+          email
+        )
+      `)
+      .eq('shop_id', shopStaff.shop_id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching shop coupons:', error);
+      return res.status(500).json({ error: 'Failed to fetch shop coupons' });
+    }
+
+    return res.json({ coupons: coupons || [] });
+
+  } catch (error) {
+    console.error('Error fetching shop coupons:', error);
+    return res.status(500).json({ error: 'Failed to fetch shop coupons' });
+  }
+});
+
+// Get coupon batches for admin (ADMIN ONLY)
+app.get('/api/food/admin/coupon-batches', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile || !profile.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: batches, error } = await supabase
+      .from('coupon_batches')
+      .select(`
+        *,
+        shops!inner(
+          id,
+          name
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching coupon batches:', error);
+      return res.status(500).json({ error: 'Failed to fetch coupon batches' });
+    }
+
+    return res.json({ batches: batches || [] });
+
+  } catch (error) {
+    console.error('Error fetching coupon batches:', error);
+    return res.status(500).json({ error: 'Failed to fetch coupon batches' });
+  }
+});
+
 
 // ============================================
 // POLICY ROUTES

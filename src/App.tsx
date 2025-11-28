@@ -1,5 +1,8 @@
 import { Toaster } from "@/components/ui/toaster";
 
+import { ThemeProvider } from "@/hooks/useTheme";
+
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +40,17 @@ import GroupDashboard from "./pages/GroupDashboard";
 import StudyMaterial from "./pages/StudyMaterial";
 
 import BookBuyback from "./pages/BookBuyback";
+
+import Food from "./pages/Food";
+import FoodShopDetail from "./pages/FoodShopDetail";
+import FoodGenerateCoupon from "./pages/FoodGenerateCoupon";
+import FoodTicket from "./pages/FoodTicket";
+import FoodMyCoupons from "./pages/FoodMyCoupons";
+import FoodAdminComplete from "./pages/FoodAdminComplete";
+import FoodAdminRedemption from "./pages/FoodAdminRedemption";
+import FoodShopkeeper from "./pages/FoodShopkeeper";
+import FoodAdminShopkeepers from "./pages/FoodAdminShopkeepers";
+
 
 import BuyPrelovedBooks from "./pages/BuyPrelovedBooks";
 
@@ -273,6 +287,19 @@ const AppRoutes = () => {
         <Route path="/resale/my-listings" element={<ResaleMyListings />} />
 
         <Route path="*" element={<NotFound />} />
+
+
+         <Route path="/food" element={<Food />} />
+          <Route path="/food/shop/:id" element={<FoodShopDetail />} />
+          <Route path="/food/generate-coupon/:shopId" element={<FoodGenerateCoupon />} />
+          <Route path="/food/ticket/:couponId" element={<FoodTicket />} />
+          <Route path="/food/my-coupons" element={<FoodMyCoupons />} />
+          <Route path="/food/admin" element={<FoodAdminComplete />} />
+          <Route path="/food/admin/redeem" element={<FoodAdminRedemption />} />
+          <Route path="/food/admin/shopkeepers" element={<FoodAdminShopkeepers />} />
+          <Route path="/food/shopkeeper" element={<FoodShopkeeper />} />
+
+
       </Routes>
     </>
   );
@@ -385,6 +412,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PolicyWrapper>
+           <ThemeProvider> 
           <TooltipProvider>
             <HotToaster position="top-center" />
 
@@ -400,6 +428,7 @@ const App = () => {
 
             <SpeedInsights />
           </TooltipProvider>
+           </ThemeProvider>
         </PolicyWrapper>
       </AuthProvider>
     </QueryClientProvider>
