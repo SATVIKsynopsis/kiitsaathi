@@ -2726,19 +2726,36 @@ app.put('/api/food/admin/batches/:id', authenticateToken, async (req, res) => {
       }
     });
 
+    // First check if batch exists
+    const { data: existingBatch, error: checkError } = await supabase
+      .from('coupon_batches')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingBatch) {
+      console.error('Batch not found:', checkError);
+      return res.status(404).json({ error: 'Batch not found' });
+    }
+
+    // Update the batch
     const { data: batch, error } = await supabase
       .from('coupon_batches')
       .update(allowedFields)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Error updating batch:', error);
       return res.status(500).json({ error: 'Failed to update batch' });
     }
 
-    return res.json({ batch });
+    if (!batch || batch.length === 0) {
+      console.error('Update returned no rows for batch:', id);
+      return res.status(404).json({ error: 'Batch not found or could not be updated' });
+    }
+
+    return res.json({ batch: batch[0] });
 
   } catch (error) {
     console.error('Error updating batch:', error);
@@ -2752,14 +2769,9 @@ app.delete('/api/food/admin/batches/:id', authenticateToken, async (req, res) =>
     const userId = req.user_id;
     const { id } = req.params;
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userId)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
+    // Check if user is admin by email
+    const adminEmails = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
+    if (!req.user?.email || !adminEmails.includes(req.user.email)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
