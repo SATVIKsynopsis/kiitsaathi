@@ -32,15 +32,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+
 const services = [
-  // {
-  // id: "kiit-saathi-ai-assistant",
-  //  icon: Bot,
-  //  title: "KIIT Saathi (AI Assistant)",
-  //  description: "Lost? Hungry? Confused? Ask our chatbot - 24x7 KIIT help.",
-  //  price: "Free",
-  //  gradient: "from-ecell-cyan to-campus-blue",
-  // },
   {
     id: "sgpa-cgpa-calculator",
     icon: Calculator,
@@ -68,20 +61,12 @@ const services = [
   },
   {
     id: "campus-map",
-    icon: Shield,
+    icon: MapPin,
     title: "Campus Map",
     description: "Explore the vibrant campus of KIIT and everything it has to offer.",
     price: "Free",
-    gradient: "from-campus-blue to-kiit-green",
+    gradient: "from-teal-400 to-blue-500",
   },
-  // {
-  //   id: "timetable-saathi",
-  //   icon: Calendar,
-  //   title: "Timetable Saathi",
-  //   description: "View your class schedule with real-time updates",
-  //   price: "Free",
-  //   gradient: "from-indigo-500 to-purple-500",
-  // },
   {
     id: "kiit-societies-fests-sports",
     icon: Calendar,
@@ -90,7 +75,6 @@ const services = [
     price: "Free",
     gradient: "from-campus-purple to-usc-maroon",
   },
-
   {
     id: "kiiit-food-stalls-restaurants",
     icon: Calendar,
@@ -132,15 +116,6 @@ const services = [
     price: "Coming Soon",
     gradient: "from-campus-blue to-ecell-cyan",
   },
-  //{
-  //  id: "donation-saathi",
-  //  icon: Heart,
-  //  title: "Donation Saathi",
-  //  description: "Extend a helping hand - donate books, food, and essentials to those in need through the KIIT community.",
-  //  price: "Coming Soon",
-  //  gradient: "from-kiit-green to-campus-orange",
-  //
-  //},
   {
     id: "printout-on-demand",
     icon: Printer,
@@ -231,6 +206,7 @@ const services = [
   }
 ];
 
+
 export const ServicesGrid = () => {
   const navigate = useNavigate();
   const { visibilityMap, loading, hasFetchedData } = useServiceVisibility();
@@ -251,6 +227,7 @@ export const ServicesGrid = () => {
       console.log('🚫 Non-admin mode - hidden services completely hidden.');
     }
   }
+
 
   const handleServiceClick = (service: typeof services[0]) => {
     const routeMap: Record<string, string> = {
@@ -273,9 +250,10 @@ export const ServicesGrid = () => {
       "Course & Faculty Details": "/course-structure",
       "Food and micro-essentials delivery": "/food-order-customer",
       "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
-      "Campus Map": "/campus-map",
+      "Campus Map": "/campus-maps",
       "KIIT Food Stalls & Restaurants": "/food"
     };
+
 
     const route = routeMap[service.title];
     if (route) {
@@ -291,6 +269,7 @@ export const ServicesGrid = () => {
     }
   };
 
+
   return (
     <section className="py-4 sm:py-6 bg-gradient-to-br from-campus-blue/10 to-kiit-green/10">
       <div className="container mx-auto px-3 sm:px-4">
@@ -301,16 +280,19 @@ export const ServicesGrid = () => {
             10+ Campus Services
           </div>
 
+
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-poppins font-bold text-gradient mb-4 sm:mb-6">
             Everything You Need
             <span className="block">In One Platform</span>
           </h2>
+
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-black max-w-3xl mx-auto leading-relaxed px-2 sm:px-4">
             From academic support to daily essentials, we have built the complete ecosystem
             to enrich your KIIT experience. <span className="font-semibold text-kiit-green block">Because campus life is hectic enough already.</span>
           </p>
         </div>
+
 
         {/* Services Grid */}
         <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 px-2 sm:px-4">
@@ -346,10 +328,12 @@ export const ServicesGrid = () => {
               
               const isHidden = !isVisible;
 
+
               // For non-admins: completely skip hidden services (no DOM rendering at all)
               if (!isAdmin && isHidden && !replacementText) {
                 return null;
               }
+
 
               // If service is hidden and has replacement text, show placeholder (non-admin only)
               if (!isAdmin && !isVisible && replacementText) {
@@ -366,15 +350,18 @@ export const ServicesGrid = () => {
                       </div>
                     </div>
 
+
                     {/* Placeholder Content */}
                     <div className="space-y-2">
                       <h3 className="text-base sm:text-lg md:text-xl font-poppins font-semibold text-muted-foreground">
                         {replacementText}
                       </h3>
 
+
                       <p className="text-muted-foreground leading-relaxed text-xs sm:text-sm opacity-75">
                         Exciting new services are being developed and will be available soon.
                       </p>
+
 
                       <div className="flex items-center justify-between pt-2">
                         <span className="font-semibold px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm bg-muted text-muted-foreground">
@@ -385,6 +372,7 @@ export const ServicesGrid = () => {
                   </div>
                 );
               }
+
 
               // For admins: show all services (including hidden ones with badge)
               // For non-admins: show only visible services
@@ -402,6 +390,7 @@ export const ServicesGrid = () => {
                     </div>
                   </div>
 
+
                   <div className="space-y-2 px-2 sm:px-3 hover:bg-gray-200 hover:rounded-lg p-3 sm:p-4">
                     <div className="flex flex-col items-start gap-1.5 sm:gap-2 mb-1">
                       <h3 className="text-base sm:text-lg md:text-xl hover:text-black font-poppins font-semibold text-foreground group-hover:text-kiit-green transition-colors">
@@ -414,9 +403,11 @@ export const ServicesGrid = () => {
                       )}
                     </div>
 
+
                     <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
                       {service.description}
                     </p>
+
 
                   </div>
                 </div>

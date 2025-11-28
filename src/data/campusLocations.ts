@@ -204,3 +204,4 @@ export const campusLocations: CampusLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/aiH4924Fucy1Whz57"
   }
 ];
+
