@@ -33,7 +33,7 @@ export const teamData = [
     Instagram: null,
     Image: "/team/Prajjwal.jpg",
     Github: "https://github.com/prajj267",
-    role: "Operations",
+    role: "Web Developer",
   },
   {
     name: "Prangshu Mondal",

@@ -35,13 +35,12 @@ import { toast } from "@/hooks/use-toast";
 
 const services = [
   {
-    id: "sgpa-cgpa-calculator",
-    icon: Calculator,
-    title: "SGPA & CGPA Calculator",
-    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
+    id: "campus-map",
+    icon: MapPin,
+    title: "Campus Map",
+    description: "Explore the vibrant campus of KIIT and everything it has to offer.",
     price: "Free",
-    gradient: "from-kiit-green to-campus-blue",
-    action: () => window.location.href = "/sgpa-calculator",
+    gradient: "from-teal-400 to-blue-500",
   },
   {
     id: "study-material",
@@ -60,12 +59,13 @@ const services = [
     gradient: "from-campus-orange to-usc-orange",
   },
   {
-    id: "campus-map",
-    icon: MapPin,
-    title: "Campus Map",
-    description: "Explore the vibrant campus of KIIT and everything it has to offer.",
+    id: "sgpa-cgpa-calculator",
+    icon: Calculator,
+    title: "SGPA & CGPA Calculator",
+    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
     price: "Free",
-    gradient: "from-teal-400 to-blue-500",
+    gradient: "from-kiit-green to-campus-blue",
+    action: () => window.location.href = "/sgpa-calculator",
   },
   {
     id: "kiit-societies-fests-sports",
@@ -119,7 +119,7 @@ const services = [
   {
     id: "printout-on-demand",
     icon: Printer,
-    title: "Printouts on Demand",
+    title: "PrintSaathi",
     description: "Too lazy to go out? Just send a PDF and get it printed and delivered.",
     price: "₹2/page",
     gradient: "from-usc-maroon to-campus-purple",

@@ -208,7 +208,7 @@ const App = () => {
                   <Route path="/order-history" element={<OrderHistory />} />
                   <Route path="/kiit-societies" element={<KiitSocieties />} />
                   <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
-                  <Route path="/interview-deadlines" element={<InterviewDeadlinesTracker />} />
+                  <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
                   <Route path="/course-structure" element={<CourseStructure />} />
                   <Route path="/timetable-saathi" element={<TimetableSaathi />} />
                   <Route path="/fest-announcements" element={<FestAnnouncements />} />
