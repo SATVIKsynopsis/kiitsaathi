@@ -327,3 +327,4 @@ const CampusDetailPage: React.FC = () => {
 };
 
 export default CampusDetailPage;
+//nottttt
