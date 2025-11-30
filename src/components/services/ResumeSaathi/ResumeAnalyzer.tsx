@@ -26,7 +26,7 @@ for (const workerUrl of workerUrls) {
   try {
     pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
     workerSet = true;
-    console.log(`PDF.js worker set to: ${workerUrl}`);
+    // console.log(`PDF.js worker set to: ${workerUrl}`);
     break;
   } catch (error) {
     console.warn(`Failed to set worker URL: ${workerUrl}`, error);

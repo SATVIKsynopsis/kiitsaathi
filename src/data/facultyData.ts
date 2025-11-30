@@ -3569,12 +3569,12 @@ export const facultyMembers = facultyMembersData.sort((a, b) => a.name.localeCom
 
 export const allFacultyData = [...contactPersons, ...facultyMembers];
 
-console.log(`✅ Faculty data updated successfully!
-📊 Summary:
-- Total Contact Persons: ${contactPersons.length} (all updated with real data)
-- Total Faculty Members: ${facultyMembers.length} (all updated with real data)
-- All entries sorted alphabetically (A-Z)
-- Real emails from Excel: ✓
-- Real LinkedIn profiles: ✓
-- Missing LinkedIn shown as: "No LinkedIn"
-`);
+// console.log(`✅ Faculty data updated successfully!
+// 📊 Summary:
+// - Total Contact Persons: ${contactPersons.length} (all updated with real data)
+// - Total Faculty Members: ${facultyMembers.length} (all updated with real data)
+// - All entries sorted alphabetically (A-Z)
+// - Real emails from Excel: ✓
+// - Real LinkedIn profiles: ✓
+// - Missing LinkedIn shown as: "No LinkedIn"
+//`);
