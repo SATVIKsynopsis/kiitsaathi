@@ -4,6 +4,7 @@ import { hideServicesDirectly } from "@/utils/adminCommands";
 export const AdminCommandExecutor = () => {
   const [executed, setExecuted] = useState(false);
 
+  
   useEffect(() => {
     if (!executed) {
       const executeHideCommand = async () => {
