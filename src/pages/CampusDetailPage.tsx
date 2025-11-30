@@ -57,13 +57,13 @@ const CampusDetailPage: React.FC = () => {
   // Supabase PDF URLs
   const floorPdfMap = {
     ground:
-      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/ground-floor-campus-25.pdf#toolbar=0',
+      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/Ground%20Floor%20KIIT%20Campus%2025%20.pdf',
     first:
-      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/first-floor-campus-25.pdf#toolbar=0',
+      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/First%20Floor%20Campus%2025%20KIIT%20Saathi.pdf#toolbar=0',
     second:
-      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/second-floor-campus-25.pdf#toolbar=0',
+      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/Second%20Floor%20Campus%2025%20KIIT%20Saathi.pdf#toolbar=0',
     third:
-      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/third-floor-campus-25.pdf#toolbar=0',
+      'https://jzkzqpeorsehwvwcyjkf.supabase.co/storage/v1/object/public/campus-map/Cam25/Third%20Floor%20Campus%2025%20KIIT%20Saathi.pdf#toolbar=0',
   };
 
   const floorNames = {
@@ -327,3 +327,4 @@ const CampusDetailPage: React.FC = () => {
 };
 
 export default CampusDetailPage;
+//nottttt
