@@ -29,7 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { useServiceVisibility } from "@/hooks/useServiceVisibility";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import GridLoader from "@/components/home/gridLoader";
 import { toast } from "@/hooks/use-toast";
 
 
@@ -82,7 +82,7 @@ const services = [
     description: "Discover campus food stalls with menu, timings, and location. Generate discount coupons instantly - verfied and single-use.",
     price: "Free",
     gradient: "from-campus-orange to-usc-orange",
-    
+
   },
   {
     id: "course-faculty-details",
@@ -203,7 +203,15 @@ const services = [
     description: "From wholesome mini meals to everyday essentials - delivered from trusted campus and nearby stores.",
     price: "₹20 delivery",
     gradient: "from-usc-orange to-fedkiit-green",
-  }
+  },
+  {
+    id: "Timetable-Saathi",
+    icon: Calendar,
+    title: "Timetable Saathi",
+    description: "View and manage your weekly and daily class schedules with ease.",
+    price: "Free",
+    gradient: "from-usc-orange to-fedkiit-green",
+  },
 ];
 
 
@@ -211,14 +219,14 @@ export const ServicesGrid = () => {
   const navigate = useNavigate();
   const { visibilityMap, loading, hasFetchedData } = useServiceVisibility();
   const { user, loading: authLoading } = useAuth();
-  
+
   // Admin emails - these are the ONLY emails that can see hidden services
   const ADMIN_EMAILS = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
   const isAdmin = user && ADMIN_EMAILS.includes(user.email || '');
-  
+
   // Wait for both auth and visibility data to load
   const isDataReady = !authLoading && hasFetchedData;
-  
+
   // Log admin status (only when data is ready)
   if (isDataReady) {
     if (isAdmin) {
@@ -251,7 +259,8 @@ export const ServicesGrid = () => {
       "Food and micro-essentials delivery": "/food-order-customer",
       "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
       "Campus Map": "/campus-maps",
-      "KIIT Food Stalls & Restaurants": "/food"
+      "KIIT Food Stalls & Restaurants": "/food",
+      "KIIT Timetable": "/timetable-saathi",
     };
 
 
@@ -298,18 +307,19 @@ export const ServicesGrid = () => {
         <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 px-2 sm:px-4">
           {!isDataReady ? (
             <div className="col-span-full flex justify-center py-6 sm:py-8">
-              <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-muted-foreground" />
+              <GridLoader />
+
             </div>
           ) : (
             services.map((service, index) => {
               const visibility = visibilityMap[service.id];
               const IconComponent = service.icon;
-              
+
               // CRITICAL: For non-admins, services are hidden by default unless explicitly visible
               // For admins, all services are shown regardless of visibility
               let isVisible: boolean;
               let replacementText: string | null = null;
-              
+
               if (isAdmin) {
                 // Admins see everything, regardless of visibility settings
                 isVisible = true;
@@ -325,7 +335,7 @@ export const ServicesGrid = () => {
                   replacementText = visibility.replaced_text;
                 }
               }
-              
+
               const isHidden = !isVisible;
 
 
