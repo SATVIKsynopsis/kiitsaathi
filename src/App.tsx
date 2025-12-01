@@ -10,6 +10,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import RouteLogger from "./components/RouteLogger";
 import { Toaster as HotToaster } from "react-hot-toast";
 
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CartonTransfer from "./pages/CartonTransfer";
@@ -69,26 +70,34 @@ import ResaleTransactions from "./pages/ResaleTransactions";
 import ResaleFavourites from "./pages/ResaleFavourites";
 import ResaleMyListings from "./pages/ResaleMyListings";
 
+
 // ✅ NEW IMPORTS
 import CampusMapsPage from "./pages/CampusMapsPage";
 import CampusDetailPage from "./pages/CampusDetailPage";
+import InteractiveMapPage from './pages/InteractiveMapPage';
+import HostelDetailPage from './pages/HostelDetailPage';
+
 
 import Loader from "./components/Loader";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { useEffect, useState } from "react";
 
+
 const queryClient = new QueryClient();
+
 
 // ✅ The main App (with a single BrowserRouter)
 const App = () => {
   const [loading, setLoading] = useState(false);
+
 
   // ✅ Google Analytics setup
   useEffect(() => {
     const script1 = document.createElement("script");
     script1.async = true;
     script1.src = "https://www.googletagmanager.com/gtag/js?id=G-VYT7GP1CJE";
+
 
     const script2 = document.createElement("script");
     script2.innerHTML = `
@@ -98,14 +107,17 @@ const App = () => {
       gtag('config', 'G-VYT7GP1CJE');
     `;
 
+
     document.head.appendChild(script1);
     document.head.appendChild(script2);
+
 
     return () => {
       document.head.removeChild(script1);
       document.head.removeChild(script2);
     };
   }, []);
+
 
   // ✅ Existing security + UI logic
   useEffect(() => {
@@ -114,8 +126,10 @@ const App = () => {
     document.documentElement.style.margin = "0";
     document.documentElement.style.padding = "0";
 
+
     const disableRightClick = (e) => e.preventDefault();
     document.addEventListener("contextmenu", disableRightClick);
+
 
     const disableShortcuts = (e) => {
       if (
@@ -138,6 +152,7 @@ const App = () => {
     };
     document.addEventListener("keydown", disableShortcuts);
 
+
     const checkDevTools = () => {
       const start = performance.now();
       debugger;
@@ -148,7 +163,9 @@ const App = () => {
       }
     };
 
+
     const interval = setInterval(checkDevTools, 2000);
+
 
     return () => {
       document.removeEventListener("contextmenu", disableRightClick);
@@ -156,6 +173,7 @@ const App = () => {
       clearInterval(interval);
     };
   }, []);
+
 
   // ✅ Main return
   return (
@@ -179,6 +197,7 @@ const App = () => {
                   <Route path="/study-material" element={<StudyMaterial />} />
                   <Route path="/book-buyback" element={<BookBuyback />} />
 
+
                   {/* Food Routes */}
                   <Route path="/food" element={<Food />} />
                   <Route path="/food/shop/:shopId" element={<FoodShopDetail />} />
@@ -190,6 +209,7 @@ const App = () => {
                   <Route path="/food/shopkeeper" element={<FoodShopkeeper />} />
                   <Route path="/food/admin/shopkeepers" element={<FoodAdminShopkeepers />} />
 
+
                   {/* Books & Shopping */}
                   <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
                   <Route path="/book-buyback-sell" element={<BookBuybackSell />} />
@@ -198,10 +218,12 @@ const App = () => {
                   <Route path="/meetups" element={<Meetups />} />
                   <Route path="/campus-tour-booking" element={<CampusTourBooking />} />
 
+
                   {/* Auth Routes */}
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+
 
                   {/* Core Features */}
                   <Route path="/chat-bot" element={<ChatBotPage />} />
@@ -216,14 +238,26 @@ const App = () => {
                   <Route path="/food-order-customer" element={<FoodOrderCustomer />} />
                   <Route path="/food-order-helper" element={<FoodOrderHelper />} />
 
-                  {/* ✅ NEW CAMPUS MAPS ROUTES */}
+
+                  {/* ✅ CAMPUS MAPS ROUTES - ORDER MATTERS! */}
+                  {/* Main page with 2 tabs */}
                   <Route path="/campus-maps" element={<CampusMapsPage />} />
+                  
+                  {/* Interactive map page (Campus 25 floor layouts) */}
+                  <Route path="/campus-maps/interactive" element={<InteractiveMapPage />} />
+                  
+                  {/* Detail page for each campus (comes after /interactive to avoid route conflicts) */}
                   <Route path="/campus-maps/:id" element={<CampusDetailPage />} />
+                  
+                  {/* Hostels page */}
+                  <Route path="/hostels/:hostelId" element={<HostelDetailPage />} />
+
 
                   {/* Old Campus Routes (backward compatibility) */}
                   <Route path="/campus-map" element={<CampusMap />} />
                   <Route path="/campus-map/:id" element={<CampusMapView />} />
                   <Route path="/campus-25" element={<Campus25 />} />
+
 
                   {/* Admin & Other Routes */}
                   <Route path="/sgpa-calculator" element={<SGPACalculator />} />
@@ -240,6 +274,7 @@ const App = () => {
                   <Route path="/bakery-dashboard" element={<BakeryDashboard />} />
                   <Route path="/feedback" element={<Feedback />} />
 
+
                   {/* Resale Routes */}
                   <Route path="/resale" element={<Resale />} />
                   <Route path="/resale/browse" element={<ResaleBrowse />} />
@@ -250,6 +285,7 @@ const App = () => {
                   <Route path="/resale/transactions" element={<ResaleTransactions />} />
                   <Route path="/resale/favourites" element={<ResaleFavourites />} />
                   <Route path="/resale/my-listings" element={<ResaleMyListings />} />
+
 
                   {/* 404 - Must be last */}
                   <Route path="*" element={<NotFound />} />
@@ -267,5 +303,6 @@ const App = () => {
     </QueryClientProvider>
   );
 };
+
 
 export default App;
