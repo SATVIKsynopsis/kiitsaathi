@@ -244,7 +244,7 @@ const parseSections = (data) => {
       const { raw, digits } = normalizeRoll(rawRoll);
 
       // Validate roll number format (6-8 digits)
-      if (raw.match(/^\d{6,8}$/)) {
+      if (raw.match(/^\d{6,10}$/)) {
         sections[raw] = section;
         if (digits && digits !== raw) sections[digits] = section;
       }

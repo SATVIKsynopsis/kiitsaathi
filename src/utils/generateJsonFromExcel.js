@@ -176,7 +176,7 @@ const parseSections = (data) => {
     const row = data[i];
 
     // Check if we found the mapping section
-    if (row[0]?.toString().match(/^\d{6,8}$/)) {
+    if (row[0]?.toString().match(/^\d{6,10}$/)) {
       foundMapping = true;
     }
 
@@ -185,7 +185,7 @@ const parseSections = (data) => {
       const section = row[1].toString().trim();
 
       // Validate roll number format (6-8 digits)
-      if (rollNumber.match(/^\d{6,8}$/) && section) {
+      if (rollNumber.match(/^\d{6,10}$/) && section) {
         sections[rollNumber] = section;
       }
     }

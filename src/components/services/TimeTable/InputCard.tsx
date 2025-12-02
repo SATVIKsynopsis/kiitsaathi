@@ -17,8 +17,8 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
       return;
     }
 
-    if (!/^\d{6,8}$/.test(rollNumber.trim())) {
-      setError("Please enter a valid 6-8 digit roll number");
+    if (!/^\d{6,10}$/.test(rollNumber.trim())) {
+      setError("Please enter a valid 6-10 digit roll number");
       return;
     }
 
@@ -89,6 +89,7 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
             </p>
           )}
         </div>
+        
 
         <button
           type="submit"
