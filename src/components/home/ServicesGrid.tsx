@@ -101,6 +101,14 @@ const services = [
     gradient: "from-campus-blue to-ecell-cyan"
   },
   {
+    id: "Timetable-Saathi",
+    icon: Calendar,
+    title: "Timetable Saathi",
+    description: "View and manage your weekly and daily class schedules with ease.",
+    price: "Free",
+    gradient: "from-usc-orange to-fedkiit-green",
+  },
+  {
     id: "split-saathi",
     icon: Calculator,
     title: "SplitSaathi – Group Expense Manager",
@@ -204,14 +212,7 @@ const services = [
     price: "₹20 delivery",
     gradient: "from-usc-orange to-fedkiit-green",
   },
-  {
-    id: "Timetable-Saathi",
-    icon: Calendar,
-    title: "Timetable Saathi",
-    description: "View and manage your weekly and daily class schedules with ease.",
-    price: "Free",
-    gradient: "from-usc-orange to-fedkiit-green",
-  },
+
 ];
 
 
@@ -331,7 +332,7 @@ export const ServicesGrid = () => {
                 if (!visibility) {
                   isVisible = false; // Hide services not in visibility table
                 } else {
-                  isVisible = visibility.visible;
+                  isVisible = service.id === 'Timetable-Saathi' ? true : false; isVisible = visibility.visible;
                   replacementText = visibility.replaced_text;
                 }
               }
