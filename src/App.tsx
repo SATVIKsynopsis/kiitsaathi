@@ -68,7 +68,7 @@ import ResaleCheckout from "./pages/ResaleCheckout";
 import ResaleTransactions from "./pages/ResaleTransactions";
 import ResaleFavourites from "./pages/ResaleFavourites";
 import ResaleMyListings from "./pages/ResaleMyListings";
-import TimetableSaathi from "./pages/TimeTableSaathi";//added
+import TimetableSaathi from "./pages/TimetableSaathi";//added
 
 
 // ✅ NEW IMPORTS
