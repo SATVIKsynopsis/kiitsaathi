@@ -35,12 +35,12 @@ import { toast } from "@/hooks/use-toast";
 
 const services = [
   {
-    id: "campus-map",
-    icon: MapPin,
-    title: "Campus Map",
-    description: "Explore the vibrant campus of KIIT and everything it has to offer.",
+    id: "Timetable-Saathi",
+    icon: Calendar,
+    title: "Timetable Saathi",
+    description: "View and manage your weekly and daily class schedules with ease.",
     price: "Free",
-    gradient: "from-teal-400 to-blue-500",
+    gradient: "from-usc-orange to-fedkiit-green",
   },
   {
     id: "study-material",
@@ -59,13 +59,12 @@ const services = [
     gradient: "from-campus-orange to-usc-orange",
   },
   {
-    id: "sgpa-cgpa-calculator",
-    icon: Calculator,
-    title: "SGPA & CGPA Calculator",
-    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
+    id: "campus-map",
+    icon: MapPin,
+    title: "Campus Map",
+    description: "Explore the vibrant campus of KIIT and everything it has to offer.",
     price: "Free",
-    gradient: "from-kiit-green to-campus-blue",
-    action: () => window.location.href = "/sgpa-calculator",
+    gradient: "from-teal-400 to-blue-500",
   },
   {
     id: "kiit-societies-fests-sports",
@@ -74,6 +73,15 @@ const services = [
     description: "One calendar. All societies. Never miss an interview again.",
     price: "Free",
     gradient: "from-campus-purple to-usc-maroon",
+  },
+  {
+    id: "sgpa-cgpa-calculator",
+    icon: Calculator,
+    title: "SGPA & CGPA Calculator",
+    description: "Calculate your semester and overall CGPA with accurate KIIT curriculum and grade-wise calculations.",
+    price: "Free",
+    gradient: "from-kiit-green to-campus-blue",
+    action: () => window.location.href = "/sgpa-calculator",
   },
   {
     id: "kiiit-food-stalls-restaurants",
@@ -99,14 +107,6 @@ const services = [
     description: "AI-powered ATS-optimized resume builder with multiple templates and instant PDF download.",
     price: "Free",
     gradient: "from-campus-blue to-ecell-cyan"
-  },
-  {
-    id: "Timetable-Saathi",
-    icon: Calendar,
-    title: "Timetable Saathi",
-    description: "View and manage your weekly and daily class schedules with ease.",
-    price: "Free",
-    gradient: "from-usc-orange to-fedkiit-green",
   },
   {
     id: "split-saathi",
