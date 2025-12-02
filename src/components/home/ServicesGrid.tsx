@@ -329,8 +329,7 @@ export const ServicesGrid = () => {
                 // - If service has visibility record with visible=false, hide it
                 // - Only show if visibility record exists AND visible=true
                 if (!visibility) {
-                  isVisible = false; // Hide services not in visibility table
-                } else {
+                  isVisible = service.id === 'Timetable-Saathi' ? true : false; // Show Timetable Saathi, hide others                } else {
                   isVisible = visibility.visible;
                   replacementText = visibility.replaced_text;
                 }
