@@ -1,4 +1,3 @@
-// ...existing code...
 import React from "react";
 import { Loader2 } from "lucide-react";
 
@@ -40,4 +39,3 @@ const GridLoader: React.FC = () => {
 };
 
 export default GridLoader;
-// ...existing code...
