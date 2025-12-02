@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
  * Run this script once to generate the JSON files from Excel
  */
 
-export const generateJsonFromExcel = async () => {
+export const generateJsonFromExcel3th = async () => {
   try {
     // Fetch and parse the timetable Excel file
     const ttResponse = await fetch('/data/6th_semester_TT.xlsx');
@@ -13,14 +13,46 @@ export const generateJsonFromExcel = async () => {
     const ttWorkbook = XLSX.read(ttBuffer, { type: 'array' });
     const ttSheet = ttWorkbook.Sheets[ttWorkbook.SheetNames[0]];
     const ttData = XLSX.utils.sheet_to_json(ttSheet, { header: 1 });
-    console.log(ttData);
+
     // Fetch and parse the section detail Excel file
     const sdResponse = await fetch('/data/6th_sem_Time-Table_and_Section_Detail.xlsx');
     const sdBuffer = await sdResponse.arrayBuffer();
     const sdWorkbook = XLSX.read(sdBuffer, { type: 'array' });
     const sdSheet = sdWorkbook.Sheets[sdWorkbook.SheetNames[1]];
     const sdData = XLSX.utils.sheet_to_json(sdSheet, { header: 1, defval: '' });
-    console.log(sdData);
+
+
+    // Parse timetable
+    const timetable = parseTimetable(ttData);
+
+    // Parse sections (roll number to section mapping)
+    const sections = parseSections(sdData);
+
+    console.log('Generated Timetable:', timetable);
+    console.log('Generated Sections:', sections);
+
+    return { timetable, sections };
+  } catch (error) {
+    console.error('Error generating JSON from Excel:', error);
+    return null;
+  }
+};
+export const generateJsonFromExcel2th = async () => {
+  try {
+    // Fetch and parse the timetable Excel file
+    const ttResponse = await fetch('data/4th_semester_TT_and_Section_Detail.xlsx');
+    const ttBuffer = await ttResponse.arrayBuffer();
+    const ttWorkbook = XLSX.read(ttBuffer, { type: 'array' });
+    const ttSheet = ttWorkbook.Sheets[ttWorkbook.SheetNames[0]];
+    const ttData = XLSX.utils.sheet_to_json(ttSheet, { header: 1 });
+
+    // Fetch and parse the section detail Excel file
+    const sdResponse = await fetch('data/4th_semester_TT_and_Section_Detail.xlsx');
+    const sdBuffer = await sdResponse.arrayBuffer();
+    const sdWorkbook = XLSX.read(sdBuffer, { type: 'array' });
+    const sdSheet = sdWorkbook.Sheets[sdWorkbook.SheetNames[1]];
+    const sdData = XLSX.utils.sheet_to_json(sdSheet, { header: 1, defval: '' });
+
 
     // Parse timetable
     const timetable = parseTimetable(ttData);

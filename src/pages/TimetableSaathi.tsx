@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import InputCard from '../components/services/TimeTable/InputCard.jsx';
 import TimetableCard from '../components/services/TimeTable/TimetableCard.jsx';
-import { getFullWeekTimetable,getTodayTimetable } from '../utils/parseExcel.js';
+import { getFullWeekTimetable, getTodayTimetable } from '../utils/parseExcel.js';
 import { toast } from 'sonner';
 import { Footer } from '@/components/Footer.js';
 import { Navbar } from '@/components/Navbar.js';
@@ -13,7 +13,7 @@ const TimeTableSaathi = () => {
   const [view, setView] = useState('today');
 
   const handleRollNumberSubmit = async (rollNumber, view) => {
-  setView(view); 
+    setView(view);
 
     setLoading(true);
 
@@ -57,13 +57,18 @@ const TimeTableSaathi = () => {
             <p className="text-foreground text-lg">Loading your timetable...</p>
           </div>
         ) : timetableData ? (
-          <TimetableCard data={timetableData} onBack={handleBack} />
+          <TimetableCard
+            data={timetableData}
+            view={view}
+            onViewChange={setView}
+            onBack={handleBack}
+          />
         ) : (
           <InputCard onSubmit={handleRollNumberSubmit} />
         )}
       </div>
-        <Footer />
-      
+      <Footer />
+
     </div>
   );
 };

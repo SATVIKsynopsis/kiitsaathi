@@ -45,7 +45,7 @@ import KiitSocieties from "./pages/KiitSocieties";
 import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
 import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
 import CourseStructure from "./pages/CourseStructure";
-import TimetableSaathi from "./pages/TimetableSaathi";
+import TimeTableSaathi from "./pages/TimeTableSaathi";
 import FestAnnouncements from "./pages/FestAnnouncements";
 import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
@@ -120,59 +120,59 @@ const App = () => {
 
 
   // ✅ Existing security + UI logic
-  useEffect(() => {
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
-    document.documentElement.style.margin = "0";
-    document.documentElement.style.padding = "0";
+  // useEffect(() => {
+  //   document.body.style.margin = "0";
+  //   document.body.style.padding = "0";
+  //   document.documentElement.style.margin = "0";
+  //   document.documentElement.style.padding = "0";
 
 
-    const disableRightClick = (e) => e.preventDefault();
-    document.addEventListener("contextmenu", disableRightClick);
+  //   const disableRightClick = (e) => e.preventDefault();
+  //   document.addEventListener("contextmenu", disableRightClick);
 
 
-    const disableShortcuts = (e) => {
-      if (
-        e.ctrlKey &&
-        (e.key === "u" ||
-          e.key === "U" ||
-          e.key === "s" ||
-          e.key === "S" ||
-          e.key === "p" ||
-          e.key === "P" ||
-          e.key === "x" ||
-          e.key === "X" ||
-          e.key === "a" ||
-          e.key === "A" ||
-          e.key === "F12")
-      ) {
-        e.preventDefault();
-        alert("This action is disabled to protect content.");
-      }
-    };
-    document.addEventListener("keydown", disableShortcuts);
+  //   const disableShortcuts = (e) => {
+  //     if (
+  //       e.ctrlKey &&
+  //       (e.key === "u" ||
+  //         e.key === "U" ||
+  //         e.key === "s" ||
+  //         e.key === "S" ||
+  //         e.key === "p" ||
+  //         e.key === "P" ||
+  //         e.key === "x" ||
+  //         e.key === "X" ||
+  //         e.key === "a" ||
+  //         e.key === "A" ||
+  //         e.key === "F12")
+  //     ) {
+  //       e.preventDefault();
+  //       alert("This action is disabled to protect content.");
+  //     }
+  //   };
+  //   document.addEventListener("keydown", disableShortcuts);
 
 
-    const checkDevTools = () => {
-      const start = performance.now();
-      debugger;
-      const end = performance.now();
-      if (end - start > 100) {
-        alert("Developer Tools detected! Please close it to continue.");
-        window.location.reload();
-      }
-    };
+  //   const checkDevTools = () => {
+  //     const start = performance.now();
+  //     debugger;
+  //     const end = performance.now();
+  //     if (end - start > 100) {
+  //       alert("Developer Tools detected! Please close it to continue.");
+  //       window.location.reload();
+  //     }
+  //   };
 
 
-    const interval = setInterval(checkDevTools, 2000);
+  //   const interval = setInterval(checkDevTools, 2000);
 
 
-    return () => {
-      document.removeEventListener("contextmenu", disableRightClick);
-      document.removeEventListener("keydown", disableShortcuts);
-      clearInterval(interval);
-    };
-  }, []);
+  //   return () => {
+  //     document.removeEventListener("contextmenu", disableRightClick);
+  //     document.removeEventListener("keydown", disableShortcuts);
+  //     clearInterval(interval);
+  //   };
+  // }, []);
 
 
   // ✅ Main return
@@ -196,6 +196,8 @@ const App = () => {
                   <Route path="/group-dashboard" element={<GroupDashboard />} />
                   <Route path="/study-material" element={<StudyMaterial />} />
                   <Route path="/book-buyback" element={<BookBuyback />} />
+                  <Route path="/timetable-saathi" element={<TimeTableSaathi />} />
+
 
 
                   {/* Food Routes */}
@@ -232,7 +234,6 @@ const App = () => {
                   <Route path="/skill-enhancing-sessions" element={<SkillEnhancingSessions />} />
                   <Route path="/interview-deadlines-tracker" element={<InterviewDeadlinesTracker />} />
                   <Route path="/course-structure" element={<CourseStructure />} />
-                  <Route path="/timetable-saathi" element={<TimetableSaathi />} />
                   <Route path="/fest-announcements" element={<FestAnnouncements />} />
                   <Route path="/sports-events" element={<SportsEventsHub />} />
                   <Route path="/food-order-customer" element={<FoodOrderCustomer />} />

@@ -13,7 +13,6 @@ const TimetableCard = ({ data, view, onViewChange, onBack }) => {
             <th className="text-left py-4 px-4 text-foreground font-poppins font-semibold">Time</th>
             <th className="text-left py-4 px-4 text-foreground font-poppins font-semibold">Subject</th>
             <th className="text-left py-4 px-4 text-foreground font-poppins font-semibold ">Room</th>
-            <th className="text-left py-4 px-4 text-foreground font-poppins font-semibold hidden lg:table-cell">Faculty</th>
           </tr>
         </thead>
         <tbody>
@@ -32,15 +31,14 @@ const TimetableCard = ({ data, view, onViewChange, onBack }) => {
                 </td>
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-2">
-                    {isLab && <span className="text-lg">🔬</span>}
-                    {isBreak && <span className="text-lg">🍽️</span>}
+                    {isLab && <span className="text-lg"><Lab/></span>}
+                    {isBreak && <span className="text-lg"><Break/></span>}
                     <span className={`font-medium ${isBreak ? 'text-muted-foreground italic' : 'text-foreground'}`}>
                       {period.subject}
                     </span>
                   </div>
                 </td>
-                <td className="py-4 px-4 text-muted-foreground hidden md:table-cell">{period.room}</td>
-                <td className="py-4 px-4 text-muted-foreground hidden lg:table-cell">{period.faculty}</td>
+                <td className="py-4 px-4 text-muted-foreground md:table-cell">{period.room}</td>
               </tr>
             );
           })}
@@ -67,6 +65,15 @@ const TimetableCard = ({ data, view, onViewChange, onBack }) => {
             ← Back to Home
           </button>
         </div>
+        <button
+            onClick={() => onViewChange('week')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${view === 'week'
+                ? 'glass-button scale-105'
+                : 'bg-secondary/40 hover:bg-secondary/60'
+              }`}
+          >
+            Weekly 📅
+          </button>
       </div>
     );
   }

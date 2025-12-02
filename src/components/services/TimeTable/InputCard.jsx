@@ -74,7 +74,7 @@ const InputCard = ({ onSubmit }) => {
             type="text"
             value={rollNumber}
             onChange={(e) => setRollNumber(e.target.value)}
-            placeholder="e.g., 2305070 or 23051001"
+            placeholder="e.g., 2305070 or 22051001"
             maxLength={8}
             className="w-full px-6 py-4 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-lg"
           />
