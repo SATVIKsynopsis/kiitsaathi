@@ -67,8 +67,8 @@ const TimetableSaathi = () => {
           <InputCard onSubmit={handleRollNumberSubmit} />
         )}
       </div>
-      <Footer />
 
+      <Footer />
     </div>
   );
 };

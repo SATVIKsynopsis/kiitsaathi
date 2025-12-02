@@ -3,14 +3,26 @@ import * as XLSX from 'xlsx';
 let cachedDataMap = {}; // cache per semester key ('4' or '6')
 
 /**
- * Determine semester key from roll number:
+ * Determine semester key from roll number or year+section:
  * - starts with '24' => 4th semester
  * - starts with '23' => 6th semester
+ * - year '2nd' => 4th semester
+ * - year '3rd' => 6th semester
  */
-const semesterKeyFromRoll = (roll) => {
-  const r = String(roll || '').trim();
-  if (r.startsWith('24')) return '4';
-  if (r.startsWith('23')) return '6';
+const semesterKeyFromInput = (input) => {
+  const s = String(input || '').trim();
+  
+  // Check if it's a year|section format
+  if (s.includes('|')) {
+    const [year] = s.split('|');
+    if (year === '2nd') return '4';
+    if (year === '3rd') return '6';
+    return '6'; // default
+  }
+  
+  // Otherwise treat as roll number
+  if (s.startsWith('24')) return '4';
+  if (s.startsWith('23')) return '6';
   return '6';
 };
 
@@ -23,8 +35,8 @@ const normalizeRoll = (r) => {
 };
 
 /** --------------------------- PARSE EXCEL ---------------------------- */
-export const parseExcelFiles = async (rollNumber) => {
-  const semKey = semesterKeyFromRoll(rollNumber);
+export const parseExcelFiles = async (input) => {
+  const semKey = semesterKeyFromInput(input);
   if (cachedDataMap[semKey]) {
     console.log(`Using cached data for semester ${semKey}`);
     return cachedDataMap[semKey];
@@ -33,7 +45,7 @@ export const parseExcelFiles = async (rollNumber) => {
   try {
     const files = {
       '6': { filepath: '/data/6th_sem_Time-Table_and_Section_Detail.xlsx' },
-      '4': { filepath: 'data/4th_semester_TT_and_Section_Detail.xlsx '}
+      '4': { filepath: 'data/4th_semester_TT_and_Section_Detail.xlsx'}
     };
 
     const chosen = files[semKey] || files['6'];
@@ -74,15 +86,13 @@ export const parseExcelFiles = async (rollNumber) => {
 const parseTimetable = (data, semKey) => {
   const timetable = {};
   
-  // Try different day formats
   const dayPatterns = [
-    ['MON', 'TUE', 'WED', 'THU', 'FRI'],           // Standard
-    ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'], // Full names
-    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],           // Capitalized
-    ['MON(1)', 'TUE(1)', 'WED(1)', 'THU(1)', 'FRI(1)'] // With numbers
+    ['MON', 'TUE', 'WED', 'THU', 'FRI'],
+    ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    ['MON(1)', 'TUE(1)', 'WED(1)', 'THU(1)', 'FRI(1)']
   ];
 
-  // Detect which pattern is used
   let usedPattern = dayPatterns[0];
   for (const pattern of dayPatterns) {
     for (let i = 0; i < Math.min(50, data.length); i++) {
@@ -102,11 +112,10 @@ const parseTimetable = (data, semKey) => {
     const row = data[i];
     const col0 = row[0]?.toString().toUpperCase().trim();
     
-    // Check if this row has a day (flexible matching)
     const matchedDay = usedPattern.find(day => col0?.includes(day));
     
     if (matchedDay) {
-      const day = matchedDay.substring(0, 3); // Get first 3 letters
+      const day = matchedDay.substring(0, 3);
       const section = row[1]?.toString().trim();
 
       console.log(`Found day at row ${i}: ${day}, section: ${section}`);
@@ -133,7 +142,6 @@ const parseTimetable = (data, semKey) => {
 
   console.log(`Sections created:`, Object.keys(timetable));
 
-  // Add empty weekends
   Object.keys(timetable).forEach(sec => {
     timetable[sec]['Saturday'] = [];
     timetable[sec]['Sunday'] = [];
@@ -149,7 +157,6 @@ const parsePeriods = (row, semKey) => {
 
   console.log(`Parsing periods for row:`, row.slice(0, 20));
 
-  // Time slot mappings - these might need adjustment based on your Excel structure
   const slots = [
     { time: "8:00-9:00",    subject: 3,  room: 2  },
     { time: "9:00-10:00",   subject: 5,  room: 4  },
@@ -169,13 +176,11 @@ const parsePeriods = (row, semKey) => {
 
     console.log(`Slot ${slot.time}: subject="${subject}" (col ${slot.subject}), room="${room}" (col ${slot.room})`);
 
-    // Skip empty cells
     if (!subject || subject === "" || subject === "---") {
       console.log(`  -> Skipping (empty subject)`);
       continue;
     }
 
-    // Handle free periods (marked with X)
     if (subject === "X") {
       periods.push({
         time: slot.time,
@@ -187,16 +192,14 @@ const parsePeriods = (row, semKey) => {
       continue;
     }
 
-    // Enhanced room number extraction
     if (room && room !== '-' && room !== '---') {
-      // Try multiple patterns
       const patterns = [
-        /([A-Z]\d+-[A-Z]-\d+)/i,           // C25-A-118
-        /([A-Z]\d+-[A-Z]\d+)/i,            // C25-A118
-        /([A-Z]-\d+)/i,                     // A-118
-        /(Room\s*[A-Z]?\d+)/i,             // Room A123
-        /([A-Z]\d+)/i,                      // C118
-        /(\d+)/                             // 118
+        /([A-Z]\d+-[A-Z]-\d+)/i,
+        /([A-Z]\d+-[A-Z]\d+)/i,
+        /([A-Z]-\d+)/i,
+        /(Room\s*[A-Z]?\d+)/i,
+        /([A-Z]\d+)/i,
+        /(\d+)/
       ];
 
       let extractedRoom = room;
@@ -228,7 +231,6 @@ const parsePeriods = (row, semKey) => {
   return periods;
 };
 
-
 /** --------------------------- PARSE SECTIONS ---------------------------- */
 
 const parseSections = (data) => {
@@ -243,7 +245,6 @@ const parseSections = (data) => {
 
       const { raw, digits } = normalizeRoll(rawRoll);
 
-      // Validate roll number format (6-8 digits)
       if (raw.match(/^\d{6,10}$/)) {
         sections[raw] = section;
         if (digits && digits !== raw) sections[digits] = section;
@@ -259,42 +260,27 @@ const parseSections = (data) => {
 const normalizeSectionName = (section) => {
   if (!section) return section;
   
-  // Handle different section formats
-  // CSCE-01 -> CSE-1, CSE-01 -> CSE-1, IT-01 -> IT-1
   let normalized = section
     .replace(/CSCE-0?/, 'CSCE-')
     .replace(/CSE-0/, 'CSE-')
     .replace(/IT-0/, 'IT-');
   
-  // Remove leading zeros from section numbers
   normalized = normalized.replace(/(\D+)0+(\d+)/, '$1$2');
   
   return normalized;
 };
 
-/** --------------------------- TODAY TIMETABLE ---------------------------- */
+/** --------------------------- FIND SECTION IN TIMETABLE ---------------------------- */
 
-export const getTodayTimetable = async (rollNumber) => {
-  const { sections, timetable, semKey } = await parseExcelFiles(rollNumber);
-
-  const { raw: lookupRaw, digits: lookupDigits } = normalizeRoll(rollNumber);
-  const section = sections[lookupRaw] || sections[lookupDigits];
-
-  console.log(`Roll number: ${rollNumber}, Found section: ${section}`);
-
-  if (!section) {
-    throw new Error("Roll number not found");
-  }
-
-  // Try multiple normalization approaches
+const findSectionInTimetable = (timetable, section) => {
   const normalizedSection = normalizeSectionName(section);
-  console.log(`Normalized section: ${normalizedSection}`);
+  console.log(`Looking for section: ${section} (normalized: ${normalizedSection})`);
   console.log(`Available sections:`, Object.keys(timetable));
 
-  // Try to find the section in timetable
+  // Try direct match
   let sectionTT = timetable[section] || timetable[normalizedSection];
   
-  // If still not found, try exact match ignoring case
+  // Try case-insensitive match
   if (!sectionTT) {
     const exactMatch = Object.keys(timetable).find(
       key => key.toLowerCase() === section.toLowerCase()
@@ -305,8 +291,48 @@ export const getTodayTimetable = async (rollNumber) => {
     }
   }
 
+  // Try fuzzy matching (remove dashes, spaces)
   if (!sectionTT) {
-    console.error(`Section ${section} (normalized: ${normalizedSection}) not found in timetable`);
+    const cleanSection = section.replace(/[-\s]/g, '').toLowerCase();
+    const fuzzyMatch = Object.keys(timetable).find(
+      key => key.replace(/[-\s]/g, '').toLowerCase() === cleanSection
+    );
+    if (fuzzyMatch) {
+      sectionTT = timetable[fuzzyMatch];
+      console.log(`Found section via fuzzy match: ${fuzzyMatch}`);
+    }
+  }
+
+  return sectionTT;
+};
+
+/** --------------------------- TODAY TIMETABLE ---------------------------- */
+
+export const getTodayTimetable = async (input) => {
+  const { sections, timetable, semKey } = await parseExcelFiles(input);
+
+  let section;
+
+  // Check if input is year|section format
+  if (input.includes('|')) {
+    const [year, sec] = input.split('|');
+    section = sec.trim();
+    console.log(`Using year+section input: ${year} ${section}`);
+  } else {
+    // Roll number lookup
+    const { raw: lookupRaw, digits: lookupDigits } = normalizeRoll(input);
+    section = sections[lookupRaw] || sections[lookupDigits];
+    console.log(`Roll number: ${input}, Found section: ${section}`);
+  }
+
+  if (!section) {
+    throw new Error("Section not found. Please check your roll number or year+section.");
+  }
+
+  const sectionTT = findSectionInTimetable(timetable, section);
+
+  if (!sectionTT) {
+    console.error(`Section ${section} not found in timetable`);
     throw new Error(`Section ${section} not found in timetable`);
   }
 
@@ -320,50 +346,44 @@ export const getTodayTimetable = async (rollNumber) => {
   if (todaySchedule.length === 0) {
     return {
       day: today,
-      section: normalizedSection,
+      section: normalizeSectionName(section),
       timetable: [],
       message: "No classes today. Enjoy your break! 🎉"
     };
   }
 
-  return { day: today, section: normalizedSection, timetable: todaySchedule };
+  return { day: today, section: normalizeSectionName(section), timetable: todaySchedule };
 };
 
 /** --------------------------- FULL WEEK TIMETABLE ---------------------------- */
 
-export const getFullWeekTimetable = async (rollNumber) => {
-  const { sections, timetable, semKey } = await parseExcelFiles(rollNumber);
+export const getFullWeekTimetable = async (input) => {
+  const { sections, timetable, semKey } = await parseExcelFiles(input);
 
-  const { raw: lookupRaw, digits: lookupDigits } = normalizeRoll(rollNumber);
-  const section = sections[lookupRaw] || sections[lookupDigits];
+  let section;
 
-  console.log(`Roll number: ${rollNumber}, Found section: ${section}`);
+  // Check if input is year|section format
+  if (input.includes('|')) {
+    const [year, sec] = input.split('|');
+    section = sec.trim();
+    console.log(`Using year+section input: ${year} ${section}`);
+  } else {
+    // Roll number lookup
+    const { raw: lookupRaw, digits: lookupDigits } = normalizeRoll(input);
+    section = sections[lookupRaw] || sections[lookupDigits];
+    console.log(`Roll number: ${input}, Found section: ${section}`);
+  }
 
   if (!section) {
-    throw new Error("Roll number not found");
+    throw new Error("Section not found. Please check your roll number or year+section.");
   }
 
-  const normalizedSection = normalizeSectionName(section);
-  console.log(`Normalized section: ${normalizedSection}`);
-
-  // Try to find the section in timetable
-  let fullTimetable = timetable[section] || timetable[normalizedSection];
-  
-  // If still not found, try exact match ignoring case
-  if (!fullTimetable) {
-    const exactMatch = Object.keys(timetable).find(
-      key => key.toLowerCase() === section.toLowerCase()
-    );
-    if (exactMatch) {
-      fullTimetable = timetable[exactMatch];
-      console.log(`Found section via case-insensitive match: ${exactMatch}`);
-    }
-  }
+  const fullTimetable = findSectionInTimetable(timetable, section);
 
   if (!fullTimetable) {
-    console.error(`Section ${section} (normalized: ${normalizedSection}) not found in timetable`);
+    console.error(`Section ${section} not found in timetable`);
     throw new Error(`Section ${section} not found in timetable`);
   }
 
-  return { section: normalizedSection, fullTimetable };
+  return { section: normalizeSectionName(section), fullTimetable };
 };

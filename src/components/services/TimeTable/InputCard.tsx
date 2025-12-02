@@ -8,22 +8,37 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
   const [rollNumber, setRollNumber] = useState("");
   const [error, setError] = useState("");
   const [view, setView] = useState<"today" | "week">("today");
+  const [year, setYear] = useState("");
+  const [section, setSection] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!rollNumber.trim()) {
-      setError("Please enter your roll number");
+    const rollTrim = rollNumber.trim();
+    const yearTrim = year.trim();
+    const sectionTrim = section.trim();
+
+    // Check if roll number is provided
+    if (rollTrim) {
+      if (!/^\d{6,10}$/.test(rollTrim)) {
+        setError("Please enter a valid 6-10 digit roll number");
+        return;
+      }
+      setError("");
+      onSubmit(rollTrim, view);
       return;
     }
 
-    if (!/^\d{6,10}$/.test(rollNumber.trim())) {
-      setError("Please enter a valid 6-10 digit roll number");
+    // Check if year + section is provided
+    if (yearTrim && sectionTrim) {
+      setError("");
+      // Pass a composed identifier for downstream handling (e.g. "2nd|CSE-A")
+      onSubmit(`${yearTrim}|${sectionTrim.toUpperCase()}`, view);
       return;
     }
 
-    setError("");
-    onSubmit(rollNumber.trim(), view);
+    // Neither option provided
+    setError("Please enter either roll number OR both year and section");
   };
 
   return (
@@ -77,19 +92,88 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
             id="rollNumber"
             type="text"
             value={rollNumber}
-            onChange={(e) => setRollNumber(e.target.value)}
+            onChange={(e) => {
+              setRollNumber(e.target.value);
+              // Clear year and section when roll number is entered
+              if (e.target.value.trim()) {
+                setYear("");
+                setSection("");
+              }
+            }}
             placeholder="e.g., 2305070 or 22051001"
-            maxLength={8}
+            maxLength={10}
             className="w-full px-6 py-4 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-lg"
           />
-
-          {error && (
-            <p className="text-destructive text-sm mt-2 animate-fade-in">
-              {error}
-            </p>
-          )}
         </div>
-        
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-background px-4 text-muted-foreground">OR</span>
+          </div>
+        </div>
+
+        <div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="year"
+                className="block text-sm font-medium mb-2 text-foreground"
+              >
+                Year
+              </label>
+
+              <select
+                id="year"
+                value={year}
+                onChange={(e) => {
+                  setYear(e.target.value);
+                  // Clear roll number when year is selected
+                  if (e.target.value) {
+                    setRollNumber("");
+                  }
+                }}
+                className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 text-base"
+              >
+                <option value="">Select year</option>
+                <option value="1st">1st Year</option>
+                <option value="2nd">2nd Year</option>
+                <option value="3rd">3rd Year</option>
+                <option value="4th">4th Year</option>
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="section"
+                className="block text-sm font-medium mb-2 text-foreground"
+              >
+                Section
+              </label>
+              <input
+                id="section"
+                type="text"
+                value={section}
+                onChange={(e) => {
+                  setSection(e.target.value);
+                  // Clear roll number when section is entered
+                  if (e.target.value.trim()) {
+                    setRollNumber("");
+                  }
+                }}
+                placeholder="e.g., CSE-A or IT-1"
+                className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 text-base"
+              />
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-destructive text-sm mt-2 animate-fade-in">
+            {error}
+          </p>
+        )}
 
         <button
           type="submit"
@@ -103,7 +187,8 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
 
       <div className="mt-8 text-center">
         <p className="text-muted-foreground text-sm">
-          Try roll numbers like: 2305070, 23051001
+          Try roll numbers like: 2305070, 23051001<br />
+          Or select year + section: 2nd Year, CSE-A
         </p>
       </div>
     </div>
