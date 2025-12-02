@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import InputCard from '../components/services/TimeTable/InputCard.jsx';
-import TimetableCard from '../components/services/TimeTable/TimetableCard.jsx';
+import InputCard from '../components/services/TimeTable/InputCard.js';
+import TimetableCard from '../components/services/TimeTable/TimetableCard.js';
 import { getFullWeekTimetable, getTodayTimetable } from '../utils/parseExcel.js';
 import { toast } from 'sonner';
 import { Footer } from '@/components/Footer.js';
@@ -9,11 +9,11 @@ import { Navbar } from '@/components/Navbar.js';
 
 const TimeTableSaathi = () => {
   const [loading, setLoading] = useState(false);
-  const [timetableData, setTimetableData] = useState(null);
-  const [view, setView] = useState('today');
+  const [timetableData, setTimetableData] = useState<any | null>(null);
+  const [view, setView] = useState<'today' | 'week'>('today');
 
-  const handleRollNumberSubmit = async (rollNumber, view) => {
-    setView(view);
+  const handleRollNumberSubmit = async (rollNumber: string, viewType: 'today' | 'week') => {
+    setView(viewType);
 
     setLoading(true);
 
@@ -27,9 +27,9 @@ const TimeTableSaathi = () => {
       } else {
         toast.success(`Timetable loaded for ${fullData.section}!`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching timetable:", error);
-      toast.error(error.message || "Roll number not found. Please try again.");
+      toast.error(error?.message || "Roll number not found. Please try again.");
     } finally {
       setLoading(false);
     }

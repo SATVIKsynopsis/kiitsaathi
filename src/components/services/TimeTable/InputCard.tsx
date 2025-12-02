@@ -1,25 +1,29 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-const InputCard = ({ onSubmit }) => {
-  const [rollNumber, setRollNumber] = useState('');
-  const [error, setError] = useState('');
-  const [view, setView] = useState('today'); // NEW
+interface InputCardProps {
+  onSubmit: (rollNumber: string, view: "today" | "week") => void;
+}
 
-  const handleSubmit = (e) => {
+const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
+  const [rollNumber, setRollNumber] = useState("");
+  const [error, setError] = useState("");
+  const [view, setView] = useState<"today" | "week">("today");
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!rollNumber.trim()) {
-      setError('Please enter your roll number');
+      setError("Please enter your roll number");
       return;
     }
 
     if (!/^\d{6,8}$/.test(rollNumber.trim())) {
-      setError('Please enter a valid 6-8 digit roll number');
+      setError("Please enter a valid 6-8 digit roll number");
       return;
     }
 
-    setError('');
-    onSubmit(rollNumber.trim(), view); // PASS view
+    setError("");
+    onSubmit(rollNumber.trim(), view);
   };
 
   return (
@@ -37,33 +41,33 @@ const InputCard = ({ onSubmit }) => {
       <div className="flex justify-center gap-4 mb-6">
         <button
           type="button"
-          onClick={() => setView('today')}
+          onClick={() => setView("today")}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            view === 'today'
-              ? 'glass-button scale-105'
-              : 'bg-secondary/40 hover:bg-secondary/60'
+            view === "today"
+              ? "glass-button scale-105"
+              : "bg-secondary/40 hover:bg-secondary/60"
           }`}
         >
-          Today 
+          Today
         </button>
 
         <button
           type="button"
-          onClick={() => setView('week')}
+          onClick={() => setView("week")}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            view === 'week'
-              ? 'glass-button scale-105'
-              : 'bg-secondary/40 hover:bg-secondary/60'
+            view === "week"
+              ? "glass-button scale-105"
+              : "bg-secondary/40 hover:bg-secondary/60"
           }`}
         >
-          Weekly 
+          Weekly
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label 
-            htmlFor="rollNumber" 
+          <label
+            htmlFor="rollNumber"
             className="block text-sm font-medium mb-2 text-foreground"
           >
             Enter Your Roll Number
@@ -90,7 +94,9 @@ const InputCard = ({ onSubmit }) => {
           type="submit"
           className="glass-button w-full py-4 rounded-xl font-poppins font-semibold text-lg text-foreground glow-green"
         >
-          {view === 'today' ? "Get Today's Timetable 📚" : "Get Weekly Timetable 📅"}
+          {view === "today"
+            ? "Get Today's Timetable 📚"
+            : "Get Weekly Timetable 📅"}
         </button>
       </form>
 
