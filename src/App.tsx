@@ -45,7 +45,6 @@ import KiitSocieties from "./pages/KiitSocieties";
 import SkillEnhancingSessions from "./pages/SkillEnhancingSessions";
 import InterviewDeadlinesTracker from "./pages/InterviewDeadlinesTracker";
 import CourseStructure from "./pages/CourseStructure";
-import TimeTableSaathi from "./pages/TimeTableSaathi";
 import FestAnnouncements from "./pages/FestAnnouncements";
 import SportsEventsHub from "./pages/SportsEventsHub";
 import FoodOrderCustomer from "./pages/FoodOrderCustomer";
@@ -69,6 +68,7 @@ import ResaleCheckout from "./pages/ResaleCheckout";
 import ResaleTransactions from "./pages/ResaleTransactions";
 import ResaleFavourites from "./pages/ResaleFavourites";
 import ResaleMyListings from "./pages/ResaleMyListings";
+import TimetableSaathi from "./pages/TimeTableSaathi";//added
 
 
 // ✅ NEW IMPORTS
@@ -196,7 +196,7 @@ const App = () => {
                   <Route path="/group-dashboard" element={<GroupDashboard />} />
                   <Route path="/study-material" element={<StudyMaterial />} />
                   <Route path="/book-buyback" element={<BookBuyback />} />
-                  <Route path="/timetable-saathi" element={<TimeTableSaathi />} />
+                  <Route path="/timetable-saathi" element={<TimetableSaathi />} />
 
 
 

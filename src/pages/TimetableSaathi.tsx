@@ -7,7 +7,7 @@ import { Footer } from '@/components/Footer.js';
 import { Navbar } from '@/components/Navbar.js';
 
 
-const TimeTableSaathi = () => {
+const TimetableSaathi = () => {
   const [loading, setLoading] = useState(false);
   const [timetableData, setTimetableData] = useState<any | null>(null);
   const [view, setView] = useState<'today' | 'week'>('today');
@@ -73,4 +73,4 @@ const TimeTableSaathi = () => {
   );
 };
 
-export default TimeTableSaathi;
+export default TimetableSaathi;
