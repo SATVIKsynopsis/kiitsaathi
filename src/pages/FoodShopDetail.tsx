@@ -19,6 +19,9 @@ const FoodShopDetail = () => {
   const navigate = useNavigate();
   const { user, accessToken } = useAuth();
   
+  // Admin check
+  const isAdmin = user?.email === 'adityash8997@gmail.com' || user?.email === '24155598@kiit.ac.in';
+  
   // Menu filtering state
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,10 +88,16 @@ const FoodShopDetail = () => {
         method: 'GET',
         headers: getAuthHeaders()
       });
-      if (!response.ok) throw new Error('Failed to fetch shop');
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch shop: ${response.status}`);
+      }
+      
       const data = await response.json();
       return data.shop;
     },
+    enabled: !!shopId && isAdmin,
   });
 
   const { data: ratingData } = useQuery({
@@ -131,7 +140,7 @@ const FoodShopDetail = () => {
         console.error('Menu API error:', error);
       }
       
-      // Fallback: fetch directly from shop_menu_items table
+      // Fallback: fetch directly from admin API
       try {
         const response = await fetch(`${HOSTED_URL}/api/food/admin/shops/${shopId}`, {
           method: 'GET',
@@ -171,6 +180,40 @@ const FoodShopDetail = () => {
     }
   };
 
+  // This check is now handled earlier in the component
+
+  // Admin access check
+  if (!user) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-background flex items-center justify-center p-6 pt-24">
+          <div className="text-center">
+            <p className="text-xl text-muted-foreground mb-4">Please sign in to access shop details</p>
+            <Button onClick={() => navigate('/auth')}>Sign In</Button>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-background flex items-center justify-center p-6 pt-24">
+          <div className="text-center">
+            <p className="text-xl text-muted-foreground mb-4">Access Denied - Admin Only</p>
+            <p className="text-sm text-muted-foreground mb-4">Shop details are only accessible to administrators</p>
+            <Button onClick={() => navigate('/food')}>Back to Food Service</Button>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   if (isLoading) {
     return (
       <>
@@ -186,12 +229,19 @@ const FoodShopDetail = () => {
     );
   }
 
-  if (!shop) {
+  if (!shop && !isLoading) {
     return (
       <>
         <Navbar />
         <div className="min-h-screen bg-background flex items-center justify-center p-6 pt-24">
-          <p className="text-xl text-muted-foreground">Shop not found</p>
+          <div className="text-center">
+            <p className="text-xl text-muted-foreground mb-2">Shop not found</p>
+            <p className="text-sm text-muted-foreground mb-4">Shop ID: {shopId}</p>
+            {error && (
+              <p className="text-sm text-red-500 mb-4">Error: {error.message}</p>
+            )}
+            <Button onClick={() => navigate('/food')}>Back to Food Service</Button>
+          </div>
         </div>
         <Footer />
       </>

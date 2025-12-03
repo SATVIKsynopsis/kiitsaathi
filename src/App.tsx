@@ -82,6 +82,7 @@ import Loader from "./components/Loader";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { useEffect, useState } from "react";
+import FoodAdmin from "./pages/FoodAdmin";
 
 
 const queryClient = new QueryClient();
@@ -204,6 +205,8 @@ const App = () => {
                   <Route path="/food" element={<Food />} />
                   <Route path="/food/shop/:shopId" element={<FoodShopDetail />} />
                   <Route path="/food/generate-coupon" element={<FoodGenerateCoupon />} />
+                  <Route path="/food/generate-coupon/:shopId" element={<FoodGenerateCoupon />} />
+
                   <Route path="/food/ticket/:ticketId" element={<FoodTicket />} />
                   <Route path="/food/my-coupons" element={<FoodMyCoupons />} />
                   <Route path="/food/generate-coupon/:shopId" element={<FoodGenerateCoupon />} />
@@ -212,7 +215,10 @@ const App = () => {
                   <Route path="/food/admin/redemption" element={<FoodAdminRedemption />} />
                   <Route path="/food/shopkeeper" element={<FoodShopkeeper />} />
                   <Route path="/food/admin/shopkeepers" element={<FoodAdminShopkeepers />} />
-  
+                  <Route path="/food/admin" element={<FoodAdmin />} />
+
+
+
 
                   {/* Books & Shopping */}
                   <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />
