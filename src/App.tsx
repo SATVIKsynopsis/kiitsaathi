@@ -206,11 +206,13 @@ const App = () => {
                   <Route path="/food/generate-coupon" element={<FoodGenerateCoupon />} />
                   <Route path="/food/ticket/:ticketId" element={<FoodTicket />} />
                   <Route path="/food/my-coupons" element={<FoodMyCoupons />} />
+                  <Route path="/food/generate-coupon/:shopId" element={<FoodGenerateCoupon />} />
+
                   <Route path="/food/admin/complete" element={<FoodAdminComplete />} />
                   <Route path="/food/admin/redemption" element={<FoodAdminRedemption />} />
                   <Route path="/food/shopkeeper" element={<FoodShopkeeper />} />
                   <Route path="/food/admin/shopkeepers" element={<FoodAdminShopkeepers />} />
-
+  
 
                   {/* Books & Shopping */}
                   <Route path="/buy-preloved-books" element={<BuyPrelovedBooks />} />

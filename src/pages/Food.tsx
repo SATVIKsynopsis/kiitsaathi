@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
-const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
 const Food = () => {
   const { user, loading, accessToken } = useAuth();

@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
 const FoodGenerateCoupon = () => {
   const { shopId } = useParams();

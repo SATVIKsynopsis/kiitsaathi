@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 
-const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
 interface BatchFormData {
   shop_id: string;

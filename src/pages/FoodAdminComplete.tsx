@@ -14,7 +14,7 @@ import AdminShopForm from "@/components/food/AdminShopForm";
 import AdminBatchForm from "@/components/food/AdminBatchForm";
 import { useToast } from "@/hooks/use-toast";
 
-const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
 const FoodAdminComplete = () => {
   const { user } = useAuth();

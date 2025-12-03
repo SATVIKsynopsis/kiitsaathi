@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, Star, Ticket } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { ShopEditButton } from "@/components/ShopEditButton";
 
 interface Shop {
   id: string;
@@ -16,7 +17,7 @@ interface Shop {
   featured: boolean;
 }
 
-const HOSTED_URL = import.meta.env.VITE_NEW_HOSTED_URL;
+const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
 const ShopCard = ({ shop }: { shop: Shop }) => {
   const { user } = useAuth();
@@ -66,6 +67,9 @@ const ShopCard = ({ shop }: { shop: Shop }) => {
             Featured
           </Badge>
         )}
+        <div className="absolute top-2 left-2">
+          <ShopEditButton shopId={shop.id} shopName={shop.name} />
+        </div>
       </div>
 
       <CardHeader className="pb-3">

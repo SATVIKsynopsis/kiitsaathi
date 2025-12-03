@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ShieldAlert, ArrowLeft, QrCode, Eye, MousePointerClick, Phone, Save, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import QRScanner from "@/components/food/QRScanner";
+import MenuManagement from "@/components/food/MenuManagement";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const FoodShopkeeper = () => {
   const { user, accessToken } = useAuth();
 
-  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+  const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
   
   // Helper function to get auth headers
@@ -386,6 +387,11 @@ const FoodShopkeeper = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Menu Management */}
+          <div className="mb-6">
+            <MenuManagement />
+          </div>
 
           {/* Contact Number Management */}
           <Card className="mb-6">

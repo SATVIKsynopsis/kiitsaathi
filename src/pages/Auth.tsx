@@ -75,21 +75,20 @@ export default function Auth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
-        if (
-          session.user?.email &&
-          !session.user.email.endsWith("@kiit.ac.in")
-        ) {
-          await supabase.auth.signOut();
-          setError(
-            "Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi."
-          );
-          toast.error(
-            "🚫 Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi."
-          );
-          return;
-        }
-
-        localStorage.setItem("access_token", session.access_token);
+      if (
+        session.user?.email &&
+        !session.user.email.endsWith("@kiit.ac.in") &&
+        !session.user.email.endsWith("@shop.com")
+      ) {
+        await supabase.auth.signOut();
+        setError(
+          "Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi."
+        );
+        toast.error(
+          "🚫 Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi."
+        );
+        return;
+      }        localStorage.setItem("access_token", session.access_token);
 
         const response = await fetch(`${HOSTED_URL}/api/auth/session`, {
           headers: {
@@ -139,7 +138,7 @@ export default function Auth() {
     setError("");
     setEmailError("");
 
-    toast.info("Please sign in with your KIIT College email (@kiit.ac.in)", {
+    toast.info("Please sign in with your KIIT College email (@kiit.ac.in) or shopkeeper email (@shop.com)", {
       duration: 4000,
     });
 
@@ -161,6 +160,12 @@ export default function Auth() {
   const validateKiitEmail = (email: string, showFriendly: boolean = false) => {
     if (!email.trim()) return null;
 
+    // Bypass validation for @shop.com emails
+    if (email.endsWith("@shop.com")) {
+      return null;
+    }
+
+    // Only validate @kiit.ac.in for regular users
     if (!email.endsWith("@kiit.ac.in")) {
       return showFriendly
         ? "🚫 Access Denied! Please use your official KIIT ID (example: 2000000@kiit.ac.in)."
@@ -173,6 +178,12 @@ export default function Auth() {
     setEmail(value);
     setError("");
 
+    // Completely bypass validation for @shop.com emails
+    if (value.endsWith("@shop.com")) {
+      setEmailError("");
+      return;
+    }
+
     const emailValidationError = validateKiitEmail(value, true);
     setEmailError(emailValidationError || "");
   };
@@ -183,13 +194,16 @@ export default function Auth() {
     setError("");
     setEmailError("");
 
-    const emailValidationError = validateKiitEmail(email);
-    if (emailValidationError) {
-      setEmailError(emailValidationError);
-      setError(emailValidationError);
-      setLoading(false);
-      toast.error(emailValidationError);
-      return;
+    // Skip validation for @shop.com emails
+    if (!email.endsWith("@shop.com")) {
+      const emailValidationError = validateKiitEmail(email);
+      if (emailValidationError) {
+        setEmailError(emailValidationError);
+        setError(emailValidationError);
+        setLoading(false);
+        toast.error(emailValidationError);
+        return;
+      }
     }
 
     try {
@@ -235,13 +249,16 @@ export default function Auth() {
     setError("");
     setEmailError("");
 
-    const emailValidationError = validateKiitEmail(email);
-    if (emailValidationError) {
-      setEmailError(emailValidationError);
-      setError(emailValidationError);
-      setLoading(false);
-      toast.error(emailValidationError);
-      return;
+    // Skip validation for @shop.com emails
+    if (!email.endsWith("@shop.com")) {
+      const emailValidationError = validateKiitEmail(email);
+      if (emailValidationError) {
+        setEmailError(emailValidationError);
+        setError(emailValidationError);
+        setLoading(false);
+        toast.error(emailValidationError);
+        return;
+      }
     }
 
     try {
@@ -314,10 +331,13 @@ export default function Auth() {
       return;
     }
 
-    const emailValidationError = validateKiitEmail(email);
-    if (emailValidationError) {
-      toast.error(emailValidationError);
-      return;
+    // Skip validation for @shop.com emails
+    if (!email.endsWith("@shop.com")) {
+      const emailValidationError = validateKiitEmail(email);
+      if (emailValidationError) {
+        toast.error(emailValidationError);
+        return;
+      }
     }
 
     try {

@@ -10,12 +10,28 @@ import QRCode from "react-qr-code";
 import { useAuth } from "@/hooks/useAuth";
 
 const FoodTicket = () => {
-  const { couponId } = useParams();
+  const { ticketId } = useParams();
   const navigate = useNavigate();
   const { accessToken } = useAuth();
 
-  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+  const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
+  // Check for missing ticket ID
+  if (!ticketId) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="container mx-auto max-w-md">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-xl text-muted-foreground mb-4">Invalid ticket URL</p>
+              <Button onClick={() => navigate('/food')}>Back to Food Service</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   // Helper function to get auth headers
   const getAuthHeaders = () => {
@@ -26,9 +42,9 @@ const FoodTicket = () => {
   };
 
   const { data: coupon, isLoading } = useQuery({
-    queryKey: ['coupon', couponId],
+    queryKey: ['coupon', ticketId],
     queryFn: async () => {
-      const response = await fetch(`${HOSTED_URL}/api/food/coupon/${couponId}`, {
+      const response = await fetch(`${HOSTED_URL}/api/food/coupon/${ticketId}`, {
         method: 'GET',
         headers: getAuthHeaders()
       });

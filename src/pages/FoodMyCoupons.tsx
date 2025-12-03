@@ -21,7 +21,7 @@ const FoodMyCoupons = () => {
     };
   };
 
-  const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
+  const HOSTED_URL = 'https://kiitsaathi-hosted.onrender.com';
 
 
   const { data: coupons, isLoading } = useQuery({

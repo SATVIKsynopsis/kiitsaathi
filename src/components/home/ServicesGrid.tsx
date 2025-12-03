@@ -24,6 +24,7 @@ import {
   Heart,
   Brain
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useServiceVisibility } from "@/hooks/useServiceVisibility";
@@ -224,7 +225,34 @@ export const ServicesGrid = () => {
   // Admin emails - these are the ONLY emails that can see hidden services
   const ADMIN_EMAILS = ['adityash8997@gmail.com', '24155598@kiit.ac.in'];
   const isAdmin = user && ADMIN_EMAILS.includes(user.email || '');
-
+  
+  // Check if user is a shopkeeper by looking up in shopkeeper_emails table
+  const [isShopkeeper, setIsShopkeeper] = useState(false);
+  
+  useEffect(() => {
+    const checkShopkeeperStatus = async () => {
+      if (!user?.email) return;
+      
+      try {
+        // Check if user email exists in shopkeeper_emails table
+        const response = await fetch('https://kiitsaathi-hosted.onrender.com/api/check-shopkeeper-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setIsShopkeeper(data.isShopkeeper);
+        }
+      } catch (error) {
+        console.error('Error checking shopkeeper status:', error);
+      }
+    };
+    
+    checkShopkeeperStatus();
+  }, [user?.email]);
+  
   // Wait for both auth and visibility data to load
   const isDataReady = !authLoading && hasFetchedData;
 
@@ -232,8 +260,10 @@ export const ServicesGrid = () => {
   if (isDataReady) {
     if (isAdmin) {
       console.log('✅ Admin mode activated - all hidden services visible.');
+    } else if (isShopkeeper) {
+      console.log('🍽️ Shopkeeper mode activated - food service accessible.');
     } else {
-      console.log('🚫 Non-admin mode - hidden services completely hidden.');
+      console.log('🚫 Standard user mode - hidden services completely hidden.');
     }
   }
 
@@ -316,11 +346,15 @@ export const ServicesGrid = () => {
 
               // CRITICAL: For non-admins, services are hidden by default unless explicitly visible
               // For admins, all services are shown regardless of visibility
+              // For shopkeepers, show food service specifically
               let isVisible: boolean;
               let replacementText: string | null = null;
 
               if (isAdmin) {
                 // Admins see everything, regardless of visibility settings
+                isVisible = true;
+              } else if (isShopkeeper && service.id === "kiiit-food-stalls-restaurants") {
+                // Shopkeepers can see the food service specifically
                 isVisible = true;
               } else {
                 // Non-admins (including unauthenticated users):
