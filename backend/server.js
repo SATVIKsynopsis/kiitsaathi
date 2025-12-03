@@ -122,10 +122,35 @@ console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '✅ Set' 
 // ✅ Initialize Supabase AFTER environment variables are loaded
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
+// Verify Supabase Admin API access
+console.log('🔍 Supabase Admin API Check:');
+console.log('- Admin listUsers method:', typeof supabase.auth.admin.listUsers);
+console.log('- Admin createUser method:', typeof supabase.auth.admin.createUser);
+console.log('- Admin getUserByEmail method:', typeof supabase.auth.admin.getUserByEmail);
 
+// Test admin permissions on startup
+(async () => {
+  try {
+    console.log('🧪 Testing admin permissions...');
+    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1 });
+    if (error) {
+      console.error('❌ Admin permissions test failed:', error.message);
+    } else {
+      console.log('✅ Admin permissions working - can list users');
+    }
+  } catch (e) {
+    console.error('❌ Admin API test error:', e.message);
+  }
+})();
 
 // Razorpay instance
 let razorpay = null;
@@ -621,6 +646,7 @@ app.get('/api/files/signed-url', authenticateToken, async (req, res) => {
 // AUTHENTICATION ROUTES
 // ============================================
 
+
 app.get("/api/auth/callback", async (req, res) => {
   try {
     const { access_token } = req.query;
@@ -682,9 +708,9 @@ app.post('/api/auth/signup', async (req, res) => {
   try {
     const { email, password, fullName } = req.body;
 
-    if (!email.endsWith('@kiit.ac.in')) {
+    if (!email.endsWith('@kiit.ac.in') && !email.endsWith('@shop.com')) {
       return res.status(400).json({ 
-        error: 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.' 
+        error: 'Only KIIT College Email IDs (@kiit.ac.in) and shopkeeper accounts (@shop.com) are allowed to sign up or log in to KIIT Saathi.' 
       });
     }
 
@@ -721,9 +747,9 @@ app.post('/api/auth/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email.endsWith('@kiit.ac.in')) {
+    if (!email.endsWith('@kiit.ac.in') && !email.endsWith('@shop.com')) {
       return res.status(400).json({ 
-        error: 'Only KIIT College Email IDs (@kiit.ac.in) are allowed to sign up or log in to KIIT Saathi.' 
+        error: 'Only KIIT College Email IDs (@kiit.ac.in) and shopkeeper accounts (@shop.com) are allowed to sign up or log in to KIIT Saathi.' 
       });
     }
 
@@ -798,7 +824,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     }
 
     if (!email.endsWith('@kiit.ac.in')) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Only KIIT College Email IDs (@kiit.ac.in) are allowed' 
       });
     }
@@ -2176,7 +2202,10 @@ app.get('/api/food/admin/shops', authenticateToken, async (req, res) => {
 
     const { data: shops, error } = await supabase
       .from('shops')
-      .select('*')
+      .select(`
+        *,
+        menu_items:shop_menu_items(*)
+      `)
       .order('name');
 
     if (error) {
@@ -2189,6 +2218,185 @@ app.get('/api/food/admin/shops', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching admin shops:', error);
     return res.status(500).json({ error: 'Failed to fetch shops' });
+  }
+});
+
+// Get shop details for editing (SECURED - admin only)
+app.get('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { data: shop, error } = await supabase
+      .from('shops')
+      .select(`
+        *,
+        menu_items:shop_menu_items(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching shop for edit:', error);
+      return res.status(500).json({ error: 'Failed to fetch shop' });
+    }
+
+    if (!shop) {
+      return res.status(404).json({ error: 'Shop not found' });
+    }
+
+    return res.json({ shop });
+
+  } catch (error) {
+    console.error('Error fetching shop for edit:', error);
+    return res.status(500).json({ error: 'Failed to fetch shop' });
+  }
+});
+
+// Update shop details (SECURED - admin only)
+app.put('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+    const { 
+      name, 
+      description, 
+      location, 
+      contact_number, 
+      opening_hours, 
+      closing_hours,
+      is_active,
+      featured,
+      category,
+      photos,
+      menu_items 
+    } = req.body;
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    console.log('🏪 Admin updating shop:', id);
+    console.log('🍽️ Menu items received:', menu_items ? menu_items.length : 'none', menu_items);
+
+    // Update shop basic details
+    const { data: shop, error: shopError } = await supabase
+      .from('shops')
+      .update({
+        name,
+        description,
+        location,
+        contact_number,
+        opening_hours,
+        closing_hours,
+        is_active,
+        featured,
+        category,
+        photos,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (shopError) {
+      console.error('Error updating shop:', shopError);
+      return res.status(500).json({ error: 'Failed to update shop' });
+    }
+
+    // Update menu items if provided
+    if (menu_items && Array.isArray(menu_items)) {
+      console.log('Processing menu items:', menu_items);
+      console.log('Menu items with photos debug:', menu_items.map(item => ({
+        name: item.name,
+        photos: item.photos,
+        photosLength: item.photos?.length || 0
+      })));
+      
+      // Delete existing menu items
+      await supabase
+        .from('shop_menu_items')
+        .delete()
+        .eq('shop_id', id);
+
+      // Insert new menu items
+      if (menu_items.length > 0) {
+        // Filter out temp IDs and clean the data
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        
+        const menuItemsWithShopId = menu_items.map(item => {
+          const cleanItem = {
+            name: item.name,
+            description: item.description || '',
+            price: parseFloat(item.price) || 0,
+            category: item.category || 'Main Course',
+            is_available: item.is_available !== false,
+            shop_id: id,
+            created_at: new Date().toISOString()
+          };
+          
+          // Handle photos - save both photos array and image_url for backward compatibility
+          if (item.photos && Array.isArray(item.photos)) {
+            cleanItem.photos = item.photos;
+            // Set first photo as image_url for backward compatibility
+            if (item.photos.length > 0) {
+              cleanItem.image_url = item.photos[0];
+            }
+          } else {
+            cleanItem.photos = [];
+          }
+          
+          // Only include ID if it's a valid UUID
+          if (item.id && uuidRegex.test(item.id)) {
+            cleanItem.id = item.id;
+          }
+          
+          return cleanItem;
+        });
+
+        console.log('Clean menu items to insert:', menuItemsWithShopId);
+
+        const { error: menuError } = await supabase
+          .from('shop_menu_items')
+          .insert(menuItemsWithShopId);
+
+        if (menuError) {
+          console.error('Error updating menu items:', menuError);
+          // Don't fail the request, just log the error
+        } else {
+          console.log('✅ Menu items inserted successfully');
+        }
+      }
+    }
+
+    console.log('✅ Shop updated successfully');
+    return res.json({ 
+      success: true, 
+      shop,
+      message: 'Shop updated successfully' 
+    });
+
+  } catch (error) {
+    console.error('Error updating shop:', error);
+    return res.status(500).json({ error: 'Failed to update shop' });
   }
 });
 
@@ -2226,7 +2434,642 @@ app.get('/api/food/admin/shopkeeper-emails', authenticateToken, async (req, res)
   }
 });
 
-// Add shopkeeper email (SECURED - admin only)
+// Enhanced debugging endpoint for user creation issues
+app.post('/api/food/admin/debug-user-creation', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required for testing' });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const debugInfo = {
+      email: email.toLowerCase().trim(),
+      emailValidation: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+      supabaseConfig: {
+        url: !!process.env.SUPABASE_URL,
+        serviceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+      }
+    };
+
+    // Step 1: Check if email exists in auth.users using listUsers
+    try {
+      const { data: authUsers, error: listError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      });
+      
+      if (listError) {
+        debugInfo.existingAuthUser = {
+          exists: false,
+          error: listError.message,
+          note: 'Could not list users to check for duplicates'
+        };
+      } else {
+        const existingUser = authUsers?.users?.find(user => 
+          user.email?.toLowerCase() === email.toLowerCase().trim()
+        );
+        
+        debugInfo.existingAuthUser = {
+          exists: !!existingUser,
+          userId: existingUser?.id || null,
+          error: null
+        };
+      }
+    } catch (e) {
+      debugInfo.existingAuthUser = { 
+        exists: false, 
+        error: e.message,
+        note: 'This is expected if user does not exist'
+      };
+    }
+
+    // Step 2: Check database tables
+    try {
+      const { data: shopkeeperEmail, error: shopkeeperError } = await supabase
+        .from('shopkeeper_emails')
+        .select('*')
+        .eq('email', email.toLowerCase().trim())
+        .single();
+      
+      debugInfo.shopkeeperEmailExists = {
+        exists: !!shopkeeperEmail,
+        error: shopkeeperError?.message || null
+      };
+    } catch (e) {
+      debugInfo.shopkeeperEmailExists = { exists: false, error: e.message };
+    }
+
+    // Step 3: Try creating user with different approaches
+    const testResults = [];
+
+    // Test 1: Minimal user creation
+    try {
+      const { data: authData1, error: authError1 } = await supabase.auth.admin.createUser({
+        email: email.toLowerCase().trim(),
+        password: password,
+        email_confirm: true
+      });
+
+      if (authData1?.user?.id) {
+        await supabase.auth.admin.deleteUser(authData1.user.id);
+        testResults.push({ test: 'minimal_creation', success: true, userId: authData1.user.id });
+      } else {
+        testResults.push({ 
+          test: 'minimal_creation', 
+          success: false, 
+          error: authError1?.message,
+          code: authError1?.code,
+          details: authError1
+        });
+      }
+    } catch (e) {
+      testResults.push({ 
+        test: 'minimal_creation', 
+        success: false, 
+        error: e.message,
+        stack: e.stack
+      });
+    }
+
+    // Test 2: User creation without auto-confirm
+    try {
+      const { data: authData2, error: authError2 } = await supabase.auth.admin.createUser({
+        email: email.toLowerCase().trim(),
+        password: password
+      });
+
+      if (authData2?.user?.id) {
+        await supabase.auth.admin.deleteUser(authData2.user.id);
+        testResults.push({ test: 'no_auto_confirm', success: true, userId: authData2.user.id });
+      } else {
+        testResults.push({ 
+          test: 'no_auto_confirm', 
+          success: false, 
+          error: authError2?.message,
+          code: authError2?.code
+        });
+      }
+    } catch (e) {
+      testResults.push({ test: 'no_auto_confirm', success: false, error: e.message });
+    }
+
+    return res.json({ 
+      success: true,
+      message: 'Debug information collected',
+      debugInfo,
+      testResults
+    });
+
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    return res.status(500).json({ 
+      error: 'Debug failed',
+      details: error.message,
+      stack: error.stack
+    });
+  }
+});
+
+// Test endpoint for user creation debugging
+app.post('/api/food/admin/test-user-creation', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required for testing' });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Try to create a minimal user account for testing
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: email.toLowerCase().trim(),
+      password: password,
+      email_confirm: true
+    });
+
+    if (authError) {
+      return res.json({ 
+        success: false,
+        error: authError.message,
+        code: authError.code,
+        status: authError.status,
+        details: authError
+      });
+    }
+
+    // Clean up the test user immediately
+    if (authData?.user?.id) {
+      await supabase.auth.admin.deleteUser(authData.user.id);
+    }
+
+    return res.json({ 
+      success: true,
+      message: 'User creation test successful (user was deleted)',
+      userId: authData?.user?.id
+    });
+
+  } catch (error) {
+    console.error('Test user creation error:', error);
+    return res.status(500).json({ 
+      error: 'Test failed',
+      details: error.message,
+      stack: error.stack
+    });
+  }
+});
+
+// Alternative shopkeeper creation with step-by-step approach
+app.post('/api/food/admin/create-shopkeeper-alt', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { email, password, shopId } = req.body;
+
+    console.log('🔍 Starting alternative shopkeeper creation:', {
+      email: email?.toLowerCase().trim(),
+      hasPassword: !!password,
+      shopId,
+      adminUserId: userId
+    });
+
+    if (!email || !password || !shopId) {
+      return res.status(400).json({ error: 'Email, password, and shop ID are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Step 1: Check all possible conflicts first
+    console.log('Step 1: Checking for existing accounts...');
+    
+    // Check shopkeeper_emails
+    const { data: existingShopkeeperEmail } = await supabase
+      .from('shopkeeper_emails')
+      .select('id, email, shops(name)')
+      .eq('email', normalizedEmail)
+      .single();
+
+    if (existingShopkeeperEmail) {
+      return res.status(400).json({ 
+        error: `Email already assigned to shop: ${existingShopkeeperEmail.shops?.name || 'Unknown shop'}` 
+      });
+    }
+
+    // Check auth.users using list approach (more reliable)
+    console.log('Step 2: Checking auth.users...');
+    try {
+      const { data: authUsers, error: listError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000 // Adjust if you have more users
+      });
+
+      const existingAuthUser = authUsers?.users?.find(user => 
+        user.email?.toLowerCase() === normalizedEmail
+      );
+
+      if (existingAuthUser) {
+        return res.status(400).json({ 
+          error: 'An account with this email already exists in the authentication system' 
+        });
+      }
+    } catch (listError) {
+      console.log('Could not list users, trying direct approach:', listError.message);
+    }
+
+    // Step 3: Create user without any metadata first
+    console.log('Step 3: Creating minimal auth user...');
+    
+    // Use original @shop.com email since it's now allowed
+    const shopkeeperEmail = normalizedEmail;
+    
+    console.log('✅ Using original shopkeeper email:', {
+      email: shopkeeperEmail
+    });
+    
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: shopkeeperEmail,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        role: 'shopkeeper',
+        original_email: normalizedEmail
+      }
+    });
+
+    if (authError) {
+      console.error('❌ Auth user creation failed (ALT METHOD):', {
+        message: authError.message,
+        code: authError.code,
+        status: authError.status,
+        details: authError.details,
+        hint: authError.hint,
+        fullError: authError
+      });
+      return res.status(400).json({ 
+        error: `Failed to create user account: ${authError.message}`,
+        code: authError.code,
+        supabaseError: {
+          status: authError.status,
+          hint: authError.hint,
+          details: authError.details
+        },
+        details: process.env.NODE_ENV === 'development' ? authError : undefined
+      });
+    }
+
+    console.log('✅ Auth user created:', authData.user.id);
+
+    // Step 4: Add to shopkeeper_emails table (bypass RLS with service role)
+    console.log('Step 4: Adding to shopkeeper_emails...');
+    
+    // Try with explicit RLS bypass
+    const insertData = {
+      email: normalizedEmail,
+      shop_id: shopId,
+      added_by: userId,
+      assigned: true
+    };
+    
+    console.log('Insert data:', insertData);
+    
+    const { data: insertResult, error: emailError } = await supabase
+      .from('shopkeeper_emails')
+      .insert(insertData)
+      .select();
+
+    if (emailError) {
+      console.error('❌ Shopkeeper email insertion failed:', {
+        code: emailError.code,
+        message: emailError.message,
+        details: emailError.details,
+        hint: emailError.hint,
+        insertData
+      });
+      // Cleanup auth user
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      return res.status(500).json({ 
+        error: 'Error adding shopkeeper email', 
+        details: {
+          code: emailError.code,
+          message: emailError.message,
+          hint: emailError.hint
+        }
+      });
+    }
+
+    console.log('✅ Shopkeeper email added');
+
+    // Step 5: Create shop_staff entry
+    console.log('Step 5: Creating shop_staff entry...');
+    const { error: staffError } = await supabase
+      .from('shop_staff')
+      .insert({
+        user_id: authData.user.id,
+        shop_id: shopId,
+        role: 'manager'
+      });
+
+    if (staffError) {
+      console.error('❌ Shop staff creation failed:', staffError);
+      // Cleanup
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      await supabase.from('shopkeeper_emails').delete().eq('email', normalizedEmail);
+      return res.status(500).json({ error: 'Failed to assign shopkeeper to shop' });
+    }
+
+    console.log('✅ Shop staff created');
+
+    // Step 6: Update user metadata (non-critical)
+    console.log('Step 6: Updating user metadata...');
+    try {
+      await supabase.auth.admin.updateUserById(authData.user.id, {
+        user_metadata: {
+          role: 'shopkeeper',
+          full_name: `Shopkeeper - ${normalizedEmail.split('@')[0]}`
+        }
+      });
+      console.log('✅ User metadata updated');
+    } catch (metadataError) {
+      console.log('⚠️ Metadata update failed (non-critical):', metadataError.message);
+    }
+
+    console.log('🎉 Shopkeeper creation completed successfully');
+
+    return res.json({ 
+      success: true, 
+      message: 'Shopkeeper account created successfully',
+      shopkeeper: {
+        email: normalizedEmail,
+        userId: authData.user.id,
+        loginCredentials: {
+          email: shopkeeperEmail,
+          note: "Use this email format to login"
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Alternative shopkeeper creation failed:', error);
+    return res.status(500).json({ 
+      error: 'Failed to create shopkeeper account',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Create complete shopkeeper account (SECURED - admin only)
+app.post('/api/food/admin/create-shopkeeper', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { email, password, shopId } = req.body;
+
+    if (!email || !password || !shopId) {
+      return res.status(400).json({ error: 'Email, password, and shop ID are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Check if email already exists in shopkeeper_emails
+    const { data: existingEmail, error: checkError } = await supabase
+      .from('shopkeeper_emails')
+      .select('id, email, shops(name)')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing email:', checkError);
+      return res.status(500).json({ error: 'Failed to check existing email' });
+    }
+
+    if (existingEmail) {
+      return res.status(400).json({ 
+        error: `Email already assigned to shop: ${existingEmail.shops?.name || 'Unknown shop'}` 
+      });
+    }
+
+    // Check if email already exists in auth.users using listUsers (more reliable)
+    try {
+      const { data: authUsers, error: listError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000 // Adjust based on your user count
+      });
+      
+      if (!listError && authUsers?.users) {
+        const existingAuthUser = authUsers.users.find(user => 
+          user.email?.toLowerCase() === email.toLowerCase().trim()
+        );
+        
+        if (existingAuthUser) {
+          return res.status(400).json({ 
+            error: 'An account with this email already exists in the system' 
+          });
+        }
+      }
+      
+      if (listError) {
+        console.log('Could not check existing users, proceeding with creation:', listError.message);
+      }
+    } catch (emailCheckError) {
+      console.log('Email check failed, proceeding with creation:', emailCheckError.message);
+    }
+
+    // Validate email format more strictly
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.toLowerCase().trim())) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // Create the user account in Supabase Auth with minimal metadata first
+    // Use original @shop.com email since it's now allowed
+    const shopkeeperEmail = email.toLowerCase().trim();
+    
+    console.log('✅ Using original shopkeeper email:', {
+      email: shopkeeperEmail
+    });
+    
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: shopkeeperEmail,
+      password: password,
+      email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        role: 'shopkeeper',
+        original_email: email.toLowerCase().trim()
+      }
+    });
+
+    if (authError) {
+      console.error('🚨 DETAILED AUTH ERROR:', {
+        message: authError.message,
+        code: authError.code,
+        status: authError.status,
+        details: authError.details,
+        hint: authError.hint,
+        fullError: authError
+      });
+      
+      // Provide more specific error messages
+      if (authError.message?.includes('duplicate') || authError.message?.includes('already')) {
+        return res.status(400).json({ error: 'An account with this email already exists' });
+      }
+      
+      return res.status(400).json({ 
+        error: authError.message || 'Failed to create user account',
+        details: authError.code || 'unknown_error',
+        supabaseError: {
+          code: authError.code,
+          status: authError.status,
+          hint: authError.hint
+        }
+      });
+    }
+
+    // Add email to shopkeeper_emails table (bypass RLS with service role)
+    const insertData = {
+      email: email.toLowerCase().trim(),
+      shop_id: shopId,
+      added_by: userId,
+      assigned: true // Mark as assigned since account is created
+    };
+    
+    console.log('Inserting shopkeeper email data:', insertData);
+    
+    const { data: insertResult, error: emailError } = await supabase
+      .from('shopkeeper_emails')
+      .insert(insertData)
+      .select();
+
+    if (emailError) {
+      console.error('❌ Shopkeeper email insertion failed:', {
+        code: emailError.code,
+        message: emailError.message,
+        details: emailError.details,
+        hint: emailError.hint,
+        insertData
+      });
+      // Try to clean up the auth user if email insertion fails
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      return res.status(500).json({ 
+        error: 'Error adding shopkeeper email', 
+        details: {
+          code: emailError.code,
+          message: emailError.message,
+          hint: emailError.hint
+        }
+      });
+    }
+
+    // Update the profile with shopkeeper details
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          email: email.toLowerCase().trim(), // Keep original email in profile
+          auth_email: shopkeeperEmail, // Store converted email for reference
+          full_name: `Shopkeeper - ${email.split('@')[0]}`,
+          role: 'shopkeeper',
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) {
+        console.log('Profile update warning (non-critical):', profileError);
+      }
+    } catch (profileUpdateError) {
+      console.log('Profile update failed (non-critical):', profileUpdateError);
+    }
+
+    // Create shop_staff entry
+    const { error: staffError } = await supabase
+      .from('shop_staff')
+      .insert({
+        user_id: authData.user.id,
+        shop_id: shopId,
+        role: 'manager'
+      });
+
+    if (staffError) {
+      console.error('Error creating shop staff:', staffError);
+      // Clean up on error
+      try {
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        await supabase.from('shopkeeper_emails').delete().eq('email', email.toLowerCase().trim());
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      return res.status(500).json({ error: 'Failed to assign shopkeeper to shop' });
+    }
+
+    return res.json({ 
+      success: true, 
+      message: 'Shopkeeper account created successfully',
+      shopkeeper: {
+        email: email.toLowerCase().trim(),
+        userId: authData.user.id,
+        loginCredentials: {
+          email: shopkeeperEmail,
+          password: "As set by admin",
+          note: "Shopkeeper must use the email above to login"
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating shopkeeper:', error);
+    return res.status(500).json({ error: 'Failed to create shopkeeper account' });
+  }
+});
+
+// Add shopkeeper email (SECURED - admin only) [DEPRECATED - use create-shopkeeper instead]
 app.post('/api/food/admin/shopkeeper-emails', authenticateToken, async (req, res) => {
   try {
     const userId = req.user_id;
@@ -2245,6 +3088,24 @@ app.post('/api/food/admin/shopkeeper-emails', authenticateToken, async (req, res
 
     if (profileError || !profile?.is_admin) {
       return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Check if email already exists
+    const { data: existingEmail, error: checkError } = await supabase
+      .from('shopkeeper_emails')
+      .select('id, email, shops(name)')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing email:', checkError);
+      return res.status(500).json({ error: 'Failed to check existing email' });
+    }
+
+    if (existingEmail) {
+      return res.status(400).json({ 
+        error: `Email already assigned to shop: ${existingEmail.shops?.name || 'Unknown shop'}` 
+      });
     }
 
     // Add email
@@ -2301,6 +3162,235 @@ app.delete('/api/food/admin/shopkeeper-emails/:id', authenticateToken, async (re
   } catch (error) {
     console.error('Error deleting shopkeeper email:', error);
     return res.status(500).json({ error: 'Failed to delete email' });
+  }
+});
+
+// ============================================
+// MENU MANAGEMENT ROUTES FOR SHOPKEEPERS
+// ============================================
+
+// Get menu items for a shop (PUBLIC)
+app.get('/api/food/shop/:shopId/menu', async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    console.log(`[MENU DEBUG] Fetching menu items for shop_id: ${shopId}`);
+
+    const { data: menuItems, error } = await supabase
+      .from('shop_menu_items')
+      .select('*')
+      .eq('shop_id', shopId)
+      // Temporarily show all items for debugging
+      // .eq('is_available', true)
+      .order('category')
+      .order('name');
+
+    console.log(`[MENU DEBUG] Query result:`, { 
+      shopId, 
+      menuItemsCount: menuItems?.length || 0, 
+      menuItems: menuItems?.slice(0, 3), // Log first 3 items
+      error 
+    });
+
+    if (error) {
+      console.error('Error fetching menu items:', error);
+      return res.status(500).json({ error: 'Failed to fetch menu items' });
+    }
+
+    console.log(`[MENU DEBUG] Returning ${menuItems?.length || 0} menu items`);
+    return res.json({ menuItems: menuItems || [] });
+
+  } catch (error) {
+    console.error('Error fetching menu items:', error);
+    return res.status(500).json({ error: 'Failed to fetch menu items' });
+  }
+});
+
+// Get menu items for shopkeeper's shop (SECURED - shopkeeper only)
+app.get('/api/food/shopkeeper/menu', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+
+    // Get shopkeeper's assigned shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id, shops(*)')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Shopkeeper access required' });
+    }
+
+    const { data: menuItems, error } = await supabase
+      .from('shop_menu_items')
+      .select('*')
+      .eq('shop_id', shopStaff.shop_id)
+      .order('category')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching shopkeeper menu items:', error);
+      return res.status(500).json({ error: 'Failed to fetch menu items' });
+    }
+
+    return res.json({ menuItems: menuItems || [] });
+
+  } catch (error) {
+    console.error('Error fetching shopkeeper menu items:', error);
+    return res.status(500).json({ error: 'Failed to fetch menu items' });
+  }
+});
+
+// Add menu item (SECURED - shopkeeper only)
+app.post('/api/food/shopkeeper/menu', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { name, description, price, category, isVeg } = req.body;
+
+    if (!name || !price || !category) {
+      return res.status(400).json({ error: 'Name, price, and category are required' });
+    }
+
+    // Get shopkeeper's assigned shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Shopkeeper access required' });
+    }
+
+    const { data: menuItem, error } = await supabase
+      .from('shop_menu_items')
+      .insert({
+        shop_id: shopStaff.shop_id,
+        name: name.trim(),
+        description: description?.trim() || null,
+        price: parseFloat(price),
+        category: category.trim(),
+        is_veg: isVeg || false,
+        is_available: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding menu item:', error);
+      return res.status(500).json({ error: 'Failed to add menu item' });
+    }
+
+    return res.json({ menuItem });
+
+  } catch (error) {
+    console.error('Error adding menu item:', error);
+    return res.status(500).json({ error: 'Failed to add menu item' });
+  }
+});
+
+// Update menu item (SECURED - shopkeeper only)
+app.patch('/api/food/shopkeeper/menu/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+    const { name, description, price, category, isVeg, isActive } = req.body;
+
+    // Get shopkeeper's assigned shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Shopkeeper access required' });
+    }
+
+    // Verify menu item belongs to shopkeeper's shop
+    const { data: existingItem, error: itemError } = await supabase
+      .from('shop_menu_items')
+      .select('shop_id')
+      .eq('id', id)
+      .single();
+
+    if (itemError || !existingItem || existingItem.shop_id !== shopStaff.shop_id) {
+      return res.status(404).json({ error: 'Menu item not found' });
+    }
+
+    // Build update object
+    const updateData = {};
+    if (name !== undefined) updateData.name = name.trim();
+    if (description !== undefined) updateData.description = description?.trim() || null;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    if (category !== undefined) updateData.category = category.trim();
+    if (isVeg !== undefined) updateData.is_veg = isVeg;
+    if (isActive !== undefined) updateData.is_available = isActive;
+
+    const { data: menuItem, error } = await supabase
+      .from('shop_menu_items')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating menu item:', error);
+      return res.status(500).json({ error: 'Failed to update menu item' });
+    }
+
+    return res.json({ menuItem });
+
+  } catch (error) {
+    console.error('Error updating menu item:', error);
+    return res.status(500).json({ error: 'Failed to update menu item' });
+  }
+});
+
+// Delete menu item (SECURED - shopkeeper only)
+app.delete('/api/food/shopkeeper/menu/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { id } = req.params;
+
+    // Get shopkeeper's assigned shop
+    const { data: shopStaff, error: staffError } = await supabase
+      .from('shop_staff')
+      .select('shop_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (staffError || !shopStaff) {
+      return res.status(403).json({ error: 'Shopkeeper access required' });
+    }
+
+    // Verify menu item belongs to shopkeeper's shop
+    const { data: existingItem, error: itemError } = await supabase
+      .from('shop_menu_items')
+      .select('shop_id')
+      .eq('id', id)
+      .single();
+
+    if (itemError || !existingItem || existingItem.shop_id !== shopStaff.shop_id) {
+      return res.status(404).json({ error: 'Menu item not found' });
+    }
+
+    // Soft delete by setting is_available to false
+    const { error } = await supabase
+      .from('shop_menu_items')
+      .update({ is_available: false })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting menu item:', error);
+      return res.status(500).json({ error: 'Failed to delete menu item' });
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting menu item:', error);
+    return res.status(500).json({ error: 'Failed to delete menu item' });
   }
 });
 
@@ -2550,62 +3640,7 @@ app.post('/api/food/admin/shops', authenticateToken, async (req, res) => {
   }
 });
 
-// Update shop (SECURED - admin only)
-app.put('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user_id;
-    const { id } = req.params;
-    const shopData = req.body;
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userId)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
-    // Filter allowed shop fields (exclude non-existent columns)
-    const allowedFields = {
-      name: shopData.name,
-      short_desc: shopData.short_desc,
-      address: shopData.address,
-      contact_number: shopData.contact_number,
-      tags: shopData.tags,
-      photos: shopData.photos,
-      featured: shopData.featured,
-      is_active: shopData.is_active
-    };
-
-    // Remove undefined fields
-    Object.keys(allowedFields).forEach(key => {
-      if (allowedFields[key] === undefined) {
-        delete allowedFields[key];
-      }
-    });
-
-    const { data: shop, error } = await supabase
-      .from('shops')
-      .update(allowedFields)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating shop:', error);
-      return res.status(500).json({ error: 'Failed to update shop' });
-    }
-
-    return res.json({ shop });
-
-  } catch (error) {
-    console.error('Error updating shop:', error);
-    return res.status(500).json({ error: 'Failed to update shop' });
-  }
-});
 
 // Delete shop (SECURED - admin only)
 app.delete('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
@@ -4418,6 +5453,37 @@ app.get('/api/campus-buildings', async (req, res) => {
 });
   
   
+
+// Check if user is a shopkeeper
+app.post('/api/check-shopkeeper-status', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    // Check if email exists in shopkeeper_emails table
+    const { data, error } = await supabase
+      .from('shopkeeper_emails')
+      .select('email')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+      console.error('Error checking shopkeeper status:', error);
+      return res.status(500).json({ error: 'Failed to check shopkeeper status' });
+    }
+    
+    const isShopkeeper = !!data;
+    
+    return res.json({ isShopkeeper });
+    
+  } catch (error) {
+    console.error('Error in shopkeeper status check:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 /* ---------------------- SERVER ---------------------- */
 const PORT = process.env.PORT || 3001;
