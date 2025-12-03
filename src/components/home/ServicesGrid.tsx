@@ -35,7 +35,7 @@ import { toast } from "@/hooks/use-toast";
 
 const services = [
   {
-    id: "Timetable-Saathi",
+    id: "timetable-saathi",
     icon: Calendar,
     title: "Timetable Saathi",
     description: "View and manage your weekly and daily class schedules with ease.",
@@ -237,7 +237,6 @@ export const ServicesGrid = () => {
     }
   }
 
-
   const handleServiceClick = (service: typeof services[0]) => {
     const routeMap: Record<string, string> = {
       "Carton Packing & Hostel Transfers": "/carton-transfer",
@@ -261,7 +260,6 @@ export const ServicesGrid = () => {
       "Study Material (PYQs, Notes, YouTube Videos)": "/study-material",
       "Campus Map": "/campus-maps",
       "KIIT Food Stalls & Restaurants": "/food",
-      "KIIT Timetable": "/timetable-saathi",
     };
 
 
@@ -330,10 +328,8 @@ export const ServicesGrid = () => {
                 // - If service has visibility record with visible=false, hide it
                 // - Only show if visibility record exists AND visible=true
                 if (!visibility) {
-                  isVisible = false; // Hide services not in visibility table
-                  isVisible = service.id === 'Timetable-Saathi' ? true : false; 
+                  isVisible = false;
                 } else {
-                  isVisible = service.id === 'Timetable-Saathi' ? true : false; 
                   isVisible = visibility.visible;
                   replacementText = visibility.replaced_text;
                 }
