@@ -426,5 +426,5 @@ export const ServicesGrid = () => {
         </div>
       </div>
     </section>
-  );
+  )
 };
