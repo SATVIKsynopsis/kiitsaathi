@@ -27,6 +27,7 @@ import { semesters, years, semesterSubjects } from "@/data/studyMaterials";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import GridLoader from "@/components/services/study-materials/gridLoader";
 
 const HOSTED_URL = import.meta.env.VITE_HOSTED_URL;
 // Types
@@ -544,15 +545,7 @@ export default function StudyMaterial() {
 
             {/* Enhanced Loading */}
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-kiit-primary/20 rounded-full"></div>
-                  <div className="w-16 h-16 border-4 border-kiit-primary border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
-                </div>
-                <p className="mt-4 text-muted-foreground animate-pulse">
-                  Loading study materials...
-                </p>
-              </div>
+              <GridLoader/>
             ) : (
               <div className="glass-card rounded-2xl overflow-hidden border border-border/50 shadow-xl">
                 <DataTable

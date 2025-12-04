@@ -12,8 +12,8 @@ const GridLoader: React.FC = () => {
       <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-xl p-6 flex flex-col items-center gap-4 shadow-lg">
         <Loader2 className="w-12 h-12 text-white animate-spin" />
         <p className="text-white text-center text-sm sm:text-base font-medium">
-          Please wait We are verifying you</p>
-        
+          Study materials are being loaded
+        </p>
 
         {/* Indeterminate progress bar */}
         <div className="w-full mt-2">
