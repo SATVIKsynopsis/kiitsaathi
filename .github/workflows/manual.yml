@@ -2,7 +2,7 @@ name: Ping Render Server
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # Every 15 minutes
+    - cron: "*/10 * * * *"   # Every 15 minutes
   workflow_dispatch:         # Allow manual trigger
 
 jobs:
