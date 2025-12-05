@@ -215,14 +215,7 @@ export default function StudyMaterial() {
       setError("");
       return;
     }
-    if (
-      activeSection === "ppt" ||
-      activeSection === "notes" ||
-      activeSection === "ebooks"
-    ) {
-      setLoading(false);
-      setError("");
-    }
+
     try {
       const params = new URLSearchParams();
 
