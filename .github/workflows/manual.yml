@@ -1,0 +1,14 @@
+name: Ping Render Server
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # Every 15 minutes
+  workflow_dispatch:         # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit Render Backend
+        run: |
+          curl -I https://kiitsaathi-hosted.onrender.com
