@@ -75,7 +75,7 @@ export const parseExcelFiles = async (input) => {
       '4': { 
         filepath: 'data/4th_semester_TT_and_Section_Detail.xlsx', 
         name: 'CSE/IT 4th Sem',
-        attendanceFile: 'data/Attendance 4th Student list  2024 AB1.XLSX'
+        attendanceFile: 'data/Attendance4thStudentlist-2024AB(1).XLSX'
       },
       'mse4': { 
         filepath: 'data/SME_4th_Semester_Timetable_Spring_20252026_WEF_01122025.xlsx', 
@@ -98,28 +98,15 @@ export const parseExcelFiles = async (input) => {
 
     console.log('Available sheets:', workbook.SheetNames);
 
-    let timetable = {};
-    let sections = {};
+    // MSE file might have different structure
+    const ttSheet = workbook.Sheets[workbook.SheetNames[0]]; // Time Table
+    const sdSheet = workbook.SheetNames.length > 1 ? workbook.Sheets[workbook.SheetNames[1]] : null;
 
-    if (semKey === 'mse4') {
-      // MSE has sections in one sheet
-      const ttSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const ttData = XLSX.utils.sheet_to_json(ttSheet, { header: 1, defval: '' });
-      
-      console.log('Parsing MSE with sections in one sheet...');
-      timetable = parseMSETimetable(ttData);
-      sections = getMSERollNumberMappings();
-    } else {
-      // CSE/IT format
-      const ttSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const sdSheet = workbook.SheetNames.length > 1 ? workbook.Sheets[workbook.SheetNames[1]] : null;
+    const ttData = XLSX.utils.sheet_to_json(ttSheet, { header: 1, defval: '' });
+    const sdData = sdSheet ? XLSX.utils.sheet_to_json(sdSheet, { header: 1, defval: '' }) : [];
 
-      const ttData = XLSX.utils.sheet_to_json(ttSheet, { header: 1, defval: '' });
-      const sdData = sdSheet ? XLSX.utils.sheet_to_json(sdSheet, { header: 1, defval: '' }) : [];
-
-      timetable = parseTimetable(ttData, semKey);
-      sections = sdData.length > 0 ? parseSections(sdData) : {};
-    }
+    const timetable = parseTimetable(ttData, semKey);
+    let sections = sdData.length > 0 ? parseSections(sdData) : {};
 
     // For MSE, add hardcoded roll number mappings if no section data exists
     if (semKey === 'mse4' && Object.keys(sections).length === 0) {
@@ -129,23 +116,26 @@ export const parseExcelFiles = async (input) => {
 
     // Load additional attendance/student list file if available
     if (chosen.attendanceFile) {
-        console.log(`Loading attendance file: ${chosen.attendanceFile}`);
-        try {
-          const attendanceResponse = await fetch(chosen.attendanceFile);
-          if (attendanceResponse.ok) {
-            const attendanceBuffer = await attendanceResponse.arrayBuffer();
-            const attendanceWorkbook = XLSX.read(attendanceBuffer, { type: 'array' });
-            
-            console.log('Attendance file sheets:', attendanceWorkbook.SheetNames);
-            
-            const attendanceSections = parseAttendanceFile(attendanceWorkbook);
-            sections = { ...sections, ...attendanceSections };
-            console.log(`Merged attendance data: ${Object.keys(attendanceSections).length} new roll numbers`);
-          }
-        } catch (attendanceError) {
-          console.warn('Could not load attendance file:', attendanceError);
+      console.log(`Loading attendance file: ${chosen.attendanceFile}`);
+      try {
+        const attendanceResponse = await fetch(chosen.attendanceFile);
+        if (attendanceResponse.ok) {
+          const attendanceBuffer = await attendanceResponse.arrayBuffer();
+          const attendanceWorkbook = XLSX.read(attendanceBuffer, { type: 'array' });
+          
+          console.log('Attendance file sheets:', attendanceWorkbook.SheetNames);
+          
+          // Parse all sheets in the attendance file
+          const attendanceSections = parseAttendanceFile(attendanceWorkbook);
+          
+          // Merge with existing sections
+          sections = { ...sections, ...attendanceSections };
+          console.log(`Merged attendance data: ${Object.keys(attendanceSections).length} new roll numbers`);
         }
+      } catch (attendanceError) {
+        console.warn('Could not load attendance file:', attendanceError);
       }
+    }
 
     console.log(`Total parsed ${Object.keys(sections).length} roll numbers for ${chosen.name}`);
     console.log(`Parsed ${Object.keys(timetable).length} sections for ${chosen.name}`);
@@ -160,6 +150,7 @@ export const parseExcelFiles = async (input) => {
 };
 
 /** --------------------------- MSE ROLL NUMBER MAPPINGS ---------------------------- */
+
 const getMSERollNumberMappings = () => {
   const sections = {};
   
@@ -194,62 +185,6 @@ const getMSERollNumberMappings = () => {
   
   console.log(`Generated ${Object.keys(sections).length} MSE roll number mappings`);
   return sections;
-};
-
-const parseMSETimetable = (data) => {
-  const timetable = {};
-  
-  // Look for section headers "SECTION: M1" etc. in column A (index 0)
-  const sectionStarts = [];
-  
-  for (let i = 0; i < data.length; i++) {
-    const rowStr = data[i][0]?.toString().toUpperCase().trim();
-    if (rowStr && rowStr.includes('SECTION: ')) {
-      const sectionMatch = rowStr.match(/M[1-4]/);
-      if (sectionMatch) {
-        const section = sectionMatch[0];
-        // Timetable starts after header (row i+1: TIME/DAY) and i+2: first day
-        const startRow = i + 2;
-        sectionStarts.push({ section, startRow });
-        console.log(`Found section ${section} at row ${i + 1}, timetable from row ${startRow + 1}`);
-      }
-    }
-  }
-
-  if (sectionStarts.length === 0) {
-    console.log('No sections found, returning empty timetable');
-    return {};
-  }
-
-  // Sort by startRow
-  sectionStarts.sort((a, b) => a.startRow - b.startRow);
-
-  // Add end marker
-  sectionStarts.push({ startRow: data.length, section: null });
-
-  for (let k = 0; k < sectionStarts.length - 1; k++) {
-    const { section, startRow } = sectionStarts[k];
-    const endRow = sectionStarts[k + 1].startRow;
-    
-    // Extract section data, including potential multi-row lunch breaks
-    let sectionData = [];
-    for (let r = startRow; r < endRow; r++) {
-      if (data[r]) {
-        // If the row has day in col0, include it
-        const col0 = data[r][0]?.toString().toUpperCase().trim();
-        if (col0 && (col0.includes('MON') || col0.includes('TUE') || col0.includes('WED') || col0.includes('THU') || col0.includes('FRI'))) {
-          sectionData.push(data[r]);
-        }
-      }
-    }
-
-    console.log(`Parsing section ${section}, from row ${startRow + 1} to ${endRow}, ${sectionData.length} day rows`);
-
-    const sectionTimetable = parseMSESection(sectionData);
-    timetable[section] = sectionTimetable;
-  }
-
-  return timetable;
 };
 
 /** --------------------------- PARSE ATTENDANCE FILE ---------------------------- */
@@ -397,134 +332,65 @@ const parseTimetable = (data, semKey) => {
 };
 
 /** --------------------------- PARSE PERIODS ---------------------------- */
-const parseMSESection = (sectionData) => {
-  const sectionTimetable = {};
-  
-  const dayPatterns = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
-  const dayMap = {
-    'MON': 'Monday',
-    'TUE': 'Tuesday', 
-    'WED': 'Wednesday',
-    'THU': 'Thursday',
-    'FRI': 'Friday'
-  };
-
-  for (let i = 0; i < sectionData.length; i++) {
-    const row = sectionData[i];
-    const col0 = row[0]?.toString().toUpperCase().trim();
-    
-    const matchedDay = dayPatterns.find(day => col0?.includes(day));
-    
-    if (matchedDay) {
-      console.log(`Found day ${matchedDay} at row ${i}`);
-      
-      const fullDay = dayMap[matchedDay];
-      const periods = parseMSEPeriods(row);
-      sectionTimetable[fullDay] = periods;
-    }
-  }
-
-  return sectionTimetable;
-};
-
-const parseMSEPeriods = (row) => {
-  const periods = [];
-
-  console.log('Parsing MSE periods, row:', row.slice(0, 15));
-
-  // MSE format: columns 2-11 contain subjects (0-based index)
-  const slots = [
-    { time: "8:00-9:00",    col: 2 },
-    { time: "9:00-10:00",   col: 4 }, // Skipping empty columns based on structure
-    { time: "10:00-11:00",  col: 6 },
-    { time: "11:00-12:00",  col: 8 },
-    { time: "12:00-1:00",   col: 10 },
-    { time: "1:00-2:00",    col: 12 }, // Lunch might be here
-    { time: "2:00-3:00",    col: 14 },
-    { time: "3:00-4:00",    col: 16 },
-    { time: "4:00-5:00",    col: 18 },
-    { time: "5:00-6:00",    col: 20 }
-  ];
-
-  for (const slot of slots) {
-    const subject = row[slot.col]?.toString().trim();
-
-    console.log(`  Slot ${slot.time}: Col${slot.col}="${subject}"`);
-
-    if (!subject || subject === "" || subject === "---" || subject === "undefined" || subject === "***") {
-      console.log(`    -> Skipping (empty/invalid)`);
-      continue;
-    }
-
-    // Handle lunch/break
-    if (subject.toLowerCase().includes('lunch') || subject.toLowerCase().includes('break')) {
-      periods.push({
-        time: slot.time,
-        subject: "Break",
-        room: "-",
-        faculty: "-"
-      });
-      console.log(`    -> Added Break`);
-      continue;
-    }
-
-    if (subject === "X" || subject.toLowerCase() === "free") {
-      periods.push({
-        time: slot.time,
-        subject: "Free Period",
-        room: "-",
-        faculty: "-"
-      });
-      console.log(`    -> Added Free Period`);
-      continue;
-    }
-
-    // Determine room based on subject type
-    let room = "-";
-    if (subject.toLowerCase().includes('lab') || 
-        subject.toLowerCase().includes('sessional') ||
-        subject.includes('MKD') || 
-        subject.includes('CP') ||
-        subject.includes('MDSM')) {
-      room = "Lab";
-    } else {
-      room = "301"; // Default classroom
-    }
-
-    periods.push({
-      time: slot.time,
-      subject,
-      room,
-      faculty: "-"
-    });
-    console.log(`    -> Added: ${subject} in ${room}`);
-  }
-
-  console.log(`Total periods parsed: ${periods.length}`);
-  return periods;
-};
-
-// Keep the original parsePeriods for CSE/IT
 
 const parsePeriods = (row, semKey) => {
   const periods = [];
 
   console.log(`Parsing periods for semester ${semKey}, row:`, row.slice(0, 25));
 
-  // Only CSE/IT format uses this function now
-  console.log('Using CSE/IT column mapping');
-  const slots = [
-    { time: "8:00-9:00",    subject: 3,  room: 2  },
-    { time: "9:00-10:00",   subject: 5,  room: 4  },
-    { time: "10:00-11:00",  subject: 6,  room: 4  },
-    { time: "11:00-12:00",  subject: 8,  room: 7  },
-    { time: "12:00-1:00",   subject: 10, room: 9  },
-    { time: "1:00-2:00",    subject: 11, room: 9  },
-    { time: "2:00-3:00",    subject: 13, room: 12 },
-    { time: "3:15-4:15",    subject: 15, room: 14 },
-    { time: "4:15-5:15",    subject: 17, room: 16 },
-    { time: "5:15-6:15",    subject: 18, room: 16 }
-  ];
+  // Different column mappings for different file formats
+  let slots;
+  
+  if (semKey === 'mse4') {
+    // MSE format - need to determine actual column structure
+    // Logging first row to understand structure
+    console.log('Full MSE row for analysis:', row);
+    
+    // Common MSE format patterns (adjust based on actual file)
+    // Pattern 1: Subject and Room together in same cell
+    // Pattern 2: Subject in one column, Room in next
+    // Pattern 3: Time header row with subject/room below
+    
+    // Try to detect format by looking at row structure
+    const hasTimeHeaders = row.some(cell => 
+      cell?.toString().match(/\d{1,2}:\d{2}/)
+    );
+    
+    if (hasTimeHeaders) {
+      // Format with time headers - parse accordingly
+      console.log('Detected MSE format with time headers');
+      slots = parseMSEWithTimeHeaders(row);
+    } else {
+      // Standard format - adjust indices based on MSE structure
+      console.log('Using standard MSE column mapping');
+      slots = [
+        { time: "8:00-9:00",    subject: 2,  room: 3  },
+        { time: "9:00-10:00",   subject: 4,  room: 5  },
+        { time: "10:00-11:00",  subject: 6,  room: 7  },
+        { time: "11:00-12:00",  subject: 8,  room: 9  },
+        { time: "12:00-1:00",   subject: 10, room: 11 },
+        { time: "1:00-2:00",    subject: 12, room: 13 },
+        { time: "2:00-3:00",    subject: 14, room: 15 },
+        { time: "3:00-4:00",    subject: 16, room: 17 },
+        { time: "4:00-5:00",    subject: 18, room: 19 },
+      ];
+    }
+  } else {
+    // CSE/IT format (4th and 6th semester)
+    console.log('Using CSE/IT column mapping');
+    slots = [
+      { time: "8:00-9:00",    subject: 3,  room: 2  },
+      { time: "9:00-10:00",   subject: 5,  room: 4  },
+      { time: "10:00-11:00",  subject: 6,  room: 4  },
+      { time: "11:00-12:00",  subject: 8,  room: 7  },
+      { time: "12:00-1:00",   subject: 10, room: 9  },
+      { time: "1:00-2:00",    subject: 11, room: 9  },
+      { time: "2:00-3:00",    subject: 13, room: 12 },
+      { time: "3:15-4:15",    subject: 15, room: 14 },
+      { time: "4:15-5:15",    subject: 17, room: 16 },
+      { time: "5:15-6:15",    subject: 18, room: 16 }
+    ];
+  }
 
   for (const slot of slots) {
     const subject = row[slot.subject]?.toString().trim();
@@ -598,6 +464,31 @@ const parsePeriods = (row, semKey) => {
   return periods;
 };
 
+// Helper function for MSE format with time headers
+const parseMSEWithTimeHeaders = (row) => {
+  // This function would parse MSE files that have time slots in the header row
+  // Return appropriate slot mappings based on detected structure
+  const slots = [];
+  
+  // Scan row to find time patterns and build slot mapping
+  for (let i = 0; i < row.length; i++) {
+    const cell = row[i]?.toString().trim();
+    const timeMatch = cell?.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+    
+    if (timeMatch) {
+      // Found a time slot, assume subject is in same or next column
+      slots.push({
+        time: cell,
+        subject: i,
+        room: i + 1  // Room typically follows subject
+      });
+    }
+  }
+  
+  console.log('Detected MSE time header slots:', slots);
+  return slots;
+};
+
 /** --------------------------- PARSE SECTIONS ---------------------------- */
 
 const parseSections = (data) => {
@@ -636,7 +527,7 @@ const normalizeSectionName = (section) => {
     .replace(/CSCE-0?/, 'CSCE-')
     .replace(/CSE-0/, 'CSE-')
     .replace(/IT-0/, 'IT-')
-    .replace(/M-0/, 'M-')
+    .replace(/ME-0/, 'ME-')
     .replace(/MSE-0/, 'MSE-');
   
   normalized = normalized.replace(/(\D+)0+(\d+)/, '$1$2');

@@ -162,7 +162,7 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
                     setRollNumber("");
                   }
                 }}
-                placeholder="e.g., CSE-A or IT-1"
+                placeholder="e.g., CSE-A, IT-1, M-1"
                 className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 text-base"
               />
             </div>
@@ -188,7 +188,7 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
       <div className="mt-8 text-center">
         <p className="text-muted-foreground text-sm">
           Try roll numbers like: 2305070, 23051001<br />
-          Or select year + section: 2nd Year, CSE-A
+          Or select year + section: 2nd Year, CSE-A / M-1
         </p>
       </div>
     </div>
