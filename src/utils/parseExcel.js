@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { mechanicalTimetable, getMechanicalSectionFromRoll, getMechanicalSectionTimetable } from '../data/mechanicalTimetable';
 
 let cachedDataMap = {}; // cache per semester key ('4', '6', 'mse4')
 
@@ -430,23 +431,28 @@ const parseMSESection = (sectionData) => {
 const parseMSEPeriods = (row) => {
   const periods = [];
 
-  console.log('Parsing MSE periods, row:', row.slice(0, 15));
+  console.log('Parsing MSE periods, row:', row.slice(0, 25));
 
-  // MSE format: columns 2-11 contain subjects (0-based index)
+  // MSE format: each time slot maps to a column
   const slots = [
-    { time: "8:00-9:00",    col: 2 },
-    { time: "9:00-10:00",   col: 4 }, // Skipping empty columns based on structure
-    { time: "10:00-11:00",  col: 6 },
-    { time: "11:00-12:00",  col: 8 },
-    { time: "12:00-1:00",   col: 10 },
-    { time: "1:00-2:00",    col: 12 }, // Lunch might be here
-    { time: "2:00-3:00",    col: 14 },
-    { time: "3:00-4:00",    col: 16 },
-    { time: "4:00-5:00",    col: 18 },
-    { time: "5:00-6:00",    col: 20 }
+    { time: "8:00-9:00",    col: 2,  endTime: "9:00" },
+    { time: "9:00-10:00",   col: 4,  endTime: "10:00" },
+    { time: "10:00-11:00",  col: 6,  endTime: "11:00" },
+    { time: "11:00-12:00",  col: 8,  endTime: "12:00" },
+    { time: "12:00-1:00",   col: 10, endTime: "1:00" },
+    { time: "1:00-2:00",    col: 12, endTime: "2:00" },
+    { time: "2:00-3:00",    col: 14, endTime: "3:00" },
+    { time: "3:00-4:00",    col: 16, endTime: "4:00" },
+    { time: "4:00-5:00",    col: 18, endTime: "5:00" },
+    { time: "5:00-6:00",    col: 20, endTime: "6:00" }
   ];
 
-  for (const slot of slots) {
+  const skipIndices = new Set(); // Track already-processed slots
+
+  for (let i = 0; i < slots.length; i++) {
+    if (skipIndices.has(i)) continue;
+
+    const slot = slots[i];
     const subject = row[slot.col]?.toString().trim();
 
     console.log(`  Slot ${slot.time}: Col${slot.col}="${subject}"`);
@@ -479,25 +485,49 @@ const parseMSEPeriods = (row) => {
       continue;
     }
 
+    // Check if this subject spans multiple consecutive slots (merged cells)
+    let endSlotIndex = i;
+    for (let j = i + 1; j < slots.length; j++) {
+      const nextSubject = row[slots[j].col]?.toString().trim();
+      // If next cell has same content or is empty (merged cell continuation), extend the period
+      if (nextSubject === subject || (!nextSubject || nextSubject === "" || nextSubject === "---" || nextSubject === "***")) {
+        // Check if there's actual content spanning (not just empty slots)
+        if (nextSubject === subject) {
+          endSlotIndex = j;
+          skipIndices.add(j);
+        } else {
+          // Empty slot after a subject might be the end
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+
+    const startTime = slot.time.split('-')[0];
+    const endTime = slots[endSlotIndex].endTime;
+    const finalTime = endSlotIndex > i ? `${startTime}-${endTime}` : slot.time;
+
     // Determine room based on subject type
     let room = "-";
     if (subject.toLowerCase().includes('lab') || 
         subject.toLowerCase().includes('sessional') ||
         subject.includes('MKD') || 
         subject.includes('CP') ||
-        subject.includes('MDSM')) {
+        subject.includes('MDSM') ||
+        subject.includes('MP-II')) {
       room = "Lab";
     } else {
       room = "301"; // Default classroom
     }
 
     periods.push({
-      time: slot.time,
+      time: finalTime,
       subject,
       room,
       faculty: "-"
     });
-    console.log(`    -> Added: ${subject} in ${room}`);
+    console.log(`    -> Added: ${subject} in ${room} (${finalTime})`);
   }
 
   console.log(`Total periods parsed: ${periods.length}`);
@@ -694,9 +724,53 @@ const detectBranchFromSection = (section) => {
 /** --------------------------- TODAY TIMETABLE ---------------------------- */
 
 export const getTodayTimetable = async (input) => {
-  let { sections, timetable, semKey } = await parseExcelFiles(input);
-
   let section;
+
+  // Check if input is year|section format
+  if (input.includes('|')) {
+    const [year, sec] = input.split('|');
+    section = sec.trim().toUpperCase();
+    console.log(`Using year+section input: ${year} ${section}`);
+  } else {
+    // Roll number lookup - check mechanical sections first
+    const mechanicalSection = getMechanicalSectionFromRoll(input);
+    if (mechanicalSection) {
+      section = mechanicalSection;
+      console.log(`Roll number: ${input}, Found mechanical section: ${section}`);
+    }
+  }
+
+  // If it's a mechanical section (M1, M2, M3, M4), use mechanicalTimetable.ts
+  if (section && /^M[1-4]$/.test(section)) {
+    console.log(`Using mechanical timetable data for section ${section}`);
+    const sectionData = getMechanicalSectionTimetable(section);
+    
+    if (!sectionData) {
+      throw new Error(`Mechanical section ${section} not found in timetable`);
+    }
+
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const today = days[new Date().getDay()] || "Monday";
+    const todaySchedule = (sectionData.timetable[today] || []).filter(
+      period => period.subject !== "---" && period.subject !== "Weekend"
+    );
+
+    console.log(`Today (${today}) schedule for ${section}:`, todaySchedule);
+
+    if (todaySchedule.length === 0) {
+      return {
+        day: today,
+        section: section,
+        timetable: [],
+        message: "No classes today. Enjoy your break! 🎉"
+      };
+    }
+
+    return { day: today, section: section, timetable: todaySchedule };
+  }
+
+  // For non-mechanical sections, use Excel parsing
+  let { sections, timetable, semKey } = await parseExcelFiles(input);
 
   // Check if input is year|section format
   if (input.includes('|')) {
@@ -765,9 +839,44 @@ export const getTodayTimetable = async (input) => {
 /** --------------------------- FULL WEEK TIMETABLE ---------------------------- */
 
 export const getFullWeekTimetable = async (input) => {
-  let { sections, timetable, semKey } = await parseExcelFiles(input);
-
   let section;
+
+  // Check if input is year|section format
+  if (input.includes('|')) {
+    const [year, sec] = input.split('|');
+    section = sec.trim().toUpperCase();
+    console.log(`Using year+section input: ${year} ${section}`);
+  } else {
+    // Roll number lookup - check mechanical sections first
+    const mechanicalSection = getMechanicalSectionFromRoll(input);
+    if (mechanicalSection) {
+      section = mechanicalSection;
+      console.log(`Roll number: ${input}, Found mechanical section: ${section}`);
+    }
+  }
+
+  // If it's a mechanical section (M1, M2, M3, M4), use mechanicalTimetable.ts
+  if (section && /^M[1-4]$/.test(section)) {
+    console.log(`Using mechanical timetable data for section ${section}`);
+    const sectionData = getMechanicalSectionTimetable(section);
+    
+    if (!sectionData) {
+      throw new Error(`Mechanical section ${section} not found in timetable`);
+    }
+
+    // Filter out "---" and "Weekend" entries from all days
+    const filteredTimetable = {};
+    for (const [day, periods] of Object.entries(sectionData.timetable)) {
+      filteredTimetable[day] = periods.filter(
+        period => period.subject !== "---" && period.subject !== "Weekend"
+      );
+    }
+
+    return { section: section, fullTimetable: filteredTimetable };
+  }
+
+  // For non-mechanical sections, use Excel parsing
+  let { sections, timetable, semKey } = await parseExcelFiles(input);
 
   // Check if input is year|section format
   if (input.includes('|')) {

@@ -177,11 +177,9 @@ const InputCard: React.FC<InputCardProps> = ({ onSubmit }) => {
 
         <button
           type="submit"
-          className="glass-button w-full py-4 rounded-xl font-poppins font-semibold text-lg text-foreground glow-green"
+          className="glass-button w-full py-4 rounded-xl font-poppins font-semibold text-lg text-foreground glow-green hover:scale-101 hover:bg-gray-200 transition-transform bg-gray-300"
         >
-          {view === "today"
-            ? "Get Today's Timetable 📚"
-            : "Get Weekly Timetable 📅"}
+          Get Timetable 📚
         </button>
       </form>
 
