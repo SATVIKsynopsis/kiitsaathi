@@ -5495,6 +5495,7 @@ app.post('/api/check-shopkeeper-status', async (req, res) => {
     
     return res.json({ isShopkeeper });
     
+    
   } catch (error) {
     console.error('Error in shopkeeper status check:', error);
     return res.status(500).json({ error: 'Internal server error' });

@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Clock, MapPin, Calendar, User, BookOpen, Loader2, AlertCircle, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const API_URL = "https://kiitsaathi-hosted.onrender.com" 
+const API_URL = "https://kiitsaathi-timetable-teacher.onrender.com" 
+
 
 interface TimetableEntry {
   semester: number;
