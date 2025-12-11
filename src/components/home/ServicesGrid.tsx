@@ -369,6 +369,8 @@ export const ServicesGrid = () => {
               let isVisible: boolean;
               let replacementText: string | null = null;
 
+              
+
               if (isAdmin) {
                 // Admins see everything, regardless of visibility settings
                 isVisible = true;
