@@ -22,7 +22,8 @@ import {
   FileText,
   GraduationCap,
   Heart,
-  Brain
+  Brain,
+  UserSearch
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,15 @@ const services = [
     description: "View and manage your weekly and daily class schedules with ease.",
     price: "Free",
     gradient: "from-usc-orange to-fedkiit-green",
+  },
+  {
+    id: "teacher-timetable-finder",
+    icon: UserSearch,
+    title: "Teacher Timetable Finder",
+    description: "Search any teacher's schedule and find where they are teaching right now - with live status updates.",
+    price: "Free",
+    gradient: "from-purple-500 to-blue-600",
+    adminOnly: true,
   },
   {
     id: "study-material",
@@ -277,6 +287,7 @@ export const ServicesGrid = () => {
       "KIIT Societies, Fests and Sports": "/kiit-societies",
       "Lost & Found Portal": "/lost-and-found",
       "Timetable Saathi": "/timetable-saathi",
+      "Teacher Timetable Finder": "/teacher-timetable",
       "Campus Tour Booking": "/campus-tour-booking",
       "Resume Saathi": "/resume-saathi",
       "SplitSaathi – Group Expense Manager": "/split-saathi",
@@ -343,6 +354,14 @@ export const ServicesGrid = () => {
             services.map((service, index) => {
               const visibility = visibilityMap[service.id];
               const IconComponent = service.icon;
+
+              // Check if service is admin-only
+              const isAdminOnlyService = (service as any).adminOnly === true;
+
+              // Hide admin-only services from non-admin users completely
+              if (isAdminOnlyService && !isAdmin) {
+                return null;
+              }
 
               // CRITICAL: For non-admins, services are hidden by default unless explicitly visible
               // For admins, all services are shown regardless of visibility

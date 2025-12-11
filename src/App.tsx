@@ -69,6 +69,7 @@ import ResaleTransactions from "./pages/ResaleTransactions";
 import ResaleFavourites from "./pages/ResaleFavourites";
 import ResaleMyListings from "./pages/ResaleMyListings";
 import TimetableSaathi from "./pages/TimetableSaathi";//added
+import TeacherTimetable from "./pages/TeacherTimetable";
 
 
 // ✅ NEW IMPORTS
@@ -187,17 +188,18 @@ const App = () => {
                 <ScrollToTop />
                 <RouteLogger />
                 <Routes>
-                  {/* Home & Core Routes */}
+                  {/* Academic & Student Services */}
                   <Route path="/" element={<Index />} />
                   <Route path="/carton-transfer" element={<CartonTransfer />} />
                   <Route path="/senior-connect" element={<SeniorConnect />} />
                   <Route path="/handwritten-assignments" element={<HandwrittenAssignments />} />
                   <Route path="/lost-and-found" element={<LostAndFound />} />
                   <Route path="/split-saathi" element={<SplitSaathi />} />
-                  <Route path="/group-dashboard" element={<GroupDashboard />} />
+                  <Route path="/group-dashboard/:groupId" element={<GroupDashboard />} />
                   <Route path="/study-material" element={<StudyMaterial />} />
                   <Route path="/book-buyback" element={<BookBuyback />} />
                   <Route path="/timetable-saathi" element={<TimetableSaathi />} />
+                  <Route path="/teacher-timetable" element={<TeacherTimetable />} />
 
 
 
