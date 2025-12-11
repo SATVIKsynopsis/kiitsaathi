@@ -21,6 +21,7 @@ interface SectionData {
   rollRange?: {
     batch1?: { start: number; end: number };
     batch2?: { start: number; end: number };
+    
   };
   timetable: WeeklyTimetable;
 }
