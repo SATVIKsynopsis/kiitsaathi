@@ -6034,6 +6034,7 @@ async function loadTimetableData() {
   }
 }
 
+
 // Helper function to get current time slot
 function getCurrentTimeSlot() {
   const now = dayjs();
@@ -6141,7 +6142,6 @@ app.get('/api/teacher/status', (req, res) => {
       nextClass = todayClasses[0];
     }
     
-    // Get cabin (from any of teacher's classes)
     const cabin = todayClasses.length > 0 ? todayClasses[0].cabin : '';
     
     // Format classes to use displaySubject if available
