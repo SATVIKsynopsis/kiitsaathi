@@ -11,6 +11,22 @@ import fileUpload from 'express-fileupload';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 
+// ===== NEW IMPORTS FOR TIMETABLE FEATURE (DO NOT REMOVE) =====
+import xlsx from 'xlsx';
+import mammoth from 'mammoth';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
+import dayjs from 'dayjs';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// ===== END NEW IMPORTS =====
+
 
 const app = express();
 
@@ -5484,6 +5500,675 @@ app.post('/api/check-shopkeeper-status', async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// =====================================================================
+// ===== TEACHER TIMETABLE API - NEW FEATURE (DO NOT MODIFY ABOVE) =====
+// =====================================================================
+
+// In-memory storage for timetable data
+let timetableData = [];
+
+// Define timeslots
+const TIME_SLOTS = ["8-9", "9-10", "10-11", "11-12", "12-1", "1-2", "2-3", "3-4", "4-5"];
+
+// Helper function to normalize teacher names
+function normalizeTeacherName(name) {
+  if (!name || typeof name !== 'string') return '';
+  // Remove titles and normalize
+  return name.trim()
+    .toLowerCase()
+    .replace(/^(mr\.|dr\.|prof\.|ms\.|mrs\.)\s*/i, '')
+    .replace(/\s*\([^)]*\)/g, '') // Remove parenthetical content like "(On leave)"
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Helper function to find matching cabin with fuzzy matching
+function findCabinForTeacher(teacherName, cabinMap) {
+  if (!teacherName) return null;
+  
+  const normalized = normalizeTeacherName(teacherName);
+  
+  // Try exact match first
+  if (cabinMap[normalized]) {
+    return cabinMap[normalized];
+  }
+  
+  // Try fuzzy match - check if any cabin key contains or is contained in the teacher name
+  for (const [cabinTeacher, cabin] of Object.entries(cabinMap)) {
+    const cabinNormalized = normalizeTeacherName(cabinTeacher);
+    
+    // Check if last names match (assuming last word is last name)
+    const teacherLastName = normalized.split(' ').pop();
+    const cabinLastName = cabinNormalized.split(' ').pop();
+    
+    if (teacherLastName && cabinLastName && 
+        teacherLastName === cabinLastName && 
+        teacherLastName.length > 3) {
+      return cabin;
+    }
+  }
+  
+  return null;
+}
+
+// Parse cabin allocation from DOCX
+async function parseCabinAllocation() {
+  const cabinMap = {};
+  const cabinPath = path.join(__dirname, '..', 'src', 'data', 'Annexure I  Faculty Chamber allocation.docx');
+  
+  if (!fs.existsSync(cabinPath)) {
+    console.log('⚠️ Cabin allocation file not found, skipping...');
+    return cabinMap;
+  }
+  
+  try {
+    const buffer = fs.readFileSync(cabinPath);
+    const result = await mammoth.extractRawText({ buffer });
+    const text = result.value;
+    
+    console.log('📄 Parsing cabin allocation file...');
+    
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    
+    // Pattern: Serial Number, Name, Email, Room Number (repeating)
+    // Skip header lines and process in groups of 4
+    let i = 0;
+    
+    // Skip to the first serial number after headers
+    while (i < lines.length && !lines[i].match(/^\d+$/)) {
+      i++;
+    }
+    
+    // Now process in groups of 4: serial, name, email, room
+    while (i < lines.length - 3) {
+      const serial = lines[i];
+      const name = lines[i + 1];
+      const email = lines[i + 2];
+      const room = lines[i + 3];
+      
+      // Validate this is a valid entry
+      if (serial.match(/^\d+$/) && 
+          (name.includes('Mr.') || name.includes('Dr.') || name.includes('Prof.') || name.includes('Ms.') || name.includes('Mrs.')) &&
+          email.includes('@') &&
+          room.match(/^[A-Z]\d{3}[A-Z]$/)) {
+        
+        const normalizedName = normalizeTeacherName(name);
+        cabinMap[normalizedName] = room;
+        console.log(`  ✓ ${name} → ${room}`);
+        
+        i += 4; // Move to next entry
+      } else {
+        i++; // Skip invalid entry
+      }
+    }
+    
+    console.log(`✅ Loaded ${Object.keys(cabinMap).length} cabin allocations`);
+  } catch (error) {
+    console.error('❌ Error parsing cabin allocation:', error.message);
+    console.error(error);
+  }
+  
+  return cabinMap;
+}
+
+// Parse 4th semester mapping sheet (horizontal layout)
+function parse4thSemMapping() {
+  const mappingPath = path.join(__dirname, '..', 'src', 'data', 'KIIT Saathi Section Swapping 4th Sem (1).xlsx');
+  const mapping = {};
+  
+  if (!fs.existsSync(mappingPath)) {
+    console.log('⚠️ 4th sem mapping file not found, skipping...');
+    return mapping;
+  }
+  
+  try {
+    const workbook = xlsx.readFile(mappingPath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    
+    console.log(`\n📊 4th Sem Mapping - Parsing ${data.length} rows`);
+    
+    // Based on analysis: Row 0 is title, Row 1 is empty, Row 2 is headers, Row 3+ is data
+    if (data.length < 4) {
+      console.log('⚠️ Not enough rows in 4th sem mapping file');
+      return mapping;
+    }
+    
+    const headers = data[2]; // Row 2 has subject codes
+    const validHeaders = headers.filter(h => h && h.toString().trim().length > 0);
+    console.log(`Found ${validHeaders.length} subject columns: ${validHeaders.slice(0, 5).join(', ')}...`);
+    
+    // Process data rows starting from row 3
+    let processedSections = 0;
+    for (let i = 3; i < data.length; i++) {
+      const row = data[i];
+      const section = row[0]?.toString().trim();
+      
+      if (!section || section.length === 0) continue;
+      
+      let rowMappings = 0;
+      for (let j = 1; j < headers.length && j < row.length; j++) {
+        const subjectRaw = headers[j]?.toString().trim();
+        const teacher = row[j]?.toString().trim();
+        
+        if (!subjectRaw || !teacher || teacher === '-' || teacher.length === 0) continue;
+        
+        // Subject might be compound like "ED|IOC|OB", split and create mapping for each
+        const subjects = subjectRaw.split('|').map(s => s.trim()).filter(s => s.length > 0);
+        
+        for (const subject of subjects) {
+          const key = `4_${section}_${subject.toUpperCase()}`;
+          mapping[key] = normalizeTeacherName(teacher);
+          rowMappings++;
+          
+          if (Object.keys(mapping).length <= 10) {
+            console.log(`  ✓ [${section}] ${subject} → ${teacher}`);
+          }
+        }
+      }
+      
+      if (rowMappings > 0) {
+        processedSections++;
+        if (processedSections === 1) {
+          console.log(`First section (${section}): ${rowMappings} mappings created`);
+        }
+      }
+    }
+    
+    console.log(`✅ Loaded ${Object.keys(mapping).length} 4th sem mappings from ${processedSections} sections`);
+  } catch (error) {
+    console.error('❌ Error parsing 4th sem mapping:', error.message);
+    console.error(error.stack);
+  }
+  
+  return mapping;
+}
+
+// Parse 6th semester mapping sheet (horizontal layout)
+function parse6thSemMapping() {
+  const mappingPath = path.join(__dirname, '..', 'src', 'data', 'updated_sheet_with_colors(1).xlsx');
+  const mapping = {};
+  const electiveChoices = {}; // Track which elective each section chose
+  
+  if (!fs.existsSync(mappingPath)) {
+    console.log('⚠️ 6th sem mapping file not found, skipping...');
+    return { mapping, electiveChoices };
+  }
+  
+  try {
+    const workbook = xlsx.readFile(mappingPath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+    
+    if (data.length < 2) return { mapping, electiveChoices };
+    
+    const headers = data[0]; // Subject names
+    
+    // Find the PE-III Subject column index
+    const electiveColumnIndex = headers.findIndex(h => 
+      h?.toString().trim().toLowerCase().includes('pe-iii subject') ||
+      h?.toString().trim().toLowerCase().includes('pe-3 subject')
+    );
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const section = row[0]?.toString().trim();
+      
+      if (!section) continue;
+      
+      // Store the chosen elective subject for this section
+      if (electiveColumnIndex !== -1 && row[electiveColumnIndex]) {
+        const chosenElective = row[electiveColumnIndex].toString().trim().toUpperCase();
+        electiveChoices[section] = chosenElective;
+      }
+      
+      for (let j = 1; j < headers.length && j < row.length; j++) {
+        const subject = headers[j]?.toString().trim();
+        const teacher = row[j]?.toString().trim();
+        
+        if (subject && teacher) {
+          // First, create mapping with original subject (might be compound like CC/SPM/NLP/CV)
+          const key = `6_${section}_${subject}`;
+          mapping[key] = normalizeTeacherName(teacher);
+          
+          // ONLY split compound subjects that are electives (PE-III column indicates compound electives)
+          // Check if this subject looks like an elective: CC/SPM/NLP/CV or similar patterns
+          const isElectiveCompound = (subject.includes('/') || subject.includes('|')) && 
+                                     (subject.includes('CC') || subject.includes('SPM') || 
+                                      subject.includes('NLP') || subject.includes('CV') ||
+                                      subject.includes('IOT') || subject.includes('BDA'));
+          
+          if (isElectiveCompound) {
+            const individualSubjects = subject.split(/[\/\|]/).map(s => s.trim()).filter(s => s.length > 0);
+            for (const indivSubject of individualSubjects) {
+              const indivKey = `6_${section}_${indivSubject}`;
+              mapping[indivKey] = normalizeTeacherName(teacher);
+            }
+          }
+          
+          // Debug: Show CSE29 mappings and Nayan Kumar mappings
+          if (section === 'CSE29' || teacher.toLowerCase().includes('nayan')) {
+            console.log(`  [6th Sem] ${section} - ${subject} → ${teacher}`);
+          }
+        }
+      }
+    }
+    console.log(`✅ Loaded ${Object.keys(mapping).length} 6th sem mappings`);
+    console.log(`✅ Loaded ${Object.keys(electiveChoices).length} elective choices`);
+  } catch (error) {
+    console.error('❌ Error parsing 6th sem mapping:', error.message);
+  }
+  
+  return { mapping, electiveChoices };
+}
+
+// Parse 4th semester timetable
+function parse4thSemTimetable() {
+  const ttPath = path.join(__dirname, '..', 'src', 'data', '4th semester TT and Section Detail.xls');
+  const schedules = [];
+  
+  if (!fs.existsSync(ttPath)) {
+    console.log('⚠️ 4th sem timetable file not found, skipping...');
+    return schedules;
+  }
+  
+  try {
+    const workbook = xlsx.readFile(ttPath);
+    const sheetName = workbook.SheetNames[0];
+    console.log(`\n📊 4th Sem - Available sheets: ${workbook.SheetNames.join(', ')}`);
+    console.log(`   Using sheet: "${sheetName}"`);
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+    
+    if (data.length < 2) return schedules;
+    
+    const headers = data[0];
+    const dayIndex = headers.findIndex(h => h?.toString().toLowerCase().includes('day'));
+    const sectionIndex = headers.findIndex(h => h?.toString().toLowerCase().includes('section'));
+    
+    console.log(`   Headers (first 12): ${headers.slice(0, 12).map(h => h || 'empty').join(' | ')}`);
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const day = row[dayIndex]?.toString().trim();
+      const section = row[sectionIndex]?.toString().trim();
+      
+      if (!day || !section) continue;
+      
+      for (let j = 0; j < headers.length; j++) {
+        if (j === dayIndex || j === sectionIndex) continue;
+        
+        const header = headers[j]?.toString().trim();
+        const cellValue = row[j]?.toString().trim();
+        
+        // Check if this is a time slot column (not a ROOM column)
+        if (header && cellValue && cellValue !== '-' && cellValue.length > 0 && !header.toLowerCase().includes('room')) {
+          const timeSlot = header.replace(/\s+/g, '');
+          
+          // Look for corresponding ROOM column before this time slot
+          let classroom = '';
+          for (let k = j - 1; k >= 0; k--) {
+            const prevHeader = headers[k]?.toString().trim();
+            if (prevHeader && prevHeader.toLowerCase().includes('room')) {
+              const roomValue = row[k]?.toString().trim();
+              // Only set classroom if it's not empty, dash, or "---"
+              if (roomValue && roomValue !== '-' && roomValue !== '--' && roomValue !== '---' && roomValue.length > 0) {
+                classroom = roomValue;
+              }
+              break;
+            }
+            // Stop if we hit section/day column
+            if (k === dayIndex || k === sectionIndex) {
+              break;
+            }
+          }
+          
+          // Cell contains SUBJECT CODE only (not teacher name)
+          // Teacher will be filled from mapping: semester_section_subject
+          // Check if cell contains classroom info (format could be "SUBJECT-ROOM" or "SUBJECT ROOM")
+          let subjectCode = cellValue;
+          
+          // Try to extract classroom if format is like "ML-CR12" or "AI CR12"
+          const roomMatch = cellValue.match(/^(.+?)[\s\-](CR\d+|[A-Z]\d+|Room\s*\d+)/i);
+          if (roomMatch) {
+            subjectCode = roomMatch[1].trim();
+            if (!classroom) classroom = roomMatch[2].trim();
+          }
+          
+          schedules.push({
+            semester: 4,
+            section,
+            day,
+            timeSlot,
+            subject: subjectCode,
+            classroom,
+            teacher: '', // Will be filled from mapping
+            cabin: ''
+          });
+        }
+      }
+    }
+    console.log(`✅ Loaded ${schedules.length} 4th sem timetable entries`);
+    const withClassrooms = schedules.filter(e => e.classroom && e.classroom !== '-' && e.classroom !== '---');
+    console.log(`   Entries with classrooms: ${withClassrooms.length}`);
+  } catch (error) {
+    console.error('❌ Error parsing 4th sem timetable:', error.message);
+  }
+  
+  return schedules;
+}
+
+// Parse 6th semester timetable
+function parse6thSemTimetable() {
+  const ttPath = path.join(__dirname, '..', 'src', 'data', '6th sem Time-Table and Section Detail.xls');
+  const schedules = [];
+  
+  if (!fs.existsSync(ttPath)) {
+    console.log('⚠️ 6th sem timetable file not found, skipping...');
+    return schedules;
+  }
+  
+  try {
+    const workbook = xlsx.readFile(ttPath);
+    console.log(`\n📊 6th Sem Timetable - Available sheets: ${workbook.SheetNames.join(', ')}`);
+    const sheetName = workbook.SheetNames[0];
+    console.log(`   Using sheet: "${sheetName}"`);
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+    
+
+    
+    if (data.length < 2) return schedules;
+    
+    const headers = data[0];
+    const dayIndex = headers.findIndex(h => h?.toString().toLowerCase().includes('day'));
+    const sectionIndex = headers.findIndex(h => h?.toString().toLowerCase().includes('section'));
+    
+    console.log(`   Headers (first 12): ${headers.slice(0, 12).map(h => h || 'empty').join(' | ')}`);
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const day = row[dayIndex]?.toString().trim();
+      const section = row[sectionIndex]?.toString().trim();
+      
+      if (!day || !section) continue;
+      
+      for (let j = 0; j < headers.length; j++) {
+        if (j === dayIndex || j === sectionIndex) continue;
+        
+        const header = headers[j]?.toString().trim();
+        const cellValue = row[j]?.toString().trim();
+        
+        // Check if this is a time slot column (not a ROOM column)
+        if (header && cellValue && cellValue !== '-' && cellValue.length > 0 && !header.toLowerCase().includes('room')) {
+          const timeSlot = header.replace(/\s+/g, '');
+          
+          // Look for corresponding ROOM column before this time slot
+          let classroom = '';
+          for (let k = j - 1; k >= 0; k--) {
+            const prevHeader = headers[k]?.toString().trim();
+            if (prevHeader && prevHeader.toLowerCase().includes('room')) {
+              const roomValue = row[k]?.toString().trim();
+              if (roomValue && roomValue !== '-' && roomValue !== '--' && roomValue !== '---' && roomValue.length > 0) {
+                classroom = roomValue;
+              }
+              break;
+            }
+            // Stop if we hit section/day column
+            if (k === dayIndex || k === sectionIndex) {
+              break;
+            }
+          }
+          
+          // Cell contains SUBJECT CODE only (not teacher name)
+          // Teacher will be filled from mapping: semester_section_subject
+          // Check if cell contains classroom info (format could be "SUBJECT-ROOM" or "SUBJECT ROOM")
+          let subjectCode = cellValue;
+          
+          // Try to extract classroom if format is like "ML-CR12" or "AI CR12"
+          const roomMatch = cellValue.match(/^(.+?)[\s\-](CR\d+|[A-Z]\d+|Room\s*\d+)/i);
+          if (roomMatch) {
+            subjectCode = roomMatch[1].trim();
+            if (!classroom) classroom = roomMatch[2].trim();
+          }
+          
+          schedules.push({
+            semester: 6,
+            section,
+            day,
+            timeSlot,
+            subject: subjectCode,
+            classroom,
+            teacher: '', // Will be filled from mapping
+            cabin: ''
+          });
+        }
+      }
+    }
+    console.log(`✅ Loaded ${schedules.length} 6th sem timetable entries`);
+    
+    // Debug: Check if classrooms are being loaded
+    const withClassrooms = schedules.filter(e => e.classroom && e.classroom !== '-');
+    console.log(`   Entries with classrooms: ${withClassrooms.length}`);
+  } catch (error) {
+    console.error('❌ Error parsing 6th sem timetable:', error.message);
+  }
+  
+  return schedules;
+}
+
+// Main function to load all timetable data
+async function loadTimetableData() {
+  console.log('\n🔄 Loading timetable data...');
+  
+  try {
+    // Load all data
+    const cabinMap = await parseCabinAllocation();
+    const mapping4th = parse4thSemMapping();
+    const { mapping: mapping6th, electiveChoices } = parse6thSemMapping();
+    const schedule4th = parse4thSemTimetable();
+    const schedule6th = parse6thSemTimetable();
+    
+    // Merge schedules
+    const allSchedules = [...schedule4th, ...schedule6th];
+    
+    let cabinMatchCount = 0;
+    let teacherMatchCount = 0;
+    
+    // Attach teachers and cabins
+    for (const entry of allSchedules) {
+      const mapping = entry.semester === 4 ? mapping4th : mapping6th;
+      
+      // Normalize section name: remove dashes (CSE-1 → CSE1)
+      const normalizedSection = entry.section.replace(/-/g, '');
+      
+      // Normalize subject: try both | and / for compound subjects
+      let subjectNormalized = entry.subject.toUpperCase();
+      let subjectForMatching = subjectNormalized;
+      
+      // For 6th semester: If this is a compound subject (CC|SPM|NLP|CV), use actual chosen elective for matching
+      if (entry.semester === 6 && subjectNormalized.includes('|')) {
+        const chosenElective = electiveChoices[normalizedSection];
+        if (chosenElective) {
+          // Use chosen elective for BOTH teacher matching AND display
+          subjectForMatching = chosenElective;
+          entry.displaySubject = chosenElective; // Show only the chosen elective, not the compound
+        }
+      }
+      
+      const subjectWithSlash = subjectForMatching.replace(/\|/g, '/');
+      
+      // Try exact match first, then try with slash replacement
+      let key = `${entry.semester}_${normalizedSection}_${subjectForMatching}`;
+      let teacherName = mapping[key];
+      
+      if (!teacherName && subjectWithSlash !== subjectForMatching) {
+        // Try with slashes instead of pipes
+        key = `${entry.semester}_${normalizedSection}_${subjectWithSlash}`;
+        teacherName = mapping[key];
+      }
+      
+      if (teacherName) {
+        entry.teacher = teacherName;
+        teacherMatchCount++;
+        
+        // Find cabin
+        const cabin = findCabinForTeacher(teacherName, cabinMap);
+        if (cabin) {
+          entry.cabin = cabin;
+          cabinMatchCount++;
+        }
+      }
+    }
+    
+    timetableData = allSchedules;
+    console.log(`✅ Total timetable entries loaded: ${timetableData.length}`);
+    console.log(`✅ Entries with teachers: ${timetableData.filter(e => e.teacher).length}`);
+    console.log(`✅ Entries with cabins: ${timetableData.filter(e => e.cabin).length}`);
+    console.log();
+  } catch (error) {
+    console.error('❌ Error loading timetable data:', error);
+  }
+}
+
+// Helper function to get current time slot
+function getCurrentTimeSlot() {
+  const now = dayjs();
+  const hour = now.hour();
+  
+  if (hour >= 8 && hour < 9) return "8-9";
+  if (hour >= 9 && hour < 10) return "9-10";
+  if (hour >= 10 && hour < 11) return "10-11";
+  if (hour >= 11 && hour < 12) return "11-12";
+  if (hour >= 12 && hour < 13) return "12-1";
+  if (hour >= 13 && hour < 14) return "1-2";
+  if (hour >= 14 && hour < 15) return "2-3";
+  if (hour >= 15 && hour < 16) return "3-4";
+  if (hour >= 16 && hour < 17) return "4-5";
+  
+  return null;
+}
+
+// Helper function to get day name
+function getCurrentDay() {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[dayjs().day()];
+}
+
+// ===== NEW API 1: GET /api/teacher =====
+app.get('/api/teacher', (req, res) => {
+  try {
+    const { name, day } = req.query;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Teacher name is required' });
+    }
+    
+    const searchTerm = normalizeTeacherName(name);
+    
+    // Filter by teacher name (partial match - supports first name, last name, or full name)
+    let results = timetableData.filter(entry => 
+      entry.teacher && normalizeTeacherName(entry.teacher).includes(searchTerm)
+    );
+    
+    // Filter by day if provided
+    if (day) {
+      results = results.filter(entry => 
+        entry.day.toLowerCase() === day.toLowerCase()
+      );
+    }
+    
+    // Map results to use displaySubject if available
+    const formattedResults = results.map(entry => ({
+      ...entry,
+      subject: entry.displaySubject || entry.subject
+    }));
+    
+    return res.json({
+      teacher: name,
+      count: formattedResults.length,
+      schedule: formattedResults
+    });
+  } catch (error) {
+    console.error('Error in /api/teacher:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ===== NEW API 2: GET /api/teacher/status =====
+app.get('/api/teacher/status', (req, res) => {
+  try {
+    const { name } = req.query;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Teacher name is required' });
+    }
+    
+    const searchTerm = normalizeTeacherName(name);
+    const currentDay = getCurrentDay();
+    const currentSlot = getCurrentTimeSlot();
+    
+    // Get all classes for this teacher today (partial match - supports first name, last name, or full name)
+    const todayClasses = timetableData
+      .filter(entry => 
+        entry.teacher && 
+        normalizeTeacherName(entry.teacher).includes(searchTerm) &&
+        entry.day.toLowerCase() === currentDay.toLowerCase()
+      )
+      .sort((a, b) => {
+        const aIndex = TIME_SLOTS.indexOf(a.timeSlot);
+        const bIndex = TIME_SLOTS.indexOf(b.timeSlot);
+        return aIndex - bIndex;
+      });
+    
+    // Find current class
+    const currentClass = currentSlot ? todayClasses.find(entry => 
+      entry.timeSlot === currentSlot
+    ) : null;
+    
+    // Find next class
+    let nextClass = null;
+    if (currentSlot) {
+      const currentIndex = TIME_SLOTS.indexOf(currentSlot);
+      for (let i = currentIndex + 1; i < TIME_SLOTS.length; i++) {
+        nextClass = todayClasses.find(entry => entry.timeSlot === TIME_SLOTS[i]);
+        if (nextClass) break;
+      }
+    } else if (todayClasses.length > 0) {
+      nextClass = todayClasses[0];
+    }
+    
+    // Get cabin (from any of teacher's classes)
+    const cabin = todayClasses.length > 0 ? todayClasses[0].cabin : '';
+    
+    // Format classes to use displaySubject if available
+    const formatClass = (cls) => cls ? { ...cls, subject: cls.displaySubject || cls.subject } : null;
+    const formattedToday = todayClasses.map(formatClass);
+    
+    return res.json({
+      teacher: name,
+      cabin: cabin || 'Not assigned',
+      currentTime: dayjs().format('HH:mm'),
+      currentDay,
+      currentSlot,
+      current: formatClass(currentClass),
+      next: formatClass(nextClass),
+      today: formattedToday
+    });
+  } catch (error) {
+    console.error('Error in /api/teacher/status:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Load timetable data on server startup
+loadTimetableData();
+
+// ===== END OF TIMETABLE FEATURE =====
+// =====================================================================
 
 /* ---------------------- SERVER ---------------------- */
 const PORT = process.env.PORT || 3001;
