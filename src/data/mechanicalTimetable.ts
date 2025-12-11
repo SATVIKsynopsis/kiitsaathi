@@ -91,6 +91,7 @@ export const mechanicalTimetable: MechanicalTimetableData = {
   },
 
   sections: {
+    
     M1: {
       sectionName: "M1",
       rollRange: {
