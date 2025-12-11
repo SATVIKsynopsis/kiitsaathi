@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { mechanicalTimetable, getMechanicalSectionFromRoll, getMechanicalSectionTimetable } from '../data/mechanicalTimetable';
+import { civilTimetable, getCivilSectionTimetable } from '../data/civilTimetable';
 
 let cachedDataMap = {}; // cache per semester key ('4', '6', 'mse4')
 
@@ -10,6 +11,7 @@ let cachedDataMap = {}; // cache per semester key ('4', '6', 'mse4')
  * - year '2nd' => 4th semester (CSE/IT)
  * - year '3rd' => 6th semester (CSE/IT)
  * - section contains 'M1', 'M2', 'M3', 'M4' or 'ME' => MSE 4th semester
+ * - section contains 'C1', 'C2' => Civil 4th semester
  * - roll numbers: 2402001-2402110, 2409001-2409023, 2426001-2426021, 2502601-2502616, 2526301-2526304 => MSE
  */
 const semesterKeyFromInput = (input) => {
@@ -18,6 +20,11 @@ const semesterKeyFromInput = (input) => {
   // Check if it's a year|section format
   if (s.includes('|')) {
     const [year, section] = s.split('|');
+    
+    // Check if it's Civil Engineering (CE)
+    if (/^CE$/.test(section)) {
+      return 'civil4';
+    }
     
     // Check if it's Mechanical Engineering (M1, M2, M3, M4, ME-A, etc.)
     if (/M[1-4](?![A-Z])/.test(section) || section.includes('ME-') || section.includes('MSE')) {
@@ -740,6 +747,35 @@ export const getTodayTimetable = async (input) => {
     }
   }
 
+  // If it's a civil section (CE), use civilTimetable.ts
+  if (section && /^CE$/.test(section)) {
+    console.log(`Using civil timetable data for section ${section}`);
+    const sectionData = getCivilSectionTimetable(section);
+    
+    if (!sectionData) {
+      throw new Error(`Civil section ${section} not found in timetable`);
+    }
+
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const today = days[new Date().getDay()] || "Monday";
+    const todaySchedule = (sectionData.timetable[today] || []).filter(
+      period => period.subject !== "---" && period.subject !== "Weekend"
+    );
+
+    console.log(`Today (${today}) schedule for ${section}:`, todaySchedule);
+
+    if (todaySchedule.length === 0) {
+      return {
+        day: today,
+        section: section,
+        timetable: [],
+        message: "No classes today. Enjoy your break! 🎉"
+      };
+    }
+
+    return { day: today, section: section, timetable: todaySchedule };
+  }
+
   // If it's a mechanical section (M1, M2, M3, M4), use mechanicalTimetable.ts
   if (section && /^M[1-4]$/.test(section)) {
     console.log(`Using mechanical timetable data for section ${section}`);
@@ -769,7 +805,7 @@ export const getTodayTimetable = async (input) => {
     return { day: today, section: section, timetable: todaySchedule };
   }
 
-  // For non-mechanical sections, use Excel parsing
+  // For non-mechanical/non-civil sections, use Excel parsing
   let { sections, timetable, semKey } = await parseExcelFiles(input);
 
   // Check if input is year|section format
@@ -855,6 +891,26 @@ export const getFullWeekTimetable = async (input) => {
     }
   }
 
+  // If it's a civil section (CE), use civilTimetable.ts
+  if (section && /^CE$/.test(section)) {
+    console.log(`Using civil timetable data for section ${section}`);
+    const sectionData = getCivilSectionTimetable(section);
+    
+    if (!sectionData) {
+      throw new Error(`Civil section ${section} not found in timetable`);
+    }
+
+    // Filter out "---" and "Weekend" entries from all days
+    const filteredTimetable = {};
+    for (const [day, periods] of Object.entries(sectionData.timetable)) {
+      filteredTimetable[day] = periods.filter(
+        period => period.subject !== "---" && period.subject !== "Weekend"
+      );
+    }
+
+    return { section: section, fullTimetable: filteredTimetable };
+  }
+
   // If it's a mechanical section (M1, M2, M3, M4), use mechanicalTimetable.ts
   if (section && /^M[1-4]$/.test(section)) {
     console.log(`Using mechanical timetable data for section ${section}`);
@@ -875,7 +931,7 @@ export const getFullWeekTimetable = async (input) => {
     return { section: section, fullTimetable: filteredTimetable };
   }
 
-  // For non-mechanical sections, use Excel parsing
+  // For non-mechanical/non-civil sections, use Excel parsing
   let { sections, timetable, semKey } = await parseExcelFiles(input);
 
   // Check if input is year|section format
