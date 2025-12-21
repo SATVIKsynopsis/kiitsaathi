@@ -4932,7 +4932,7 @@ app.get("/api/group/:groupId", authenticateToken, async (req, res) => {
       .from("expenses")
       .select(`
         *,
-        paid_by_member:group_members(*)
+          paid_by_member:group_members!expenses_paid_by_member_id_fkey(*)
       `)
       .eq("group_id", groupId)
       .order("date", { ascending: false });
@@ -5346,7 +5346,10 @@ app.post("/api/user-groups", authenticateToken, async (req, res) => {
     // Load groups created by user
     const { data: createdGroups, error: createdError } = await supabase
       .from("groups")
-      .select("*")
+      .select(`
+  *,
+  expenses:expenses(amount)
+`)
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
 
@@ -5380,16 +5383,17 @@ app.post("/api/user-groups", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to load user groups" });
   }
 });
+
+
 app.post("/api/create-group", authenticateToken, async (req, res) => {
   try {
-    const userId = req.user_id; // ✅ From token
+    const userId = req.user_id;
     const { groupForm } = req.body;
 
     if (!groupForm?.name?.trim()) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ error: "Missing group name" });
     }
 
-    // Validate members
     const validMembers = (groupForm.members || []).filter(
       (m) => m.name && m.name.trim() !== ""
     );
@@ -5400,12 +5404,12 @@ app.post("/api/create-group", authenticateToken, async (req, res) => {
         .json({ error: "At least one member with a name is required" });
     }
 
-    // 1️⃣ Create the group
+    /* 1️⃣ Create group */
     const { data: group, error: groupError } = await supabase
       .from("groups")
       .insert({
-        name: groupForm.name,
-        description: groupForm.description,
+        name: groupForm.name.trim(),
+        description: groupForm.description || "",
         currency: groupForm.currency || "₹",
         created_by: userId,
       })
@@ -5414,29 +5418,67 @@ app.post("/api/create-group", authenticateToken, async (req, res) => {
 
     if (groupError) throw groupError;
 
-    // 2️⃣ Insert members
-    const { error: membersError } = await supabase
+    /* 2️⃣ Insert members */
+    const membersToInsert = validMembers.map((member) => ({
+      group_id: group.id,
+      name: member.name.trim(),
+      email_phone: "",
+      roll_number: member.rollNumber?.trim() || null,
+    }));
+
+    const { data: insertedMembers, error: membersError } = await supabase
       .from("group_members")
-      .insert(
-        validMembers.map((member) => ({
-          group_id: group.id,
-          name: member.name.trim(),
-          email_phone: "",
-          roll_number: member.rollNumber?.trim() || null,
-        }))
-      );
+      .insert(membersToInsert)
+      .select();
 
     if (membersError) throw membersError;
 
-    // Return the created group
-    res.status(200).json({
+   const initialAmount = Number(groupForm.initialAmount);
+
+
+if (Number.isFinite(initialAmount) && initialAmount > 0) {
+  const paidByMember = insertedMembers[0];
+
+  const { data: expense, error: expenseError } = await supabase
+    .from("expenses")
+    .insert({
+      group_id: group.id,
+      title: "Initial Group Expense",
+      amount: initialAmount,
+      paid_by_member_id: paidByMember.id,
+      date: new Date().toISOString().split("T")[0],
+      notes: "Initial amount added during group creation",
+    })
+    .select()
+    .single();
+
+  if (expenseError) throw expenseError;
+
+  const splitAmount = initialAmount / insertedMembers.length;
+
+  const splits = insertedMembers.map((member) => ({
+    expense_id: expense.id,
+    member_id: member.id,
+    amount: splitAmount,
+  }));
+
+  const { error: splitsError } = await supabase
+    .from("expense_splits")
+    .insert(splits);
+
+  if (splitsError) throw splitsError;
+}
+
+
+    /* ✅ DONE */
+    return res.status(200).json({
       message: "Group created successfully",
       group,
-      memberCount: validMembers.length,
+      memberCount: insertedMembers.length,
     });
   } catch (error) {
-    console.error("❌ Error creating group:", error.message);
-    res.status(500).json({ error: "Failed to create group" });
+    console.error("❌ Error creating group:", error);
+    return res.status(500).json({ error: "Failed to create group" });
   }
 });
 
