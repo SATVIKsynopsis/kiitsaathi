@@ -4833,25 +4833,12 @@ app.post("/api/profile/ensure", async (req, res) => {
         { id: user_id, email, full_name: full_name || email },
       ]);
       if (insertError) throw insertError;
-    if (!razorpay) {
-      return res.status(500).json({
-        error: 'Payment service not available - Razorpay not configured',
-      });
-    }
-    if (!amount || !receipt) {
-      return res.status(400).json({ error: 'Missing amount or receipt' });
     }
 
-    const order = await razorpay.orders.create({
-      amount: amount * 100, // rupees -> paise
-      currency,
-      receipt,
-    });
-  }
-    return res.json(order);
+    return res.json({ success: true });
   } catch (err) {
-    console.error('Error creating Razorpay order:', err);
-    return res.status(500).json({ error: 'Failed to create order' });
+    console.error('Error ensuring profile:', err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
