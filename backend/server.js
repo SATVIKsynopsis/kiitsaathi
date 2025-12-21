@@ -1,3 +1,4 @@
+
 import dotenv from 'dotenv';
 dotenv.config(); // ✅ Load environment variables FIRST
 
@@ -2416,6 +2417,43 @@ app.put('/api/food/admin/shops/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// API to get all 4th sem teacher names from mapping (for frontend dropdown)
+app.get('/api/teachers/4thsem', (req, res) => {
+  try {
+    const mapping = parse4thSemMapping();
+    // Get all unique teacher names from the mapping values
+    const teacherSet = new Set(Object.values(mapping));
+
+    // Additionally, extract all unique teacher names from the ED/IOC/OB column in the mapping file
+    const mappingPath = path.join(__dirname, '..', 'src', 'data', 'KIIT Saathi Section Swapping 4th Sem (1).xlsx');
+    if (fs.existsSync(mappingPath)) {
+      const workbook = xlsx.readFile(mappingPath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      // Row 2 is headers, find the ED/IOC/OB column index
+      if (data.length >= 3) {
+        const headers = data[2];
+        const electiveColIndex = headers.findIndex(h => h && h.toString().toUpperCase().includes('ED'));
+        if (electiveColIndex !== -1) {
+          for (let i = 3; i < data.length; i++) {
+            const row = data[i];
+            const teacher = row[electiveColIndex]?.toString().trim();
+            if (teacher && teacher.length > 0 && teacher !== '-') {
+              teacherSet.add(teacher);
+            }
+          }
+        }
+      }
+    }
+    // Remove empty/invalid names
+    const teachers = Array.from(teacherSet).filter(t => t && t.length > 0).sort();
+    res.json({ teachers });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load 4th sem teachers' });
+  }
+});
+
 // Get shopkeeper emails (SECURED - admin only)
 app.get('/api/food/admin/shopkeeper-emails', authenticateToken, async (req, res) => {
   try {
@@ -4795,25 +4833,12 @@ app.post("/api/profile/ensure", async (req, res) => {
         { id: user_id, email, full_name: full_name || email },
       ]);
       if (insertError) throw insertError;
-    if (!razorpay) {
-      return res.status(500).json({
-        error: 'Payment service not available - Razorpay not configured',
-      });
-    }
-    if (!amount || !receipt) {
-      return res.status(400).json({ error: 'Missing amount or receipt' });
     }
 
-    const order = await razorpay.orders.create({
-      amount: amount * 100, // rupees -> paise
-      currency,
-      receipt,
-    });
-  }
-    return res.json(order);
+    return res.json({ success: true });
   } catch (err) {
-    console.error('Error creating Razorpay order:', err);
-    return res.status(500).json({ error: 'Failed to create order' });
+    console.error('Error ensuring profile:', err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -5495,6 +5520,7 @@ app.post('/api/check-shopkeeper-status', async (req, res) => {
     
     return res.json({ isShopkeeper });
     
+    
   } catch (error) {
     console.error('Error in shopkeeper status check:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -5617,6 +5643,9 @@ function parse4thSemMapping() {
   const mappingPath = path.join(__dirname, '..', 'src', 'data', 'KIIT Saathi Section Swapping 4th Sem (1).xlsx');
   const mapping = {};
   
+  console.log('📍 Looking for 4th sem mapping at:', mappingPath);
+  console.log('📍 File exists:', fs.existsSync(mappingPath));
+  
   if (!fs.existsSync(mappingPath)) {
     console.log('⚠️ 4th sem mapping file not found, skipping...');
     return mapping;
@@ -5652,17 +5681,17 @@ function parse4thSemMapping() {
       for (let j = 1; j < headers.length && j < row.length; j++) {
         const subjectRaw = headers[j]?.toString().trim();
         const teacher = row[j]?.toString().trim();
-        
+      
         if (!subjectRaw || !teacher || teacher === '-' || teacher.length === 0) continue;
-        
-        // Subject might be compound like "ED|IOC|OB", split and create mapping for each
-        const subjects = subjectRaw.split('|').map(s => s.trim()).filter(s => s.length > 0);
-        
+      
+        // Subject might be compound like "ED/IOC/OB" or "ED|IOC|OB", split and create mapping for each
+        const subjects = subjectRaw.split(/[\/|]/).map(s => s.trim()).filter(s => s.length > 0);
+      
         for (const subject of subjects) {
           const key = `4_${section}_${subject.toUpperCase()}`;
           mapping[key] = normalizeTeacherName(teacher);
           rowMappings++;
-          
+        
           if (Object.keys(mapping).length <= 10) {
             console.log(`  ✓ [${section}] ${subject} → ${teacher}`);
           }
@@ -5767,7 +5796,7 @@ function parse6thSemMapping() {
 
 // Parse 4th semester timetable
 function parse4thSemTimetable() {
-  const ttPath = path.join(__dirname, '..', 'src', 'data', '4th semester TT and Section Detail.xls');
+  const ttPath = path.join(__dirname, '..', 'src', 'data', 'combined_timetable_2nd_yr (1).xls');
   const schedules = [];
   
   if (!fs.existsSync(ttPath)) {
@@ -5963,14 +5992,29 @@ function parse6thSemTimetable() {
 // Main function to load all timetable data
 async function loadTimetableData() {
   console.log('\n🔄 Loading timetable data...');
+  console.log('📁 Current directory:', __dirname);
   
   try {
     // Load all data
+    console.log('📖 Step 1: Loading cabin allocation...');
     const cabinMap = await parseCabinAllocation();
+    console.log(`✓ Loaded ${Object.keys(cabinMap).length} cabin assignments`);
+    
+    console.log('📖 Step 2: Loading 4th semester mapping...');
     const mapping4th = parse4thSemMapping();
+    console.log(`✓ Loaded ${Object.keys(mapping4th).length} 4th sem mappings`);
+    
+    console.log('📖 Step 3: Loading 6th semester mapping...');
     const { mapping: mapping6th, electiveChoices } = parse6thSemMapping();
+    console.log(`✓ Loaded ${Object.keys(mapping6th).length} 6th sem mappings`);
+    
+    console.log('📖 Step 4: Loading 4th semester timetable...');
     const schedule4th = parse4thSemTimetable();
+    console.log(`✓ Loaded ${schedule4th.length} 4th sem entries`);
+    
+    console.log('📖 Step 5: Loading 6th semester timetable...');
     const schedule6th = parse6thSemTimetable();
+    console.log(`✓ Loaded ${schedule6th.length} 6th sem entries`);
     
     // Merge schedules
     const allSchedules = [...schedule4th, ...schedule6th];
@@ -5981,41 +6025,54 @@ async function loadTimetableData() {
     // Attach teachers and cabins
     for (const entry of allSchedules) {
       const mapping = entry.semester === 4 ? mapping4th : mapping6th;
-      
-      // Normalize section name: remove dashes (CSE-1 → CSE1)
       const normalizedSection = entry.section.replace(/-/g, '');
-      
-      // Normalize subject: try both | and / for compound subjects
       let subjectNormalized = entry.subject.toUpperCase();
       let subjectForMatching = subjectNormalized;
-      
+
       // For 6th semester: If this is a compound subject (CC|SPM|NLP|CV), use actual chosen elective for matching
       if (entry.semester === 6 && subjectNormalized.includes('|')) {
         const chosenElective = electiveChoices[normalizedSection];
         if (chosenElective) {
-          // Use chosen elective for BOTH teacher matching AND display
           subjectForMatching = chosenElective;
-          entry.displaySubject = chosenElective; // Show only the chosen elective, not the compound
+          entry.displaySubject = chosenElective;
         }
       }
-      
+
+      // For 4th semester: If this is a compound elective (ED/IOC/OB or ED|IOC|OB), try to match each elective in mapping
+      if (entry.semester === 4 && (/ED[\/|]IOC[\/|]OB/.test(subjectNormalized) || /ED[\/|]OB[\/|]IOC/.test(subjectNormalized))) {
+        // Try to find a teacher for each elective for this section
+        const electives = ['ED', 'IOC', 'OB'];
+        for (const elective of electives) {
+          let key = `4_${normalizedSection}_${elective}`;
+          let teacherName = mapping[key];
+          if (teacherName) {
+            entry.teacher = teacherName;
+            entry.displaySubject = elective;
+            teacherMatchCount++;
+            // Find cabin
+            const cabin = findCabinForTeacher(teacherName, cabinMap);
+            if (cabin) {
+              entry.cabin = cabin;
+              cabinMatchCount++;
+            }
+            break; // Only assign the first found elective/teacher
+          }
+        }
+        continue; // Skip the rest of the loop for this entry
+      }
+
       const subjectWithSlash = subjectForMatching.replace(/\|/g, '/');
-      
-      // Try exact match first, then try with slash replacement
       let key = `${entry.semester}_${normalizedSection}_${subjectForMatching}`;
       let teacherName = mapping[key];
-      
+
       if (!teacherName && subjectWithSlash !== subjectForMatching) {
-        // Try with slashes instead of pipes
         key = `${entry.semester}_${normalizedSection}_${subjectWithSlash}`;
         teacherName = mapping[key];
       }
-      
+
       if (teacherName) {
         entry.teacher = teacherName;
         teacherMatchCount++;
-        
-        // Find cabin
         const cabin = findCabinForTeacher(teacherName, cabinMap);
         if (cabin) {
           entry.cabin = cabin;
@@ -6031,6 +6088,11 @@ async function loadTimetableData() {
     console.log();
   } catch (error) {
     console.error('❌ Error loading timetable data:', error);
+    console.error('Error message:', error.message);
+    console.error('Stack trace:', error.stack);
+    console.error('Current directory:', __dirname);
+    // Initialize empty data to prevent crashes
+    timetableData = [];
   }
 }
 
@@ -6058,6 +6120,17 @@ function getCurrentDay() {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return days[dayjs().day()];
 }
+
+// ===== HEALTH CHECK ENDPOINT =====
+app.get('/api/teacher/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Teacher Timetable API is running',
+    dataLoaded: timetableData.length > 0,
+    totalEntries: timetableData.length,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // ===== NEW API 1: GET /api/teacher =====
 app.get('/api/teacher', (req, res) => {
@@ -6163,6 +6236,7 @@ app.get('/api/teacher/status', (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Load timetable data on server startup
 loadTimetableData();
