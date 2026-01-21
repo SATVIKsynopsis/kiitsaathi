@@ -1,10 +1,10 @@
-
 import dotenv from 'dotenv';
 dotenv.config(); // ✅ Load environment variables FIRST
 
 import express from 'express';
 import cors from 'cors';
 import Razorpay from 'razorpay';
+
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import fileUpload from 'express-fileupload';
@@ -222,6 +222,37 @@ app.get('/health', async (req, res) => {
 // ============================================
 // ADMIN ROUTES
 // ============================================
+
+// Check if the authenticated user has an admin role (email from access token)
+app.get('/api/admin/check', authenticateToken, async (req, res) => {
+  try {
+    const normalizedEmail = req.user?.email?.toLowerCase();
+
+    if (!normalizedEmail) {
+      return res.status(400).json({ success: false, error: 'Email missing in token' });
+    }
+
+    const { data, error } = await supabase
+      .from('admin_roles')
+      .select('email')
+      .ilike('email', normalizedEmail)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Admin check error:', error.message);
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+
+    if (!data) {
+      return res.status(403).json({ success: false, error: 'User is not an admin' });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Admin check exception:', err);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
 
 // Admin Dashboard Data
 app.get("/api/admin/dashboard-data", async (req, res) => {
@@ -4154,12 +4185,12 @@ app.post('/api/policy/privacy', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Missing privacy_policy_version' });
     }
 
-    // Check if record exists
+    // Check if record exists (use maybeSingle to avoid error on empty result)
     const { data: existing } = await supabase
       .from('policy_acceptances')
       .select('*')
       .eq('user_id', user_id)
-      .single();
+      .maybeSingle();
 
     const updateData = {
       user_id,
@@ -4251,12 +4282,12 @@ app.post('/api/policy/terms', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Missing terms_conditions_version' });
     }
 
-    // Check if record exists
+    // Check if record exists (use maybeSingle to avoid error on empty result)
     const { data: existing } = await supabase
       .from('policy_acceptances')
       .select('*')
       .eq('user_id', user_id)
-      .single();
+      .maybeSingle();
 
     const updateData = {
       user_id,
