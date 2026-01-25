@@ -756,11 +756,18 @@ app.post('/api/auth/signup', async (req, res) => {
   try {
     const { email, password, fullName } = req.body;
 
-    if (!email.endsWith('@kiit.ac.in') && !email.endsWith('@shop.com')) {
-      return res.status(400).json({ 
-        error: 'Only KIIT College Email IDs (@kiit.ac.in) and shopkeeper accounts (@shop.com) are allowed to sign up or log in to KIIT Saathi.' 
-      });
-    }
+    if (
+  !email.endsWith('@kiit.ac.in') &&
+  !email.endsWith('@ksom.ac.in') &&
+  !email.endsWith('@kiitbiotech.ac.in') &&
+  !email.endsWith('@kls.ac.in') &&
+  !email.endsWith('@shop.com')
+) {
+  return res.status(400).json({ 
+    error: 'Only KIIT College Email IDs (@kiit.ac.in, @ksom.ac.in, @kiitbiotech.ac.in, @kls.ac.in) and shopkeeper accounts (@shop.com) are allowed to sign up or log in to KIIT Saathi.' 
+  });
+}
+
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -795,11 +802,18 @@ app.post('/api/auth/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email.endsWith('@kiit.ac.in') && !email.endsWith('@shop.com')) {
-      return res.status(400).json({ 
-        error: 'Only KIIT College Email IDs (@kiit.ac.in) and shopkeeper accounts (@shop.com) are allowed to sign up or log in to KIIT Saathi.' 
-      });
-    }
+    if (
+  !email.endsWith('@kiit.ac.in') &&
+  !email.endsWith('@ksom.ac.in') &&
+  !email.endsWith('@kiitbiotech.ac.in') &&
+  !email.endsWith('@kls.ac.in') &&
+  !email.endsWith('@shop.com')
+) {
+  return res.status(400).json({ 
+    error: 'Only KIIT College Email IDs (@kiit.ac.in, @ksom.ac.in, @kiitbiotech.ac.in, @kls.ac.in) and shopkeeper accounts (@shop.com) are allowed to sign up or log in to KIIT Saathi.' 
+  });
+}
+
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -871,11 +885,18 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    if (!email.endsWith('@kiit.ac.in')) {
-      return res.status(400).json({
-        error: 'Only KIIT College Email IDs (@kiit.ac.in) are allowed' 
-      });
-    }
+   if (
+  !email.endsWith('@kiit.ac.in') &&
+  !email.endsWith('@ksom.ac.in') &&
+  !email.endsWith('@kiitbiotech.ac.in') &&
+  !email.endsWith('@kls.ac.in') &&
+  !email.endsWith('@shop.com')
+) {
+  return res.status(400).json({
+    error: 'Password reset is only allowed for KIIT and shopkeeper email accounts.' 
+  });
+}
+
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.FRONTEND_URL || 'https://ksaathi.vercel.app'}/reset-password`,
