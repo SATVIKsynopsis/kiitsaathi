@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import Razorpay from 'razorpay';
 
+
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import fileUpload from 'express-fileupload';
@@ -4421,10 +4422,24 @@ app.get("/api/study-materials", async (req, res) => {
       .order('created_at', { ascending: false });
 
     // Apply filters only if the columns exist
-    if (subject) query = query.eq('subject', subject);
-    if (semester) query = query.eq('semester', semester);
-    if (year) query = query.eq('year', year);
-    if (search) query = query.ilike('title', `%${search}%`);
+    if (subject) {
+      console.log('🔎 Filtering by subject:', subject);
+      query = query.eq('subject', subject);
+    }
+    if (semester) {
+      console.log('🔎 Filtering by semester:', semester);
+      query = query.eq('semester', semester);
+    }
+    if (year) {
+      // Convert year to integer for proper comparison since it's stored as integer in DB
+      const yearInt = parseInt(year, 10);
+      console.log('🔎 Filtering by year:', year, '-> converted to:', yearInt, 'Type:', typeof yearInt);
+      query = query.eq('year', yearInt);
+    }
+    if (search) {
+      console.log('🔎 Filtering by search:', search);
+      query = query.ilike('title', `%${search}%`);
+    }
 
     const { data, error } = await query;
     if (error) {
@@ -4433,6 +4448,17 @@ app.get("/api/study-materials", async (req, res) => {
     }
 
     console.log(`📊 Found ${data?.length || 0} materials in ${tableName} table`);
+    if (year) {
+      console.log(`🎯 Year filter results: requested year=${year}, found ${data?.length || 0} items`);
+    }
+    if (data && data.length > 0) {
+      console.log('📝 Sample of returned data:', {
+        id: data[0].id,
+        title: data[0].title,
+        year: data[0].year,
+        yearType: typeof data[0].year
+      });
+    }
 
     // If no data, return empty array
     if (!data || data.length === 0) {
