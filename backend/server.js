@@ -298,9 +298,17 @@ app.get("/api/admin/dashboard-data", async (req, res) => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    const { count: totalUsers } = await supabase
+    // Get total users count from profiles table
+    const { count: totalUsers, error: usersError } = await supabase
       .from("profiles")
-      .select("*", { count: "exact", head: true });
+      .select("id", { count: "exact", head: true });
+
+    
+    if (usersError) {
+      console.error("Error fetching users count:", usersError);
+    }
+    
+    console.log("Total users count from profiles:", totalUsers);
 
     const today = new Date().toISOString().split("T")[0];
     const actionsToday =
@@ -6362,6 +6370,292 @@ app.get('/api/teacher/status', (req, res) => {
 loadTimetableData();
 
 // ===== END OF TIMETABLE FEATURE =====
+// =====================================================================
+
+// ===== ANALYTICS FEATURE =====
+// =====================================================================
+
+// Track visitor
+app.post('/api/analytics/track-visitor', async (req, res) => {
+  try {
+    const { sessionId, userId, pageUrl, referrer } = req.body;
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
+    // Insert visitor session
+    const { error: sessionError } = await supabase
+      .from('visitor_sessions')
+      .insert({
+        session_id: sessionId,
+        user_id: userId || null,
+        ip_address: ip,
+        user_agent: userAgent,
+        page_url: pageUrl,
+        referrer: referrer
+      });
+
+    if (sessionError) throw sessionError;
+
+    // Update daily visitor count
+    const today = new Date().toISOString().split('T')[0];
+    const { data: existingVisitor, error: fetchError } = await supabase
+      .from('website_visitors')
+      .select('*')
+      .eq('visit_date', today)
+      .single();
+
+    if (existingVisitor) {
+      const { error: updateError } = await supabase
+        .from('website_visitors')
+        .update({ 
+          page_views: existingVisitor.page_views + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('visit_date', today);
+      
+      if (updateError) throw updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from('website_visitors')
+        .insert({
+          visit_date: today,
+          visitor_count: 1,
+          unique_visitors: 1,
+          page_views: 1
+        });
+      
+      if (insertError) throw insertError;
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking visitor:', error);
+    res.status(500).json({ error: 'Failed to track visitor' });
+  }
+});
+
+// Track service usage
+app.post('/api/analytics/track-service', async (req, res) => {
+  try {
+    const { serviceName } = req.body;
+
+    if (!serviceName) {
+      return res.status(400).json({ error: 'Service name is required' });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Update cumulative service_usage table
+    const { data: existingService, error: fetchError } = await supabase
+      .from('service_usage')
+      .select('*')
+      .eq('service_name', serviceName)
+      .single();
+
+    if (existingService) {
+      const { error: updateError } = await supabase
+        .from('service_usage')
+        .update({ 
+          usage_count: existingService.usage_count + 1,
+          last_used: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('service_name', serviceName);
+      
+      if (updateError) throw updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from('service_usage')
+        .insert({
+          service_name: serviceName,
+          usage_count: 1,
+          last_used: new Date().toISOString()
+        });
+      
+      if (insertError) throw insertError;
+    }
+
+    // Update daily_service_usage table for daily/monthly tracking
+    const { data: existingDaily, error: dailyFetchError } = await supabase
+      .from('daily_service_usage')
+      .select('*')
+      .eq('service_name', serviceName)
+      .eq('usage_date', today)
+      .single();
+
+    if (existingDaily) {
+      const { error: dailyUpdateError } = await supabase
+        .from('daily_service_usage')
+        .update({ 
+          usage_count: existingDaily.usage_count + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('service_name', serviceName)
+        .eq('usage_date', today);
+      
+      if (dailyUpdateError) throw dailyUpdateError;
+    } else {
+      const { error: dailyInsertError } = await supabase
+        .from('daily_service_usage')
+        .insert({
+          service_name: serviceName,
+          usage_date: today,
+          usage_count: 1
+        });
+      
+      if (dailyInsertError) throw dailyInsertError;
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking service:', error);
+    res.status(500).json({ error: 'Failed to track service' });
+  }
+});
+
+// Get analytics data for admin dashboard
+app.get('/api/admin/analytics', async (req, res) => {
+  try {
+    // Get visitor data for last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    
+    const { data: visitorData, error: visitorError } = await supabase
+      .from('website_visitors')
+      .select('*')
+      .gte('visit_date', sixMonthsAgo.toISOString().split('T')[0])
+      .order('visit_date', { ascending: true });
+
+    if (visitorError) throw visitorError;
+
+    // Get service usage data
+    const { data: serviceData, error: serviceError } = await supabase
+      .from('service_usage')
+      .select('*')
+      .order('usage_count', { ascending: false });
+
+    if (serviceError) throw serviceError;
+
+    // Get daily service usage data for last 6 months
+    const { data: dailyServiceData, error: dailyServiceError } = await supabase
+      .from('daily_service_usage')
+      .select('*')
+      .gte('usage_date', sixMonthsAgo.toISOString().split('T')[0])
+      .order('usage_date', { ascending: true });
+
+    if (dailyServiceError) throw dailyServiceError;
+
+    // Calculate monthly service usage statistics
+    const monthlyServiceStats = {};
+    
+    (dailyServiceData || []).forEach(day => {
+      const date = new Date(day.usage_date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlyServiceStats[monthKey]) {
+        monthlyServiceStats[monthKey] = {};
+      }
+      
+      if (!monthlyServiceStats[monthKey][day.service_name]) {
+        monthlyServiceStats[monthKey][day.service_name] = 0;
+      }
+      
+      monthlyServiceStats[monthKey][day.service_name] += day.usage_count;
+    });
+
+    // Calculate monthly statistics
+    const monthlyStats = {};
+    const dailyStats = {};
+    
+    visitorData.forEach(day => {
+      const date = new Date(day.visit_date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const dayKey = day.visit_date;
+      
+      // Monthly aggregation
+      if (!monthlyStats[monthKey]) {
+        monthlyStats[monthKey] = {
+          month: monthKey,
+          totalVisitors: 0,
+          totalPageViews: 0,
+          days: 0
+        };
+      }
+      monthlyStats[monthKey].totalVisitors += day.visitor_count;
+      monthlyStats[monthKey].totalPageViews += day.page_views;
+      monthlyStats[monthKey].days += 1;
+
+      // Daily stats
+      dailyStats[dayKey] = {
+        date: dayKey,
+        visitors: day.visitor_count,
+        pageViews: day.page_views,
+        uniqueVisitors: day.unique_visitors
+      };
+    });
+
+    // Convert to arrays and sort
+    const monthlyArray = Object.values(monthlyStats).sort((a, b) => 
+      a.month.localeCompare(b.month)
+    );
+
+    const dailyArray = Object.values(dailyStats).sort((a, b) => 
+      a.date.localeCompare(b.date)
+    );
+
+    // Calculate growth rates
+    const latestMonth = monthlyArray[monthlyArray.length - 1];
+    const previousMonth = monthlyArray[monthlyArray.length - 2];
+    const monthlyGrowth = previousMonth 
+      ? ((latestMonth.totalVisitors - previousMonth.totalVisitors) / previousMonth.totalVisitors * 100).toFixed(2)
+      : 0;
+
+    // Get today's stats
+    const today = new Date().toISOString().split('T')[0];
+    const todayStats = dailyStats[today] || { visitors: 0, pageViews: 0, uniqueVisitors: 0 };
+
+    // Get yesterday's stats for daily comparison
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayKey = yesterday.toISOString().split('T')[0];
+    const yesterdayStats = dailyStats[yesterdayKey] || { visitors: 0, pageViews: 0, uniqueVisitors: 0 };
+    const dailyGrowth = yesterdayStats.visitors 
+      ? ((todayStats.visitors - yesterdayStats.visitors) / yesterdayStats.visitors * 100).toFixed(2)
+      : 0;
+
+    res.json({
+      visitors: {
+        today: todayStats,
+        yesterday: yesterdayStats,
+        daily: dailyArray,
+        monthly: monthlyArray,
+        dailyGrowth: parseFloat(dailyGrowth),
+        monthlyGrowth: parseFloat(monthlyGrowth)
+      },
+      services: serviceData.map(service => ({
+        name: service.service_name,
+        count: service.usage_count,
+        lastUsed: service.last_used
+      })),
+      servicesByMonth: monthlyServiceStats,
+      dailyServiceUsage: dailyServiceData || [],
+      totalStats: {
+        totalVisitors: visitorData.reduce((sum, day) => sum + day.visitor_count, 0),
+        totalPageViews: visitorData.reduce((sum, day) => sum + day.page_views, 0),
+        avgDailyVisitors: visitorData.length > 0 
+          ? (visitorData.reduce((sum, day) => sum + day.visitor_count, 0) / visitorData.length).toFixed(0)
+          : '0',
+        totalServices: serviceData.length,
+        totalServiceUsage: serviceData.reduce((sum, service) => sum + service.usage_count, 0)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching analytics:', error);
+    res.status(500).json({ error: 'Failed to fetch analytics data' });
+  }
+});
+
+// ===== END OF ANALYTICS FEATURE =====
 // =====================================================================
 
 /* ---------------------- SERVER ---------------------- */
