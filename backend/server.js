@@ -349,6 +349,70 @@ app.get("/api/admin/dashboard-data", async (req, res) => {
   }
 });
 
+async function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
+
+  console.log('🔐 Auth attempt:', { 
+    hasAuthHeader: !!authHeader, 
+    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+    path: req.path 
+  });
+
+  if (!token) {
+    console.error('❌ No token provided');
+    return res.status(401).json({ error: 'Access denied. No token provided.' });
+  }
+
+  try {
+    // ✅ Verify token using Supabase Auth system
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      console.error('❌ Token verification failed:', error?.message || 'No user found');
+      return res.status(403).json({ error: 'Invalid or expired token.' });
+    }
+
+    console.log('✅ Token verified for user:', user.email);
+    
+    // ✅ Attach user data to request
+    req.user = user;
+    req.user_id = user.id;
+
+    // ✅ Fetch user role from admin_roles table
+    if (user.email) {
+      const { data: roleData, error: roleError } = await supabase
+        .from('admin_roles')
+        .select('role_type')
+        .eq('email', user.email)
+        .single();
+
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.warn('⚠️  Could not fetch user role:', roleError.message);
+        req.user.role = 'user';
+      } else if (roleData) {
+        req.user.role = roleData.role_type;
+        console.log('✅ User role fetched:', roleData.role_type);
+      } else {
+        req.user.role = 'user';
+      }
+    } else {
+      req.user.role = 'user';
+    }
+    
+    next();
+  } catch (err) {
+    console.error('❌ Token verification exception:', err);
+    return res.status(403).json({ error: 'Invalid or expired token.' });
+  }
+}
+
+// ✅ Helper function to check if user is admin or editor
+function hasAdminOrEditorRole(role) {
+  return role === 'admin' || role === 'editor';
+}
+
+
 // Approve Item
 app.post('/api/admin/approve-item', async (req, res) => {
   try {
