@@ -53,11 +53,6 @@ const allowedOrigins = [
 // ✅ MIDDLEWARE MUST COME FIRST (before any routes)
 
 
-
-
-
-
-
 // CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
@@ -338,27 +333,34 @@ async function authenticateToken(req, res, next) {
     req.user = user;
     req.user_id = user.id;
 
-    // ✅ Fetch user role from admin_roles table
-    if (user.email) {
-      const { data: roleData, error: roleError } = await supabase
-        .from('admin_roles')
-        .select('role_type')
-        .eq('email', user.email)
-        .single();
+// In authenticateToken function, update the role fetching section:
 
-      if (roleError && roleError.code !== 'PGRST116') {
-        console.warn('⚠️  Could not fetch user role:', roleError.message);
-        req.user.role = 'user';
-      } else if (roleData) {
-        req.user.role = roleData.role_type;
-        console.log('✅ User role fetched:', roleData.role_type);
-      } else {
-        req.user.role = 'user';
-      }
-    } else {
-      req.user.role = 'user';
-    }
-    
+// ✅ Fetch user role from admin_roles table with debugging
+if (user.email) {
+  const normalizedEmail = user.email.toLowerCase();
+  console.log('🔍 Looking for email:', normalizedEmail);
+  
+  const { data: roleData, error: roleError } = await supabase
+    .from('admin_roles')
+    .select('role_type')
+    .eq('email', normalizedEmail)  // ✅ Use eq() since both are lowercase
+    .maybeSingle();
+
+  console.log('📋 Role Query Result:', { roleData, roleError });
+
+  if (roleError && roleError.code !== 'PGRST116') {
+    console.warn('⚠️  Could not fetch user role:', roleError.message);
+    req.user.role = 'user';
+  } else if (roleData) {
+    req.user.role = roleData.role_type;
+    console.log('✅ User role set to:', roleData.role_type);
+  } else {
+    console.log('⚠️  No role found for email:', normalizedEmail);
+    req.user.role = 'user';
+  }
+} else {
+  req.user.role = 'user';
+}
     next();
   } catch (err) {
     console.error('❌ Token verification exception:', err);
@@ -4846,6 +4848,223 @@ app.post('/api/admin/study-material-reject', async (req, res) => {
   }
 });
 
+// ============================================
+// STUDY MATERIAL EDIT/DELETE ENDPOINTS
+// ============================================
+
+// ✅ PUT /api/study-material/:id - Edit study material (SECURED)
+app.put('/api/study-material/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, subject, semester, branch, year, folder_type } = req.body;
+
+    console.log('✏️ PUT /api/study-material/:id', {
+      id,
+      folder_type,
+      userEmail: req.user?.email,
+      userRole: req.user?.role
+    });
+
+    // ✅ Check if user has admin or editor role
+    if (!hasAdminOrEditorRole(req.user?.role)) {
+      console.warn('❌ Unauthorized update attempt:', req.user?.email, req.user?.role);
+      return res.status(403).json({ 
+        error: 'Unauthorized. Admin or Editor role required.' 
+      });
+    }
+
+    // ✅ Validate ID
+    const numId = parseInt(id);
+    if (isNaN(numId) || numId <= 0) {
+      console.warn('❌ Invalid material ID:', id);
+      return res.status(400).json({ error: 'Invalid material ID' });
+    }
+
+    // ✅ Validate required fields
+    if (!title?.trim() || !subject || !semester) {
+      console.warn('❌ Missing required fields');
+      return res.status(400).json({ 
+        error: 'Missing required fields: title, subject, semester' 
+      });
+    }
+
+    // ✅ Validate and determine table name
+    const validTypes = ['notes', 'pyqs', 'ebooks', 'ppts'];
+    const tableName = folder_type && validTypes.includes(folder_type) ? folder_type : 'notes';
+    
+    console.log(`📋 Using table: ${tableName} for ID: ${numId}`);
+
+    // ✅ Check if material exists first
+    const { data: existingMaterial, error: checkError } = await supabase
+      .from(tableName)
+      .select('id, title, status')
+      .eq('id', numId)
+      .single();
+
+    if (checkError || !existingMaterial) {
+      console.warn(`❌ Material not found in table '${tableName}' with ID ${numId}:`, checkError?.message);
+      return res.status(404).json({ 
+        error: `Material not found in ${tableName} table`,
+        details: checkError?.message || 'No record found'
+      });
+    }
+
+    if (existingMaterial.status !== 'active') {
+      console.warn(`⚠️ Material not active. Status: ${existingMaterial.status}`);
+      return res.status(400).json({ 
+        error: `Cannot update material. Current status: ${existingMaterial.status}` 
+      });
+    }
+
+    console.log(`✏️ Updating material: "${existingMaterial.title}" (ID: ${numId})`);
+
+    // ✅ Update the material
+    const { data: updatedData, error: updateError } = await supabase
+      .from(tableName)
+      .update({
+        title: title.trim(),
+        subject,
+        semester,
+        branch: branch || null,
+        year: year || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', numId)
+      .eq('status', 'active')
+      .select('*')
+      .single();
+
+    if (updateError) {
+      console.error('❌ Database update error:', updateError);
+      return res.status(500).json({ 
+        error: 'Failed to update material in database',
+        details: updateError.message
+      });
+    }
+
+    console.log('✅ Material updated successfully:', {
+      id: numId,
+      table: tableName,
+      updatedBy: req.user.email,
+      title: title.trim()
+    });
+    
+    return res.status(200).json({ 
+      success: true,
+      message: 'Material updated successfully',
+      data: updatedData
+    });
+
+  } catch (error) {
+    console.error('❌ Unexpected error updating material:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || 'Failed to update material',
+      details: error.toString() 
+    });
+  }
+});
+
+// ✅ DELETE /api/study-material/:id - Delete study material (SECURED)
+app.delete('/api/study-material/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { folder_type } = req.query; // Get folder_type from query params
+
+    console.log('🗑️ DELETE /api/study-material/:id', {
+      id,
+      folder_type,
+      userEmail: req.user?.email,
+      userRole: req.user?.role
+    });
+
+    // ✅ Check if user has admin or editor role
+    if (!hasAdminOrEditorRole(req.user?.role)) {
+      console.warn('❌ Unauthorized delete attempt:', req.user?.email, req.user?.role);
+      return res.status(403).json({ 
+        error: 'Unauthorized. Admin or Editor role required.' 
+      });
+    }
+
+    // ✅ Validate ID is a number
+    const numId = parseInt(id);
+    if (isNaN(numId)) {
+      console.warn('❌ Invalid material ID:', id);
+      return res.status(400).json({ error: 'Invalid material ID' });
+    }
+
+    // ✅ Validate and determine table name
+    const validTypes = ['notes', 'pyqs', 'ebooks', 'ppts'];
+    const tableName = folder_type && validTypes.includes(folder_type) ? folder_type : 'notes';
+    
+    console.log(`📊 Using table: ${tableName} for ID: ${numId}`);
+
+    // ✅ Check if material exists first
+    const { data: materialData, error: fetchError } = await supabase
+      .from(tableName)
+      .select('pdf_url, storage_path, id, title')
+      .eq('id', numId)
+      .single();
+
+    if (fetchError || !materialData) {
+      console.warn(`❌ Material not found in table '${tableName}' with ID ${numId}:`, fetchError?.message);
+      return res.status(404).json({ 
+        error: `Material not found in ${tableName} table`,
+        details: fetchError?.message || 'No record found'
+      });
+    }
+
+    console.log(`✅ Found material: "${materialData.title}" (ID: ${materialData.id})`);
+
+    // ✅ Delete from storage if file exists
+    const filePath = materialData.storage_path || materialData.pdf_url;
+    if (filePath) {
+      try {
+        const storagePath = `${tableName}/${filePath}`;
+        console.log(`🗑️ Attempting to delete from storage: ${storagePath}`);
+        
+        await supabase.storage
+          .from('study-materials')
+          .remove([storagePath])
+          .catch(err => {
+            console.warn('⚠️ Storage deletion warning (non-critical):', err?.message);
+            // Continue anyway - we still want to delete the DB record
+          });
+      } catch (err) {
+        console.warn('⚠️ Storage deletion error (non-critical):', err);
+      }
+    }
+
+    // ✅ Delete from database
+    const { error: deleteError } = await supabase
+      .from(tableName)
+      .delete()
+      .eq('id', numId);
+
+    if (deleteError) {
+      console.error('❌ Database deletion error:', deleteError);
+      return res.status(500).json({ 
+        error: 'Failed to delete material from database',
+        details: deleteError.message 
+      });
+    }
+
+    console.log(`✅ Material deleted successfully: ID ${numId} from table '${tableName}'`);
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Material deleted successfully',
+      deletedId: numId
+    });
+  } catch (error) {
+    console.error('❌ Unexpected error deleting material:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || 'Failed to delete material',
+      details: error.toString()
+    });
+  }
+});
+
 
 
 
@@ -6402,8 +6621,31 @@ loadTimetableData();
 app.post('/api/analytics/track-visitor', async (req, res) => {
   try {
     const { sessionId, userId, pageUrl, referrer } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'sessionId is required' });
+    }
+
     const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const userAgent = req.headers['user-agent'];
+
+    const today = new Date().toISOString().split('T')[0];
+    const dayStart = `${today}T00:00:00.000Z`;
+    const nextDay = new Date(`${today}T00:00:00.000Z`);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    const dayEnd = nextDay.toISOString();
+
+    // Determine whether this session has already been seen today.
+    const { count: existingSessionCount, error: existingSessionError } = await supabase
+      .from('visitor_sessions')
+      .select('id', { count: 'exact', head: true })
+      .eq('session_id', sessionId)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd);
+
+    if (existingSessionError) throw existingSessionError;
+
+    const isUniqueVisitorToday = (existingSessionCount || 0) === 0;
 
     // Insert visitor session
     const { error: sessionError } = await supabase
@@ -6420,17 +6662,22 @@ app.post('/api/analytics/track-visitor', async (req, res) => {
     if (sessionError) throw sessionError;
 
     // Update daily visitor count
-    const today = new Date().toISOString().split('T')[0];
     const { data: existingVisitor, error: fetchError } = await supabase
       .from('website_visitors')
       .select('*')
       .eq('visit_date', today)
       .single();
 
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      throw fetchError;
+    }
+
     if (existingVisitor) {
       const { error: updateError } = await supabase
         .from('website_visitors')
         .update({ 
+          visitor_count: (existingVisitor.visitor_count || 0) + 1,
+          unique_visitors: (existingVisitor.unique_visitors || 0) + (isUniqueVisitorToday ? 1 : 0),
           page_views: existingVisitor.page_views + 1,
           updated_at: new Date().toISOString()
         })
@@ -6443,7 +6690,7 @@ app.post('/api/analytics/track-visitor', async (req, res) => {
         .insert({
           visit_date: today,
           visitor_count: 1,
-          unique_visitors: 1,
+          unique_visitors: isUniqueVisitorToday ? 1 : 0,
           page_views: 1
         });
       
