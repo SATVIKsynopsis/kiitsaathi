@@ -6617,6 +6617,136 @@ loadTimetableData();
 // ===== ANALYTICS FEATURE =====
 // =====================================================================
 
+const ANALYTICS_TIME_ZONE = 'Asia/Kolkata';
+
+const getAnalyticsDate = (date = new Date()) => {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: ANALYTICS_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date);
+};
+
+const getAnalyticsDayBoundsUtc = (date = new Date()) => {
+  const localDate = getAnalyticsDate(date);
+  const start = new Date(`${localDate}T00:00:00+05:30`);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+
+  return {
+    today: localDate,
+    dayStart: start.toISOString(),
+    dayEnd: end.toISOString()
+  };
+};
+
+const performAnalyticsReset = async ({ preserveToday = true } = {}) => {
+  const { today, dayStart } = getAnalyticsDayBoundsUtc();
+
+  if (preserveToday) {
+    const { error: visitorDeleteError } = await supabase
+      .from('website_visitors')
+      .delete()
+      .lt('visit_date', today);
+
+    if (visitorDeleteError) throw visitorDeleteError;
+
+    const { error: sessionDeleteError } = await supabase
+      .from('visitor_sessions')
+      .delete()
+      .lt('created_at', dayStart);
+
+    if (sessionDeleteError) throw sessionDeleteError;
+
+    const { error: dailyServiceDeleteError } = await supabase
+      .from('daily_service_usage')
+      .delete()
+      .lt('usage_date', today);
+
+    if (dailyServiceDeleteError) throw dailyServiceDeleteError;
+
+    // Rebuild cumulative service totals from today's rows only.
+    const { data: todayServiceRows, error: todayServiceError } = await supabase
+      .from('daily_service_usage')
+      .select('service_name, usage_count, updated_at, created_at')
+      .eq('usage_date', today);
+
+    if (todayServiceError) throw todayServiceError;
+
+    const nowIso = new Date().toISOString();
+    const { error: resetServiceTotalsError } = await supabase
+      .from('service_usage')
+      .update({
+        usage_count: 0,
+        last_used: null,
+        updated_at: nowIso
+      })
+      .gte('usage_count', 0);
+
+    if (resetServiceTotalsError) throw resetServiceTotalsError;
+
+    if ((todayServiceRows || []).length > 0) {
+      const upsertPayload = todayServiceRows.map((row) => ({
+        service_name: row.service_name,
+        usage_count: row.usage_count,
+        last_used: row.updated_at || row.created_at || nowIso,
+        updated_at: nowIso
+      }));
+
+      const { error: upsertServiceTotalsError } = await supabase
+        .from('service_usage')
+        .upsert(upsertPayload, { onConflict: 'service_name' });
+
+      if (upsertServiceTotalsError) throw upsertServiceTotalsError;
+    }
+
+    return {
+      mode: 'preserve_today',
+      today,
+      message: 'Historical analytics cleared. Today\'s data preserved.'
+    };
+  }
+
+  const { error: clearVisitorError } = await supabase
+    .from('website_visitors')
+    .delete()
+    .gte('visitor_count', 0);
+
+  if (clearVisitorError) throw clearVisitorError;
+
+  const { error: clearSessionsError } = await supabase
+    .from('visitor_sessions')
+    .delete()
+    .gte('id', 0);
+
+  if (clearSessionsError) throw clearSessionsError;
+
+  const { error: clearDailyServiceError } = await supabase
+    .from('daily_service_usage')
+    .delete()
+    .gte('usage_count', 0);
+
+  if (clearDailyServiceError) throw clearDailyServiceError;
+
+  const { error: clearServiceTotalsError } = await supabase
+    .from('service_usage')
+    .update({
+      usage_count: 0,
+      last_used: null,
+      updated_at: new Date().toISOString()
+    })
+    .gte('usage_count', 0);
+
+  if (clearServiceTotalsError) throw clearServiceTotalsError;
+
+  return {
+    mode: 'full_reset',
+    today,
+    message: 'All analytics data reset.'
+  };
+};
+
 // Track visitor
 app.post('/api/analytics/track-visitor', async (req, res) => {
   try {
@@ -6629,11 +6759,7 @@ app.post('/api/analytics/track-visitor', async (req, res) => {
     const ip = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const userAgent = req.headers['user-agent'];
 
-    const today = new Date().toISOString().split('T')[0];
-    const dayStart = `${today}T00:00:00.000Z`;
-    const nextDay = new Date(`${today}T00:00:00.000Z`);
-    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-    const dayEnd = nextDay.toISOString();
+    const { today, dayStart, dayEnd } = getAnalyticsDayBoundsUtc();
 
     // Determine whether this session has already been seen today.
     const { count: existingSessionCount, error: existingSessionError } = await supabase
@@ -6713,7 +6839,7 @@ app.post('/api/analytics/track-service', async (req, res) => {
       return res.status(400).json({ error: 'Service name is required' });
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getAnalyticsDate();
 
     // Update cumulative service_usage table
     const { data: existingService, error: fetchError } = await supabase
@@ -6881,7 +7007,7 @@ app.get('/api/admin/analytics', async (req, res) => {
       : 0;
 
     // Get today's stats
-    const today = new Date().toISOString().split('T')[0];
+    const today = getAnalyticsDate();
     const todayStats = dailyStats[today] || { visitors: 0, pageViews: 0, uniqueVisitors: 0 };
 
     // Get yesterday's stats for daily comparison
@@ -6925,9 +7051,42 @@ app.get('/api/admin/analytics', async (req, res) => {
   }
 });
 
+// Reset analytics history while optionally preserving today's counters.
+app.post('/api/admin/analytics/reset', async (req, res) => {
+  try {
+    const { preserveToday = true } = req.body || {};
+    const resetResult = await performAnalyticsReset({ preserveToday });
+
+    return res.json({
+      success: true,
+      ...resetResult
+    });
+  } catch (error) {
+    console.error('Error resetting analytics:', error);
+    return res.status(500).json({ error: 'Failed to reset analytics' });
+  }
+});
+
 // ===== END OF ANALYTICS FEATURE =====
 // =====================================================================
 
 /* ---------------------- SERVER ---------------------- */
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+
+  const shouldAutoResetAnalytics = (process.env.ANALYTICS_AUTO_RESET_ON_START || 'true').toLowerCase() === 'true';
+  if (!shouldAutoResetAnalytics) {
+    return;
+  }
+
+  const resetMode = (process.env.ANALYTICS_AUTO_RESET_MODE || 'preserve_today').toLowerCase();
+  const preserveToday = resetMode !== 'full_reset';
+
+  try {
+    const result = await performAnalyticsReset({ preserveToday });
+    console.log(`Analytics auto reset complete (${result.mode}) for ${result.today}`);
+  } catch (error) {
+    console.error('Analytics auto reset failed:', error);
+  }
+});
